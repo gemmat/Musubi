@@ -1,0 +1,6 @@
+content	musubi	chrome/content/
+overlay	chrome://browser/content/browser.xul	chrome://musubi/content/overlay.xul
+resource	musubi	resources/
+skin	musubi	classic/1.0	chrome/skin/classic/
+locale	musubi	en-US	chrome/locale/en-US/
+locale	musubi	ja	  chrome/locale/ja/

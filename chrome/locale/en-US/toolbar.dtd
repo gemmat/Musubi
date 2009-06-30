@@ -1,0 +1,10 @@
+<!ENTITY Musubi.toolbar.toggleSidebarLabel   "Musubi Sidebar">
+<!ENTITY Musubi.toolbar.userBar              "From">
+<!ENTITY Musubi.toolbar.userBar.emptytext    "yourname@gmail.com">
+<!ENTITY Musubi.toolbar.userBar.ConnectOrDisconnect "on/off">
+<!ENTITY Musubi.toolbar.userBar.connect      "connect">
+<!ENTITY Musubi.toolbar.userBar.disconnect   "disconnect">
+<!ENTITY Musubi.toolbar.sendtoBar            "SendTo">
+<!ENTITY Musubi.toolbar.sendtoBar.emptytext  "alice@gmail.com">
+<!ENTITY Musubi.toolbar.urlBar               "Location">
+

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://browser/skin/browser.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://browser/skin/places/places.css" type="text/css" ?>
+<!DOCTYPE page SYSTEM "chrome://musubi/locale/sidebar.dtd">
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      xmlns:html="http://www.w3.org/1999/xhtml"
+      id="Musubi-sidebar"
+      title="&Musubi.sidebar.title;"
+>
+    <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
+    <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
+    <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js?load=sidebar"/>
+
+<!--     <script type="application/javascript; version=1.8" charset="utf-8" src="sidebar.js"/> -->
+    <description></description>
+    <vbox flex="1" style="overflow: auto" >
+      <iframe id="sidebar-iframe"
+              flex="1"
+              src="file:///home/teruaki/garakuta-okiba/xmppwebApp/top.html"
+              type="content"/>
+      <button label="debug" oncommand="var dc = document.getElementById('debug-console'); dc.collapsed = !dc.collapsed;"/>
+      <groupbox id="debug-console" collapsed="true">
+        <caption label="Debug Console"/>
+        <hbox align="center">
+          <button label="test"
+                  oncommand="test();"/>
+        </hbox>
+        <hbox align="center">
+        </hbox>
+      </groupbox>
+    </vbox>
+    <script type="text/javascript; version=1.8" charset="utf-8">
+    // <![CDATA[
+    (function() {
+       Musubi.sidebar = {};
+       Musubi.loadSubScript("chrome://musubi/content/sidebar.js", Musubi.sidebar);
+       document.addEventListener("load",   Musubi.sidebar.onLoadAtIframe,   true);
+       document.addEventListener("unload", Musubi.sidebar.onUnloadAtIframe, true);
+    })();
+    // ]]>
+    </script>
+</page>

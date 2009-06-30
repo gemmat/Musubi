@@ -1,0 +1,136 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/css" href="chrome://musubi/skin/toolbar.css"?>
+<!DOCTYPE overlay SYSTEM "chrome://musubi/locale/browser.dtd" [
+    <!ENTITY % toolbar SYSTEM "chrome://musubi/locale/toolbar.dtd">
+    %toolbar;
+]>
+<overlay id="Musubi-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+>
+    <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
+    <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
+
+    <menupopup id="viewSidebarMenu">
+        <menuitem observes="viewMusubiSidebar" />
+    </menupopup>
+
+    <toolbarpalette id="BrowserToolbarPalette">
+        <!--  Watch out the "defaultset" property to reflect your addition of toolbar[button|item] -->
+        <toolbarbutton id="Musubi-toolbar-sidebar-button"
+                       class="chromeclass-toolbar-additional"
+                       tooltiptext="&Musubi.toolbar.toggleSidebarLabel;"
+                       observes="viewMusubiSidebar"/>
+        <toolbaritem id="Musubi-userbar-container"
+                     class="chromeclass-toolbar-additional"
+                     title="&Musubi.toolbar.userBar;">
+          <button id="Musubi-userbar-button-connect"
+                  oncommand="Musubi.toolbar.connect() || Musubi.toolbar.disconnect();">
+            &Musubi.toolbar.userBar.ConnectOrDisconnect;
+          </button>
+          <label control="Musubi-userbar" value="&Musubi.toolbar.userBar;"/>
+          <textbox id="Musubi-userbar"
+                   emptytext="&Musubi.toolbar.userBar.emptytext;"
+                   type="autocomplete"
+                   autocompletesearch="form-history" 
+                   autocompletepopup="PopupAutoCompleteRichResult" 
+                   completeselectedindex="true" 
+                   tabscrolling="true" 
+                   showcommentcolumn="true" 
+                   showimagecolumn="true" 
+                   enablehistory="true" 
+                   maxrows="6" 
+                   newlines="stripsurroundingwhitespace"                    
+                   ontextentered="return handleMusubiCommand(param);"
+                   pageproxystate="invalid"
+                   sizetopopup="pref"
+                   completedefaultindex="true"/>
+        </toolbaritem>
+        <toolbaritem id="Musubi-sendtobar-container"
+                     class="chromeclass-toolbar-additional"
+                     title="&Musubi.toolbar.sendtoBar;">
+          <label control="Musubi-sendtobar" value="&Musubi.toolbar.sendtoBar;"/>
+          <textbox id="Musubi-sendtobar"
+                   emptytext="&Musubi.toolbar.sendtoBar.emptytext;"
+                   type="autocomplete"
+                   autocompletesearch="form-history" 
+                   autocompletepopup="PopupAutoCompleteRichResult" 
+                   completeselectedindex="true" 
+                   tabscrolling="true" 
+                   showcommentcolumn="true" 
+                   showimagecolumn="true" 
+                   enablehistory="true" 
+                   maxrows="6" 
+                   newlines="stripsurroundingwhitespace"                    
+                   ontextentered="return handleMusubiCommand(param);"
+                   pageproxystate="invalid"
+                   sizetopopup="pref"
+                   completedefaultindex="true"/>
+        </toolbaritem>
+        <toolbaritem id="Musubi-urlbar-container"
+                     class="chromeclass-location"
+                     align="center"
+                     flex="10" 
+                     persist="width" 
+                     title="&Musubi.toolbar.urlBar;">
+          <textbox id="Musubi-urlbar" 
+                   flex="1" 
+                   chromedir="ltr" 
+                   type="autocomplete" 
+                   autocompletesearch="history" 
+                   autocompletepopup="PopupAutoCompleteRichResult" 
+                   completeselectedindex="true" 
+                   tabscrolling="true" 
+                   showcommentcolumn="true" 
+                   showimagecolumn="true" 
+                   enablehistory="true" 
+                   maxrows="6" 
+                   newlines="stripsurroundingwhitespace" 
+                   ontextentered="return handleMusubiCommand(param);" 
+                   pageproxystate="invalid"
+                   sizetopopup="pref"
+                   completedefaultindex="false"/>
+        </toolbaritem>
+    </toolbarpalette>
+
+    <toolbox id="navigator-toolbox">
+        <toolbar id="Musubi-toolbar"
+                 class="chromeclass-toolbar-additional"
+                 mode="icons"
+                 defaultmode="icons"
+                 iconsize="small"
+                 defaulticonsize="small"
+                 customizable="true"
+                 defaultset="Musubi-toolbar-sidebar-button,Musubi-userbar-container,Musubi-sendtobar-container,Musubi-urlbar-container"
+                 context="toolbar-context-menu"
+                 toolbarname="&Musubi.toolbar.title;"
+                 accesskey="&Musubi.toolbar.titleKey;">
+        </toolbar>
+    </toolbox>
+
+    <broadcasterset id="mainBroadcasterSet">
+        <broadcaster id="viewMusubiSidebar"
+                     label="&Musubi.sidebar.label;"
+                     autoCheck="false"
+                     type="checkbox"
+                     group="sidebar"
+                     sidebarurl="chrome://musubi/content/sidebar.xul"
+                     sidebartitle="&Musubi.sidebar.label;"
+                     key="Musubi-key-sidebar"
+                     oncommand="toggleSidebar('viewMusubiSidebar');"/>
+    </broadcasterset>
+    <script type="text/javascript; version=1.8" charset="utf-8">
+    // <![CDATA[
+    (function() {
+       Musubi.browser = {};
+       Musubi.loadSubScript("chrome://musubi/content/browser.js", Musubi.browser);
+       Musubi.toolbar = {};
+       Musubi.loadSubScript("chrome://musubi/content/toolbar.js", Musubi.toolbar);
+       getBrowser().addEventListener("load",   Musubi.browser.onLoad,   true);
+       getBrowser().addEventListener("unload", Musubi.browser.onUnload, true);
+    })();
+    // ]]>
+    </script>
+</overlay>
+
+
