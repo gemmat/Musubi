@@ -41,7 +41,7 @@
                    enablehistory="true" 
                    maxrows="6" 
                    newlines="stripsurroundingwhitespace"                    
-                   ontextentered="return handleMusubiCommand(param);"
+                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);"
                    pageproxystate="invalid"
                    sizetopopup="pref"
                    completedefaultindex="true"/>
@@ -62,7 +62,7 @@
                    enablehistory="true" 
                    maxrows="6" 
                    newlines="stripsurroundingwhitespace"                    
-                   ontextentered="return handleMusubiCommand(param);"
+                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);"
                    pageproxystate="invalid"
                    sizetopopup="pref"
                    completedefaultindex="true"/>
@@ -86,7 +86,7 @@
                    enablehistory="true" 
                    maxrows="6" 
                    newlines="stripsurroundingwhitespace" 
-                   ontextentered="return handleMusubiCommand(param);" 
+                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);" 
                    pageproxystate="invalid"
                    sizetopopup="pref"
                    completedefaultindex="false"/>

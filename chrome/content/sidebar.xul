@@ -18,7 +18,7 @@
     <vbox flex="1" style="overflow: auto" >
       <iframe id="sidebar-iframe"
               flex="1"
-              src="file:///home/teruaki/garakuta-okiba/xmppwebApp/top.html"
+              src="file:///home/teruaki/App_Musubi/sidebar/sidebar.html"
               type="content"/>
       <button label="debug" oncommand="var dc = document.getElementById('debug-console'); dc.collapsed = !dc.collapsed;"/>
       <groupbox id="debug-console" collapsed="true">
