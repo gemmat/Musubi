@@ -11,6 +11,7 @@ function MusubiDB() {
         domain             : "TEXT",
         resource           : "TEXT",
         jid                : "TEXT UNIQUE NOT NULL",
+        address            : "TEXT UNIQUE NOT NULL",
         connectionHost     : "TEXT NOT NULL",
         connectionPort     : "INTEGER NOT NULL",
         connectionSecurity : "INTEGER NOT NULL"
@@ -23,6 +24,8 @@ function MusubiDB() {
                <domain>{aObject.domain}</domain>
                <resource>{aObject.resource}</resource>
                <jid>{aObject.jid}</jid>
+               <address>{aObject.address}</address>
+               <password>{aObject.password}</password>
                <connectionHost>{aObject.connectionHost}</connectionHost>
                <connectionPort>{aObject.connectionPort}</connectionPort>
                <connectionSecurity>{aObject.connectionSecurity}</connectionSecurity>
@@ -35,6 +38,8 @@ function MusubiDB() {
         domain:             aXML.domain            .toString(),
         resource:           aXML.resource          .toString(),
         jid:                aXML.jid               .toString(),
+        address:            aXML.address           .toString(),
+        password:           aXML.password          .toString(),
         connectionHost:     aXML.connectionHost    .toString(),
         connectionPort:     parseInt(aXML.connectionPort.toString(), 10),
         connectionSecurity: parseInt(aXML.connectionSecurity.toString(), 10)

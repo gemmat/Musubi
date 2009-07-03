@@ -1,4 +1,4 @@
-const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "xmppConnect", "xmppDisconnect", "xmppSendURL"];
+const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "xmppConnect", "xmppDisconnect", "xmppSendURL"];
 
 var onlineAccounts = [];
 
@@ -14,7 +14,26 @@ function E4XToDOM(aE4XXML) {
     true);
 }
 
-function xmppConnect(aJID) {
+function updateXMPP4MOZAccount(aAccount) {
+  var key = 0;
+  // The xmpp4moz's xmpp_impl.jsm says
+  // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"
+  // Roger that, however, we intentionally use the getAccountByJid for the backward compatibility.
+  var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.jid);
+  if (xmpp4mozAccount) {
+    key = xmpp4mozAccount.key;
+  } else {
+    key = Date.now();
+  }
+  var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
+  prefs.set("address",  aAccount.address);
+  prefs.set("resource", aAccount.resource);
+  prefs.set("connectionHost", aAccount.connectionHost);
+  prefs.set("connectionPort", aAccount.connectionPort);
+  prefs.set("connectionSecurity", aAccount.connectionSecurity);
+}
+
+function xmppConnect(aAddress) {
   function onMessageForDocument(aXML) {
     if (!aXML.body.length()) return;
 	  var elts = window.content.document.documentElement.getElementsByTagName("XmppIn");
@@ -34,11 +53,10 @@ function xmppConnect(aJID) {
   }
 
   var account = Musubi.callWithMusubiDB(function(msbdb) {
-                  return msbdb.account.findByJid(aJID)[0];
+                  return msbdb.account.findByAddress(aAddress)[0];
                 });
-  if (!account) throw new Error("account data not found: " + aJID);
-  account.password = account.name;
-  XMPP.up(account);
+  if (!account) throw new Error("account data not found: " + aAddress);
+  XMPP.up(account.jid);
   account.channel = XMPP.createChannel();
   account.channel.on({
                        direction : "in",
@@ -46,19 +64,19 @@ function xmppConnect(aJID) {
                      },
                      onMessage);
   XMPP.send(account, <presence/>);
-  Musubi.onlineAccounts[aJID] = account;
+  Musubi.onlineAccounts[aAddress] = account;
 }
 
-function xmppDisconnect(aJID) {
-  var account = Musubi.onlineAccounts[aJID];
+function xmppDisconnect(aAddress) {
+  var account = Musubi.onlineAccounts[aAddress];
   account.channel.release();
-  XMPP.down(account);
-  Musubi.onlineAccounts[aJID] = null;
+  XMPP.down(account.jid);
+  Musubi.onlineAccounts[aAddress] = null;
 }
 
 //jabber:x:oob is XEP-0066 Out of Band Data.
-function xmppSendURL(aJID, aSendto, aURL) {
-  var account = Musubi.onlineAccounts[aJID];
+function xmppSendURL(aAddress, aSendto, aURL) {
+  var account = Musubi.onlineAccounts[aAddress];
   XMPP.send(account,
     <message to={aSendto} type="chat">
 	    <body>{aURL}</body>

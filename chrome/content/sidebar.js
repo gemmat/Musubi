@@ -17,17 +17,14 @@ function onXmppEventAtIframe(aEvent) {
   var sendtoBar = mainWin.document.getElementById("Musubi-sendtobar");
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
-  case "message":
-    sendtoBar.value.split(",").forEach(function f0(x) {
-      xml.@to = x;
-      XMPP.send(userBar.value, xml);
-    });
-    break;
-  case "iq":
-    break;
+  case "message": //FALLTHROUGH
+  case "iq":      //FALLTHROUGH
   case "presence":
+    // skip it, Musubi.browser.onXmppEventAtDocument will do.
     break;
   case "musubi":
+    // Only the sidebar should handle this internal xmpp event which often includes user info.
+    aEvent.stopPropagation();
     if (xml.connect.length()) {
       mainWin.Musubi.toolbar.connect();
     } else if (xml.disconnect.length()) {
@@ -64,6 +61,11 @@ function onXmppEventAtIframe(aEvent) {
         try {
           for (var i = 0; i < xml.accounts.account.length(); i++) {
             var account = new msbdb.account(msbdb.account.E4XToObject(xml.accounts.account[i]));
+            // Save the password to the browser's password manager.
+            Musubi.updateXMPP4MOZAccount(account);
+            XMPP.setPassword(account.jid, account.password);
+            // ...And don't save it to the DB.
+            account.password = null;
             if (msbdb.account.countById(account.id)) {
               msbdb.account.update(account);
             } else {

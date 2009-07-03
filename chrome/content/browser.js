@@ -22,9 +22,13 @@ function onXmppEventAtDocument(aEvent) {
   var xml = Musubi.DOMToE4X(aEvent.target);
   var user   = document.getElementById("Musubi-userbar").value;
   var sendto = document.getElementById("Musubi-sendtobar").value;
-  sendto.split(",").forEach(function(x) {
-    xml.@to = x;
-    var account = Musubi.onlineAccounts[user];
-    XMPP.send(account, xml);
-  });
+  switch (xml.name().localName) {
+  case "message":
+    sendto.split(",").forEach(function(x) {
+      xml.@to = x;
+      var account = Musubi.onlineAccounts[user];
+      XMPP.send(account, xml);
+    });
+    break;
+  }
 }
