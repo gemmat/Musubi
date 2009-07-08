@@ -41,7 +41,7 @@ function toJSON(aObject) {
 }
 
 function p(x) {
-  Application.console.log(x ? x : "““");
+  Application.console.log(x ? x : "**");
 }
 
 function $A(aObj) {
