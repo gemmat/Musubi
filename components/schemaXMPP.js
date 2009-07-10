@@ -40,12 +40,8 @@ XMPProtocol.prototype = {
     return temp;
   },
   newChannel: function XMPProtocolNewChannel(aURI) {
-    var topwin = WindowMediator.getMostRecentWindow("navigator:browser");
-    var userBar   = topwin.document.getElementById("Musubi-userbar");
-    var sendtoBar = topwin.document.getElementById("Musubi-sendtobar");
-    var urlBar    = topwin.document.getElementById("Musubi-urlbar");
-    [userBar.value, sendtoBar.value, urlBar.value] = parseLocationHref(aURI.spec);
-    return IOService.newChannel(urlBar.value, null, null);
+    var url = parseLocationHref(aURI.spec)[2];
+    return IOService.newChannel(url, null, null);
   }
 };
 

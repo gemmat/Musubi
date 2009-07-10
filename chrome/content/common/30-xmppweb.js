@@ -34,24 +34,46 @@ function updateXMPP4MOZAccount(aAccount) {
 }
 
 function xmppConnect(aAddress) {
-  function onMessageForDocument(aXML) {
-    if (!aXML.body.length()) return;
-	  var elts = window.content.document.documentElement.getElementsByTagName("XmppIn");
-	  if (elts.length) elts[0].appendChild(E4XToDOM(aXML));
-  }
-  function onMessageForSidbarIframe(aXML) {
-    if (!aXML.body.length()) return;
-    // Check the sidebar's iframe is open.
-    var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
-    if (!iframe) return;
-    var elts = iframe.contentDocument.getElementsByTagName("XmppIn");
-    if (elts.length) elts[0].appendChild(E4XToDOM(aXML));
-  }
   function onMessage(aMessageObj) {
-    onMessageForDocument(aMessageObj.stanza);
-    onMessageForSidbarIframe(aMessageObj.stanza);
+    var stanza = aMessageObj.stanza;
+    if (!stanza.body.length()) return;
+    var nsoob = new Namespace("jabber:x:oob");
+    if (stanza.@to.length() &&
+        stanza.@from.length() &&
+        stanza.nsoob::x.nsoob::url.length()) {
+      var url = "xmpp://" +
+                XMPP.JID(stanza.@to.toString()).address +
+                "/" +
+                XMPP.JID(stanza.@from.toString()).address +
+                "?href;url=" +
+                stanza.nsoob::x.nsoob::url.toString();
+      var urlFoundBrowsers = [];
+      for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
+        var b = gBrowser.getBrowserAtIndex(i);
+        if (b.currentURI.spec == url) {
+          urlFoundBrowsers.push(b);
+        }
+      }
+      if (urlFoundBrowsers.length) {
+        urlFoundBrowsers.forEach(function(b) {
+          var elts = b.contentDocument.getElementsByTagName("XmppIn");
+	        if (elts.length) elts[0].appendChild(E4XToDOM(stanza));
+        });
+      } else {
+        var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
+        newTab.addEventListener("load", function(e) {
+          var elts = newTab.contentDocument.getElementsByTagName("XmppIn");
+	        if (elts.length) elts[0].appendChild(E4XToDOM(stanza));
+        });
+      }
+    } else {
+      // Check the sidebar's iframe is open.
+      var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+      if (!iframe) return;
+      var elts = iframe.contentDocument.getElementsByTagName("XmppIn");
+      if (elts.length) elts[0].appendChild(E4XToDOM(stanza));
+    }
   }
-
   var account = Musubi.callWithMusubiDB(function(msbdb) {
                   return msbdb.account.findByAddress(aAddress)[0];
                 });

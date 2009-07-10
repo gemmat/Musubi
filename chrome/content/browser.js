@@ -24,6 +24,13 @@ function onXmppEventAtDocument(aEvent) {
   var sendto = document.getElementById("Musubi-sendtobar").value;
   switch (xml.name().localName) {
   case "message":
+    var url = Musubi.parseLocationHref(aEvent.target.ownerDocument.location.href)[2] ||
+              aEvent.target.ownerDocument.location.href;
+    var oob = <x xmlns="jabber:x:oob">
+                <url>{url}</url>
+                <desc>{aEvent.target.ownerDocument.title}</desc>
+              </x>;
+    xml.x = oob;
     sendto.split(",").forEach(function(x) {
       xml.@to = x;
       var account = Musubi.onlineAccounts[user];
