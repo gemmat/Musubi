@@ -23,7 +23,7 @@ function onXmppEventAtIframe(aEvent) {
     // skip it, Musubi.browser.onXmppEventAtDocument will do.
     break;
   case "musubi":
-    // Only the sidebar should handle this internal xmpp event which often includes user info.
+    // Only the sidebar should handle this internal xmpp event. It often includes user info.
     aEvent.stopPropagation();
     if (xml.connect.length()) {
       mainWin.Musubi.toolbar.connect();
@@ -38,8 +38,8 @@ function onXmppEventAtIframe(aEvent) {
       //TODO implement.
       //var sender = xml.sender.toString();
       //openUILink("xmpp:" + sender, "Tab");
-    } else if (xml.accounts.length() && xml.accounts.@type == "get") {
-      var element = <musubi><accounts type="result"/></musubi>;
+    } else if (xml.@type == "get" && xml.accounts.length()) {
+      var element = <musubi type="result"><accounts/></musubi>;
       if (xml.accounts.account.length()) {
         var accountXML = Musubi.callWithMusubiDB(function f1(msbdb) {
           var id = xml.accounts.account[0].@id.toString();
@@ -56,7 +56,17 @@ function onXmppEventAtIframe(aEvent) {
         });
         Musubi.sidebar.sendMessageToIframe(element);
       }
-    } else if (xml.accounts.length() && xml.accounts.@type == "set") {
+    } else if (xml.@type == "get" && xml.defaultjid.length()) {
+      var d = new Musubi.Prefs("extensions.musubi.").get("defaultJID", "");
+      Musubi.sidebar.sendMessageToIframe(<musubi type="result">
+                                           <defaultjid>{d}</defaultjid>
+                                         </musubi>);
+    } else if (xml.@type == "set" && xml.defaultjid.length()) {
+      new Musubi.Prefs("extensions.musubi.").set("defaultJID", xml.defaultjid.toString());
+      Musubi.sidebar.sendMessageToIframe(<musubi type="result">
+                                           <defaultjid>{xml.defaultjid.toString()}</defaultjid>
+                                         </musubi>);
+    } else if (xml.@type == "set" && xml.accounts.length()) {
       Musubi.callWithMusubiDB(function f4(msbdb) {
         try {
           for (var i = 0; i < xml.accounts.account.length(); i++) {

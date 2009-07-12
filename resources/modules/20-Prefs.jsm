@@ -68,7 +68,7 @@ Prefs.prototype = {
     switch (aType) {
     case PrefService.PREF_INT:      //FALLTHROUGH
     case "number":
-      return prefs.setIntPref(aPrefName, parseInt(aValue, 10));
+      return prefs.setIntPref(aPrefName, +aValue);
     case PrefService.PREF_BOOL:     //FALLTHROUGH
     case "boolean":
       return prefs.setBoolPref(aPrefName, !!aValue);

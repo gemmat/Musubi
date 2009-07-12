@@ -33,16 +33,16 @@ function MusubiDB() {
     },
     E4XToObject: function accountE4XtoObject(aXML) {
       return {
-        id:                 parseInt(aXML.@id.toString(), 10),
-        name:               aXML.name              .toString(),
-        domain:             aXML.domain            .toString(),
-        resource:           aXML.resource          .toString(),
-        jid:                aXML.jid               .toString(),
-        address:            aXML.address           .toString(),
-        password:           aXML.password          .toString(),
-        connectionHost:     aXML.connectionHost    .toString(),
-        connectionPort:     parseInt(aXML.connectionPort.toString(), 10),
-        connectionSecurity: parseInt(aXML.connectionSecurity.toString(), 10)
+        id:                 +aXML.@id               .toString(),
+        name:                aXML.name              .toString(),
+        domain:              aXML.domain            .toString(),
+        resource:            aXML.resource          .toString(),
+        jid:                 aXML.jid               .toString(),
+        address:             aXML.address           .toString(),
+        password:            aXML.password          .toString(),
+        connectionHost:      aXML.connectionHost    .toString(),
+        connectionPort:     +aXML.connectionPort    .toString(),
+        connectionSecurity: +aXML.connectionSecurity.toString()
       };
     }
   });
