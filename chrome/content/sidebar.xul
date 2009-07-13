@@ -12,8 +12,6 @@
     <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
     <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
-
-<!--     <script type="application/javascript; version=1.8" charset="utf-8" src="sidebar.js"/> -->
     <description></description>
     <vbox flex="1" style="overflow: auto" >
       <iframe id="sidebar-iframe"

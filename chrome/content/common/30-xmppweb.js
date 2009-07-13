@@ -1,4 +1,4 @@
-const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "xmppConnect", "xmppDisconnect", "xmppSendURL"];
+const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSendURL"];
 
 var onlineAccounts = [];
 
@@ -33,13 +33,13 @@ function updateXMPP4MOZAccount(aAccount) {
   prefs.set("connectionSecurity", aAccount.connectionSecurity);
 }
 
+function appendE4XToXmppIn(aDocument, aE4X) {
+  var elts = aDocument.getElementsByTagName("XmppIn");
+  if (elts.length) elts[0].appendChild(E4XToDOM(aE4X));
+}
+
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aMessageObj) {
-  function appendStanzaToXmppIn(aDocument, aStanza) {
-    var elts = aDocument.getElementsByTagName("XmppIn");
-	  if (elts.length) elts[0].appendChild(E4XToDOM(aStanza));
-  }
-
   var stanza = aMessageObj.stanza;
   if (!stanza.@to.length() || !stanza.@from.length() || !stanza.body.length()) return;
   var nsoob = new Namespace("jabber:x:oob");
@@ -53,13 +53,13 @@ function onMessage(aMessageObj) {
       var b = gBrowser.getBrowserAtIndex(i);
       if (b.currentURI.spec == url) {
         notfound = false;
-        appendStanzaToXmppIn(b.contentDocument, stanza);
+        appendE4XToXmppIn(b.contentDocument, stanza);
       }
     }
     if (notfound) {
       var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
       newTab.addEventListener("load", function(e) {
-        appendStanzaToXmppIn(newTab.contentDocument, stanza);
+        appendE4XToXmppIn(newTab.contentDocument, stanza);
       });
     }
   } else {
@@ -68,16 +68,23 @@ function onMessage(aMessageObj) {
       var b = gBrowser.getBrowserAtIndex(i);
       if (Musubi.parseLocationHref(b.currentURI.spec)[1] == stanzaFrom) {
         notfound = false;
-        appendStanzaToXmppIn(b.contentDocument, stanza);
+        appendE4XToXmppIn(b.contentDocument, stanza);
       }
     }
     if (notfound) {
-      // Check the sidebar's iframe is open.
       var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+      // Check the sidebar's iframe is open.
       if (!iframe) return;
-      appendStanzaToXmppIn(iframe.contentDocument, stanza);
+      appendE4XToXmppIn(iframe.contentDocument, stanza);
     }
   }
+}
+
+function onPresence(aPresenceObj) {
+  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  // Check the sidebar's iframe is open.
+  if (!iframe) return;
+  appendE4XToXmppIn(iframe.contentDocument, aPresenceObj.stanza);
 }
 
 function xmppConnect(aAddress) {
@@ -92,6 +99,11 @@ function xmppConnect(aAddress) {
                        event     : "message"
                      },
                      onMessage);
+  account.channel.on({
+                       direction : "in",
+                       event     : "presence"
+                     },
+                     onPresence);
   XMPP.send(account, <presence/>);
   Musubi.onlineAccounts[aAddress] = account;
 }
