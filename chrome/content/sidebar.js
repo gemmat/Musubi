@@ -5,21 +5,27 @@ function res(aXML) {
                            aXML);
 }
 
+function getMainWin() {
+  const Ci = Components.interfaces;
+  return window.QueryInterface(Ci.nsIInterfaceRequestor)
+               .getInterface(Ci.nsIWebNavigation)
+               .QueryInterface(Ci.nsIDocShellTreeItem)
+               .rootTreeItem
+               .QueryInterface(Ci.nsIInterfaceRequestor)
+               .getInterface(Ci.nsIDOMWindow);
+}
+
 function connect(aXML) {
-  var address = aXML.connect.toString();
-  if (!Musubi.onlineAccounts[address]) {
-    Musubi.xmppConnect(address);
-  } else {
-    Musubi.xmppDisonnect(address);
-  }
+  // We have to place the connection info to the browser, cuz sidebar can be closed anytime.
+  getMainWin().Musubi.xmppConnect(aXML.connect.toString());
 }
 
 function disconnect(aXML) {
-  Musubi.xmppDisconnect(aXML.disconnect.toString());
+  getMainWin().Musubi.xmppDisconnect(aXML.disconnect.toString());
 }
 
 function urlmsg(aXML) {
-  openUILink("xmpp:" + aXML.urlmsg.from + "?href;url=" + aXML.urlmsg.url, "Tab");
+  openUILink("xmpp:" + aXML.urlmsg.from + "?href;url=" + aXML.urlmsg.url, "tab");
 }
 
 function sender(aXML) {
@@ -88,6 +94,22 @@ function getCachedPresences() {
   });
 }
 
+function openContact(aAccount, aContact) {
+  if (!aAccount || !aContact) return;
+  var url = getMainWin().content.document.location.href;
+  if (url == "about:blank")
+    url = "http://sites.google.com/site/musubichat/";
+  if (/^xmpp/.test(url))
+    url = Musubi.parseLocationHref(url)[2];
+  openUILink("xmpp://" +
+             XMPP.JID(aAccount).address +
+             "/" +
+             XMPP.JID(aContact).address +
+             "?href;url=" +
+             url,
+             "tabshifted");
+}
+
 function onXmppEventAtIframe(aEvent) {
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
@@ -121,6 +143,9 @@ function onXmppEventAtIframe(aEvent) {
       setDefaultJID(xml);
     } else if (xml.@type == "get" && xml.cachedpresences.length()) {
       getCachedPresences();
+    } else if (xml.@type == "get" && xml.opencontanct.length()) {
+      openContact(xml.opencontanct.account.toString(),
+                  xml.opencontanct.contact.toString());
     }
     break;
   default:

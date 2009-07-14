@@ -15,11 +15,11 @@ function E4XToDOM(aE4XXML) {
 }
 
 function updateXMPP4MOZAccount(aAccount) {
-  var key = 0;
   // The xmpp4moz's xmpp_impl.jsm says
   // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"
-  // Roger that, however, we intentionally use the getAccountByJid for the backward compatibility.
+  // Roger that, however, here we use the getAccountByJid intentionally for the backward compatibility.
   var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.jid);
+  var key = 0;
   if (xmpp4mozAccount) {
     key = xmpp4mozAccount.key;
   } else {
@@ -34,8 +34,25 @@ function updateXMPP4MOZAccount(aAccount) {
 }
 
 function appendE4XToXmppIn(aDocument, aE4X) {
-  var elts = aDocument.getElementsByTagName("XmppIn");
-  if (elts.length) elts[0].appendChild(E4XToDOM(aE4X));
+  var xmppins = [];
+  var stack = [aDocument];
+  var i, len;
+  var doc;
+  var elts;
+  // deeply getElementsByTagName("xmppin") for nested iframes.
+  while (stack.length) {
+    doc = stack.pop();
+    elts = doc.getElementsByTagName("xmppin");
+    for (i = 0, len = elts.length; i < len; i++) {
+      xmppins.push(elts[i]);
+    }
+    elts = doc.getElementsByTagName("iframe");
+    for (i = 0, len = elts.length; i < len; i++) {
+      stack.push(elts[i].contentDocument);
+    }
+  }
+  for (i = 0, len = xmppins.length; i < len; i++)
+    xmppins[i].appendChild(E4XToDOM(aE4X));
 }
 
 //We call onMessage many times so we need to be aware of the performance.
@@ -54,6 +71,8 @@ function onMessage(aMessageObj) {
       if (b.currentURI.spec == url) {
         notfound = false;
         appendE4XToXmppIn(b.contentDocument, stanza);
+//TODO         gBrowser.browsers[0].contentDocument.getElementsByTagName("iframe")[0].contentDocument.getElementsByTagName("xmppin").length
+1
       }
     }
     if (notfound) {
@@ -87,12 +106,17 @@ function onPresence(aPresenceObj) {
   appendE4XToXmppIn(iframe.contentDocument, aPresenceObj.stanza);
 }
 
-function xmppConnect(aAddress) {
-  var account = Musubi.callWithMusubiDB(function(msbdb) {
-                  return msbdb.account.findByAddress(aAddress)[0];
-                });
+function findAccountFromAddress(aAddress) {
+  var account = Musubi.callWithMusubiDB(function findJIDfromAddressAtMusubiDB(msbdb) {
+    return msbdb.account.findByAddress(aAddress)[0];
+  });
   if (!account) throw new Error("account data not found: " + aAddress);
-  XMPP.up(account.jid);
+  return account;
+}
+
+function xmppConnect(aAddress) {
+  var account = findAccountFromAddress(aAddress);
+  XMPP.up(account);
   account.channel = XMPP.createChannel();
   account.channel.on({
                        direction : "in",
@@ -100,7 +124,6 @@ function xmppConnect(aAddress) {
                      },
                      onMessage);
   account.channel.on({
-                       direction : "in",
                        event     : "presence"
                      },
                      onPresence);
@@ -109,10 +132,18 @@ function xmppConnect(aAddress) {
 }
 
 function xmppDisconnect(aAddress) {
+  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  // Check the sidebar's iframe is open.
+  if (!iframe) return;
+  appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={aAddress}/>);
+
   var account = Musubi.onlineAccounts[aAddress];
+  if (!account) return;
+
   account.channel.release();
   XMPP.down(account.jid);
   Musubi.onlineAccounts[aAddress] = null;
+
 }
 
 //jabber:x:oob is XEP-0066 Out of Band Data.

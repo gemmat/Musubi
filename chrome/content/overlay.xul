@@ -21,76 +21,6 @@
                        class="chromeclass-toolbar-additional"
                        tooltiptext="&Musubi.toolbar.toggleSidebarLabel;"
                        observes="viewMusubiSidebar"/>
-        <toolbaritem id="Musubi-userbar-container"
-                     class="chromeclass-toolbar-additional"
-                     title="&Musubi.toolbar.userBar;">
-          <button id="Musubi-userbar-button-connect"
-                  oncommand="Musubi.toolbar.connect() || Musubi.toolbar.disconnect();">
-            &Musubi.toolbar.userBar.ConnectOrDisconnect;
-          </button>
-          <label control="Musubi-userbar" value="&Musubi.toolbar.userBar;"/>
-          <textbox id="Musubi-userbar"
-                   emptytext="&Musubi.toolbar.userBar.emptytext;"
-                   type="autocomplete"
-                   autocompletesearch="form-history" 
-                   autocompletepopup="PopupAutoCompleteRichResult" 
-                   completeselectedindex="true" 
-                   tabscrolling="true" 
-                   showcommentcolumn="true" 
-                   showimagecolumn="true" 
-                   enablehistory="true" 
-                   maxrows="6" 
-                   newlines="stripsurroundingwhitespace"                    
-                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);"
-                   pageproxystate="invalid"
-                   sizetopopup="pref"
-                   completedefaultindex="true"/>
-        </toolbaritem>
-        <toolbaritem id="Musubi-sendtobar-container"
-                     class="chromeclass-toolbar-additional"
-                     title="&Musubi.toolbar.sendtoBar;">
-          <label control="Musubi-sendtobar" value="&Musubi.toolbar.sendtoBar;"/>
-          <textbox id="Musubi-sendtobar"
-                   emptytext="&Musubi.toolbar.sendtoBar.emptytext;"
-                   type="autocomplete"
-                   autocompletesearch="form-history" 
-                   autocompletepopup="PopupAutoCompleteRichResult" 
-                   completeselectedindex="true" 
-                   tabscrolling="true" 
-                   showcommentcolumn="true" 
-                   showimagecolumn="true" 
-                   enablehistory="true" 
-                   maxrows="6" 
-                   newlines="stripsurroundingwhitespace"                    
-                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);"
-                   pageproxystate="invalid"
-                   sizetopopup="pref"
-                   completedefaultindex="true"/>
-        </toolbaritem>
-        <toolbaritem id="Musubi-urlbar-container"
-                     class="chromeclass-location"
-                     align="center"
-                     flex="10" 
-                     persist="width" 
-                     title="&Musubi.toolbar.urlBar;">
-          <textbox id="Musubi-urlbar" 
-                   flex="1" 
-                   chromedir="ltr" 
-                   type="autocomplete" 
-                   autocompletesearch="history" 
-                   autocompletepopup="PopupAutoCompleteRichResult" 
-                   completeselectedindex="true" 
-                   tabscrolling="true" 
-                   showcommentcolumn="true" 
-                   showimagecolumn="true" 
-                   enablehistory="true" 
-                   maxrows="6" 
-                   newlines="stripsurroundingwhitespace" 
-                   ontextentered="return Musubi.toolbar.handleMusubiURLBarCommand(param);" 
-                   pageproxystate="invalid"
-                   sizetopopup="pref"
-                   completedefaultindex="false"/>
-        </toolbaritem>
     </toolbarpalette>
 
     <toolbox id="navigator-toolbox">
@@ -101,7 +31,7 @@
                  iconsize="small"
                  defaulticonsize="small"
                  customizable="true"
-                 defaultset="Musubi-toolbar-sidebar-button,Musubi-userbar-container,Musubi-sendtobar-container,Musubi-urlbar-container"
+                 defaultset="Musubi-toolbar-sidebar-button"
                  context="toolbar-context-menu"
                  toolbarname="&Musubi.toolbar.title;"
                  accesskey="&Musubi.toolbar.titleKey;">
@@ -124,8 +54,6 @@
     (function() {
        Musubi.browser = {};
        Musubi.loadSubScript("chrome://musubi/content/browser.js", Musubi.browser);
-       Musubi.toolbar = {};
-       Musubi.loadSubScript("chrome://musubi/content/toolbar.js", Musubi.toolbar);
        getBrowser().addEventListener("load",   Musubi.browser.onLoad,   true);
        getBrowser().addEventListener("unload", Musubi.browser.onUnload, true);
     })();

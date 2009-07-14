@@ -18,16 +18,6 @@
               flex="1"
               src="file:///home/teruaki/App_Musubi/sidebar/sidebar.html"
               type="content"/>
-      <button label="debug" oncommand="var dc = document.getElementById('debug-console'); dc.collapsed = !dc.collapsed;"/>
-      <groupbox id="debug-console" collapsed="true">
-        <caption label="Debug Console"/>
-        <hbox align="center">
-          <button label="test"
-                  oncommand="test();"/>
-        </hbox>
-        <hbox align="center">
-        </hbox>
-      </groupbox>
     </vbox>
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
