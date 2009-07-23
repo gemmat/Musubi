@@ -73,6 +73,9 @@ function setAccounts(aXML) {
       Musubi.p(e.name + ": " + e.message);
     }
   });
+  res(<musubi type="result">
+        <ok/>
+      </musubi>);
 }
 
 function getDefaultJID() {
@@ -108,6 +111,15 @@ function openContact(aAccount, aContact) {
              "?href;url=" +
              url,
              "tabshifted");
+}
+
+function deleteAccount(aAccountId) {
+  Musubi.callWithMusubiDB(function (msbdb) {
+    return msbdb.account.deleteById(aAccountId);
+    });
+  res(<musubi type="result">
+        <deleteitem><account id={aAccountId}/></deleteitem>
+      </musubi>);
 }
 
 function onXmppEventAtIframe(aEvent) {
@@ -146,6 +158,10 @@ function onXmppEventAtIframe(aEvent) {
     } else if (xml.@type == "get" && xml.opencontanct.length()) {
       openContact(xml.opencontanct.account.toString(),
                   xml.opencontanct.contact.toString());
+    } else if (xml.@type == "set" && xml.deleteitem.length()) {
+      if (xml.deleteitem.account.@id.length()) {
+        deleteAccount(xml.deleteitem.account.@id.toString());
+      }
     }
     break;
   default:
