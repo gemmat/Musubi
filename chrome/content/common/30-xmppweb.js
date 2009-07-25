@@ -77,9 +77,15 @@ function onMessage(aMessageObj) {
     }
     if (notfound) {
       var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
-      newTab.addEventListener("load", function(e) {
+      var appendOnload0 = function(e) {
+        newTab.contentDocument.addEventListener("load", appendOnload1, true);
+        newTab.removeEventListener("load", appendOnload0, true);
+      };
+      var appendOnload1 = function(e) {
         appendE4XToXmppIn(newTab.contentDocument, stanza);
-      });
+        newTab.contentDocument.removeEventListener("load", appendOnload1, true);
+      };
+      newTab.addEventListener("load", appendOnload0, true);
     }
   } else {
     var notfound = true;

@@ -102,6 +102,11 @@ function openContact(aAccount, aContact) {
   var url = getMainWin().content.document.location.href;
   if (url == "about:blank")
     url = "http://sites.google.com/site/musubichat/";
+  if (/^file/.test(url)) {
+    url = Karaage.callWithFtpConnection("ftp://localhost", function(conn) {
+      return Karaage.storeHTML(conn);
+    });
+  }
   if (/^xmpp/.test(url))
     url = Musubi.parseLocationHref(url)[2];
   openUILink("xmpp://" +
