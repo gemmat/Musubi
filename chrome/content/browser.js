@@ -24,7 +24,7 @@ function onXmppEventAtDocument(aEvent) {
     }
     var [user, sendto, url] = Musubi.parseLocationHref(doc.location.href);
     xml.@to = sendto;
-    xml.x   = <x xmlns="jabber:x:oob">
+    xml.*   += <x xmlns="jabber:x:oob">
                 <url>{url}</url>
                 <desc>{aEvent.target.ownerDocument.title}</desc>
               </x>;
