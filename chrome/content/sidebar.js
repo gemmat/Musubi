@@ -116,6 +116,15 @@ function openContact(aAccount, aContact) {
              "?href;url=" +
              url,
              "tabshifted");
+  var xml = <message to={aContact}>
+              <body></body>
+              <x xmlns="jabber:x:oob">
+                <url>{url}</url>
+                <desc></desc>
+              </x>
+            </message>;
+  var account = getMainWin().Musubi.onlineAccounts[XMPP.JID(aAccount).address];
+  XMPP.send(account, xml);
 }
 
 function deleteAccount(aAccountId) {
