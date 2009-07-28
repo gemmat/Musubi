@@ -103,6 +103,7 @@ function openContact(aAccount, aContact) {
   if (url == "about:blank")
     url = "http://sites.google.com/site/musubichat/";
   if (/^file/.test(url)) {
+    if (!Karaage) return;
     url = Karaage.callWithFtpConnection("ftp://localhost", function(conn) {
       return Karaage.storeHTML(conn);
     });
