@@ -19,7 +19,7 @@ XMPProtocol.prototype = {
   newURI: function XMPProtocolNewURI(aSpec, aCharset, aBaseURI) {
     var temp = Cc["@mozilla.org/network/standard-url;1"]
                 .createInstance(Ci.nsIStandardURL);
-    var m = /href;url=(.*)$/.exec(aBaseURI ? aBaseURI.spec : aSpec);
+    var m = /share;href=(.*)$/.exec(aBaseURI ? aBaseURI.spec : aSpec);
     if (m) {
       aBaseURI = IOService.newURI(m[1], null, null);
     }

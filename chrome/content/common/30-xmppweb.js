@@ -64,7 +64,7 @@ function onMessage(aMessageObj) {
   var stanzaTo   = XMPP.JID(stanza.@to  .toString()).address;
   var stanzaUrl  = stanza.nsoob::x.nsoob::url.toString();
   if (stanzaUrl) {
-    var url = "xmpp://" + stanzaTo + "/" + stanzaFrom + "?href;url=" + stanzaUrl;
+    var url = "xmpp://" + stanzaTo + "/" + stanzaFrom + "?share;href=" + stanzaUrl;
     var notfound = true;
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
@@ -157,10 +157,9 @@ function xmppSendURL(aAddress, aSendto, aURL) {
   var account = Musubi.onlineAccounts[aAddress];
   XMPP.send(account,
     <message to={aSendto} type="chat">
-	    <body>{aURL}</body>
 	    <x xmlns="jabber:x:oob">
         <url>{aURL}</url>
-        <desc>{window.content.document.title}</desc>
+        <desc></desc>
       </x>
 	  </message>);
 }

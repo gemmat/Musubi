@@ -93,7 +93,7 @@ function parseLocationHref(aURISpec) {
       sendto = m[1];
     }
   }
-  m = /href;url=(.*)$/.exec(aURISpec);
+  m = /share;href=(.*)$/.exec(aURISpec);
   if (m) url = m[1];
   return [user, sendto, url];
 }

@@ -25,7 +25,7 @@ function disconnect(aXML) {
 }
 
 function urlmsg(aXML) {
-  openUILink("xmpp:" + aXML.urlmsg.from + "?href;url=" + aXML.urlmsg.url, "tab");
+  openUILink("xmpp:" + aXML.urlmsg.from + "?share;href=" + aXML.urlmsg.url, "tab");
 }
 
 function sender(aXML) {
@@ -114,18 +114,10 @@ function openContact(aAccount, aContact) {
              XMPP.JID(aAccount).address +
              "/" +
              XMPP.JID(aContact).address +
-             "?href;url=" +
+             "?share;href=" +
              url,
              "tabshifted");
-  var xml = <message to={aContact}>
-              <body></body>
-              <x xmlns="jabber:x:oob">
-                <url>{url}</url>
-                <desc></desc>
-              </x>
-            </message>;
-  var account = getMainWin().Musubi.onlineAccounts[XMPP.JID(aAccount).address];
-  XMPP.send(account, xml);
+  getMainWin().Musubi.xmppSendURL(XMPP.JID(aAccount).address, aContact, url);
 }
 
 function deleteAccount(aAccountId) {
@@ -140,13 +132,15 @@ function deleteAccount(aAccountId) {
 function onXmppEventAtIframe(aEvent) {
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
-  case "message": //FALLTHROUGH
-  case "iq":      //FALLTHROUGH
-  case "presence":
+  case "message":
     // skip it, Musubi.browser.onXmppEventAtDocument will do.
     break;
+  case "presence":
+    break;
+  case "iq":
+    break;
   case "musubi":
-    // Only the sidebar should handle this internal xmpp event. It often includes user info.
+    // Only the sidebar should handle these internal xmpp events. They often include user's info.
     aEvent.stopPropagation();
     if (xml.connect.length()) {
       connect(xml);
