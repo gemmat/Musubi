@@ -73,29 +73,22 @@ function decapitalize(aString) {
 }
 
 function parseLocationHref(aURISpec) {
+  var sh = /share;href=(.*)$/.exec(aURISpec);
   var m = null;
-  var reXmppSlashSlashUserSendto = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
-  m = reXmppSlashSlashUserSendto.exec(aURISpec);
-  var user   = "";
-  var sendto = "";
-  var url    = "";
+  m = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/.exec(aURISpec);
   if (m) {
-    user   = m[1];
-    sendto = m[2];
-  } else {
-    var reXmppColon = /^xmpp:([^\/\?#]+)/;
-    m = reXmppColon.exec(aURISpec);
-    if (m) {
-      try {
-        user = PrefService.getBranch("extensions.musubi.").
-                 getComplexValue("defaultJID", Ci.nsISupportsString).data;
-      } catch (e) {};
-      sendto = m[1];
-    }
+    return [m[1], m[2], sh ? sh[1] : ""];
   }
-  m = /share;href=(.*)$/.exec(aURISpec);
-  if (m) url = m[1];
-  return [user, sendto, url];
+  m = /^xmpp:([^\/\?#]+)/.exec(aURISpec);
+  if (m) {
+    try {
+      return [PrefService.getBranch("extensions.musubi.").
+              getComplexValue("defaultJID", Ci.nsISupportsString).data,
+              m[1],
+              sh ? sh[1] : ""];
+    } catch (e) {};
+  }
+  return null;
 }
 
 function loadModules(aScope) {
