@@ -112,6 +112,16 @@ function onPresence(aPresenceObj) {
   appendE4XToXmppIn(iframe.contentDocument, aPresenceObj.stanza);
 }
 
+function onIQ(aIQObj) {
+  var stanza = aIQObj.stanza;
+  for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
+    var b = gBrowser.getBrowserAtIndex(i);
+    if (Musubi.parseLocationHref(b.currentURI.spec)[1] == stanza.@from) {
+      appendE4XToXmppIn(b.contentDocument, stanza);
+    }
+  }
+}
+
 function findAccountFromAddress(aAddress) {
   var account = Musubi.callWithMusubiDB(function findJIDfromAddressAtMusubiDB(msbdb) {
     return msbdb.account.findByAddress(aAddress)[0];
@@ -133,6 +143,10 @@ function xmppConnect(aAddress) {
                        event     : "presence"
                      },
                      onPresence);
+  account.channel.on({
+                       event     : "iq"
+                     },
+                     onIQ);
   XMPP.send(account, <presence/>);
   Musubi.onlineAccounts[aAddress] = account;
 }
