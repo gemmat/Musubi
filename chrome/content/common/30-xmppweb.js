@@ -136,9 +136,14 @@ function onPresence(aPresenceObj) {
 
 function onIQ(aIQObj) {
   var stanza = aIQObj.stanza;
+  var stanzaFrom = XMPP.JID(stanza.@from.toString());
+  var stanzaTo   = XMPP.JID(stanza.@to  .toString());
+  Application.console.log(stanza.toXMLString());
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
-    if (Musubi.parseURI(b.currentURI.spec).account == stanza.@from) {
+    var o = Musubi.parseURI(b.currentURI.spec);
+    if (o.account  == stanzaTo.address  &&
+        o.sendto   == stanzaFrom.address) {
       appendE4XToXmppIn(b.contentDocument, stanza);
     }
   }

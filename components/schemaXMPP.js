@@ -58,10 +58,11 @@ XMPProtocol.prototype = {
     // aBaseURI      : "xmpp...;href=http://www.acme.com/index.html"
     // Result        : "xmpp...;href=http://www.acme.com/page0.html"
     if (aBaseURI) {
+      var spec = o0 ? o0.href : aSpec;
       var base = IOService.newURI(o1.href, null, null);
       var standardURL = Cc["@mozilla.org/network/standard-url;1"]
                           .createInstance(Ci.nsIStandardURL);
-      standardURL.init(1, -1, aSpec, aCharset, base);
+      standardURL.init(1, -1, spec, aCharset, base);
       standardURL.QueryInterface(Ci.nsIURI);
       o.href = standardURL.spec;
     }

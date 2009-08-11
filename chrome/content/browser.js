@@ -23,7 +23,7 @@ function onXmppEventAtDocument(aEvent) {
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
   case "message":
-    xml.@to = o.sendto;
+    xml.@to = o.jid;
     xml.*   += <x xmlns="jabber:x:oob">
                 <url>{o.href}</url>
                 <desc>{aEvent.target.ownerDocument.title}</desc>
@@ -31,14 +31,11 @@ function onXmppEventAtDocument(aEvent) {
     XMPP.send(Musubi.onlineAccounts[o.account], xml);
     break;
   case "iq":
-    xml.@to = o.sendto;
+    xml.@to = o.jid;
     XMPP.send(Musubi.onlineAccounts[o.account], xml);
     break;
-  case "musubi":
-    if (xml.joinroom.length()) {
-      var joinroom = <presence to={o.sendto + "/" + xml.joinroom.@nick}/>;
-      XMPP.send(Musubi.onlineAccounts[o.account], joinroom);
-    }
-    break;
+  case "presence":
+    xml.@to = o.jid;
+    XMPP.send(Musubi.onlineAccounts[o.account], xml);
   }
 }

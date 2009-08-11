@@ -119,6 +119,7 @@ function parseURI(aURISpec) {
     account:  account,
     sendto:   sendto,
     resource: resource,
+    jid:      sendto + (resource ? "/" + resource : ""),
     query:    query
   };
 }
