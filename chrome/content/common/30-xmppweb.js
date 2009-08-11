@@ -27,7 +27,7 @@ function updateXMPP4MOZAccount(aAccount) {
   }
   var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
   prefs.set("address",  aAccount.address);
-  prefs.set("resource", aAccount.resource);
+  prefs.set("resouce", aAccount.resource);
   prefs.set("connectionHost", aAccount.connectionHost);
   prefs.set("connectionPort", aAccount.connectionPort);
   prefs.set("connectionSecurity", aAccount.connectionSecurity);
@@ -57,51 +57,73 @@ function appendE4XToXmppIn(aDocument, aE4X) {
 
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aMessageObj) {
+  function debugP(o, stanzaFrom, stanzaTo, stanzaUrl) {
+    Application.console.log("o.account:" + o.account + "\n" +
+                            "o.sendto:" + o.sendto + "\n" +
+                            "o.resource:" + o.resource + "\n" +
+                            "o.href:" + o.href + "\n" +
+                            "stanzaFrom.address:" + stanzaFrom.address + "\n" +
+                            "stanzaTo.address:" + stanzaTo.address + "\n" +
+                            "stanzaTo.resource:" + stanzaTo.resource + "\n" +
+                            "stanzaUrl:" + stanzaUrl);
+  }
   var stanza = aMessageObj.stanza;
   if (!stanza.@to.length() || !stanza.@from.length() || !stanza.body.length()) return;
   var nsoob = new Namespace("jabber:x:oob");
-  var stanzaFrom = XMPP.JID(stanza.@from.toString()).address;
-  var stanzaTo   = XMPP.JID(stanza.@to  .toString()).address;
+  var stanzaFrom = XMPP.JID(stanza.@from.toString());
+  var stanzaTo   = XMPP.JID(stanza.@to  .toString());
   var stanzaUrl  = stanza.nsoob::x.nsoob::url.toString();
   if (stanzaUrl) {
-    var url = "xmpp://" + stanzaTo + "/" + stanzaFrom + "?share;href=" + stanzaUrl;
-    var notfound = true;
+    var found = false;
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
-      if (b.currentURI.spec == url) {
-        notfound = false;
+      var o = Musubi.parseURI(b.currentURI.spec);
+      if (!o) continue;
+      if (o.account  == stanzaTo  .address  &&
+          o.sendto   == stanzaFrom.address  &&
+          o.href     == stanzaUrl) {
+        found = true;
         appendE4XToXmppIn(b.contentDocument, stanza);
-//TODO         gBrowser.browsers[0].contentDocument.getElementsByTagName("iframe")[0].contentDocument.getElementsByTagName("xmppin").length
-1
+      } else {
+        debugP(o, stanzaFrom, stanzaTo, stanzaUrl);
       }
     }
-    if (notfound) {
-      var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
-      var appendOnload0 = function(e) {
-        newTab.contentDocument.addEventListener("load", appendOnload1, true);
-        newTab.removeEventListener("load", appendOnload0, true);
-      };
-      var appendOnload1 = function(e) {
-        appendE4XToXmppIn(newTab.contentDocument, stanza);
-        newTab.contentDocument.removeEventListener("load", appendOnload1, true);
-      };
-      newTab.addEventListener("load", appendOnload0, true);
-    }
+    if (found) return;
+    var newUrl = "xmpp://" +
+                 stanzaTo.address +
+                 "/" +
+                 stanzaFrom.address +
+                 "?share;href=" +
+                 stanzaUrl;
+    var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(newUrl));
+    var appendOnload0 = function(e) {
+      newTab.contentDocument.addEventListener("load", appendOnload1, true);
+      newTab.removeEventListener("load", appendOnload0, true);
+    };
+    var appendOnload1 = function(e) {
+      appendE4XToXmppIn(newTab.contentDocument, stanza);
+      newTab.contentDocument.removeEventListener("load", appendOnload1, true);
+    };
+    newTab.addEventListener("load", appendOnload0, true);
   } else {
-    var notfound = true;
+    var found = false;
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
-      if (Musubi.parseURI(b.currentURI.spec).account == stanzaFrom) {
-        notfound = false;
+      var o = Musubi.parseURI(b.currentURI.spec);
+      if (!o) continue;
+      if (o.account  == stanzaTo.address  &&
+          o.sendto   == stanzaFrom.address) {
+        found = true;
         appendE4XToXmppIn(b.contentDocument, stanza);
+      } else {
+        debugP(o, stanzaFrom, stanzaTo, "");
       }
     }
-    if (notfound) {
-      var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
-      // Check the sidebar's iframe is open.
-      if (!iframe) return;
-      appendE4XToXmppIn(iframe.contentDocument, stanza);
-    }
+    if (found) return;
+    var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+    // Check the sidebar's iframe is open.
+    if (!iframe) return;
+    appendE4XToXmppIn(iframe.contentDocument, stanza);
   }
 }
 

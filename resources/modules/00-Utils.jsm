@@ -73,44 +73,54 @@ function decapitalize(aString) {
 }
 
 function parseURI(aURISpec) {
-  var href = /;href=(.*)$/.exec(aURISpec);
-  var m = null;
-  var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
-  m = reXMPPColonDoubleSlash.exec(aURISpec);
-  if (m) {
-    return {
-      account: m[1],
-      sendto:  m[2],
-      action:  aURISpec.slice(m[0].length, href ? -href[0].length : aURISpec.length),
-      href:    href ? href[1] : ""
-    };
+  function parseHref(aURISpec) {
+    var m;
+    var reHref = /;href=(.*)$/;
+    m = reHref.exec(aURISpec);
+    if (m) return [m[1], aURISpec.slice(0, -m[0].length)];
+    return ["", aURISpec];
   }
-  var reXMPPColon = /^xmpp:([^\/\?#]+)/;
-  m = reXMPPColon.exec(aURISpec);
-  if (m) {
-    var action = aURISpec.slice(m[0].length,
-                                href ? -href[0].length : aURISpec.length);
-    try {
-      var browserWindow = WindowMediator.getMostRecentWindow("navigator:browser");
-      var m1 = reXMPPColonDoubleSlash.exec(browserWindow.content.location.href);
-      if (m1) {
-        return {
-          account: m1[1],
-          sendto:  m[1],
-          action:  action,
-          href:    href ? href[1] : ""
-        };
-      }
-      return {
-        account: PrefService.getBranch("extensions.musubi.").
-                   getComplexValue("defaultJID", Ci.nsISupportsString).data,
-        sendto:  m[1],
-        action:  action,
-        href:    href ? href[1] : ""
-      };
-    } catch (e) {};
+  function parseXmpp(aURISpec) {
+    var m;
+
+    var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
+    m = reXMPPColonDoubleSlash.exec(aURISpec);
+    if (m) return [m[1], m[2], aURISpec.slice(m[0].length)];
+
+    var reXMPPColon = /^xmpp:([^\/\?#]+)/;
+    m = reXMPPColon.exec(aURISpec);
+    if (m) return ["", m[1], aURISpec.slice(m[0].length)];
+
+    return null;
   }
-  return null;
+  function parseResource(aString) {
+    var m;
+    var reResource = /^\/([^\/\?#]+)/;
+    m = reResource.exec(aString);
+    if (m) return [m[1], aString.slice(m[0].length)];
+    return ["", aString];
+  }
+  function parseQuery(aString) {
+    var m;
+    var reQuery = /^\?(.*)/;
+    m = reQuery.exec(aString);
+    if (m) return m[1];
+    return "";
+  }
+
+  var [href, spec]          = parseHref(aURISpec);
+  var x                     = parseXmpp(spec);
+  if (!x) return null;
+  var [account, sendto, r0] = x;
+  var [resource, r1]        = parseResource(r0);
+  var query                 = parseQuery(r1);
+  return {
+    href:     href,
+    account:  account,
+    sendto:   sendto,
+    resource: resource,
+    query:    query
+  };
 }
 
 function loadModules(aScope) {

@@ -17,61 +17,66 @@ XMPProtocol.prototype = {
     return false;
   },
   newURI: function XMPProtocolNewURI(aSpec, aCharset, aBaseURI) {
-    function makeXmppSpec(aSpec, aCharset, aBaseURI) {
-      if (aBaseURI) {
-        var m;
-        var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
-        var reXMPPColon = /^xmpp:([^\/\?#]+)/;
-
-        m = reXMPPColonDoubleSlash.exec(aBaseURI.spec);
-        if (m) {
-          var m1 = reXMPPColon.exec(aSpec);
-          if (m1 && m1[1] != m[2]) return "xmpp://" + m[1] + "/" + m1[1];
-          return "xmpp://" + m[1] + "/" + m[2];
-        }
-        m = reXMPPColon.exec(aBaseURI.spec);
-        if (m) return "xmpp:" + m[1];
-      }
-      return "";
-    }
-    function makeActnSpec(aSpec, aCharset, aBaseURI) {
-      var o;
-      o = parseURI(aSpec);
-      if (o) return o.action;
-      if (aBaseURI) {
-        o = parseURI(aBaseURI.spec);
-        if (o) return o.action;
-      }
-      return "";
-    }
-    function makeHrefSpec(aSpec, aCharset, aBaseURI) {
-      var o;
-      o = parseURI(aSpec);
-      if (o) return o.href;
-      if (aBaseURI) {
-        o = parseURI(aBaseURI.spec);
-        if (o) {
-          var base = IOService.newURI(o.href, null, null);
-          var url = Cc["@mozilla.org/network/standard-url;1"]
-                      .createInstance(Ci.nsIStandardURL);
-          url.init(1, -1, aSpec, aCharset, base);
-          url.QueryInterface(Ci.nsIURI);
-          return url.spec;
-        }
-      }
-      return aSpec;
-    }
-    var xmpp = makeXmppSpec(aSpec, aCharset, aBaseURI);
-    var actn = makeActnSpec(aSpec, aCharset, aBaseURI);
-    var href = makeHrefSpec(aSpec, aCharset, aBaseURI);
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = xmpp ? xmpp + actn + (href ? ";href=" + href : "") : aSpec;
+    // handle the following two cases.
+    // defaultJID    : "xmpp:default@localhost"
+    // aSpec         : "xmpp:juliet@localhost"
+    // aBaseURI.spec : "xmpp://romeo@localhost/someone@localhost"
+    // ---------------------------------------------------------
+    // Result        : "xmpp://romeo@localhost/juliet@localhost"
+
+    // defaultJID    : "xmpp:default@localhost"
+    // aSpec         : "xmpp:juliet@localhost"
+    // aBaseURI.spec : null
+    // ---------------------------------------------------------
+    // Result        : "xmpp://default@localhost/juliet@localhost"
+
+    var o0, o1;
+    o0 = parseURI(aSpec);
+    o1 = aBaseURI ? parseURI(aBaseURI.spec) : null;
+    var o = o0 || o1;
+    if (!o) {
+      uri.spec = aSpec;
+      return uri;
+    }
+
+    if (o0 && o1) {
+      o.account = o1.account;
+    }
+
+    if (!o.account) {
+      try {
+        o.account = PrefService.getBranch("extensions.musubi.").
+                      getComplexValue("defaultJID", Ci.nsISupportsString).data;
+      } catch (e) {};
+      o.account = "default@localhost";
+    }
+
+    // handle the href.
+    // aSpec         : "/page0.html"
+    // aBaseURI      : "xmpp...;href=http://www.acme.com/index.html"
+    // Result        : "xmpp...;href=http://www.acme.com/page0.html"
+    if (aBaseURI) {
+      var base = IOService.newURI(o1.href, null, null);
+      var standardURL = Cc["@mozilla.org/network/standard-url;1"]
+                          .createInstance(Ci.nsIStandardURL);
+      standardURL.init(1, -1, aSpec, aCharset, base);
+      standardURL.QueryInterface(Ci.nsIURI);
+      o.href = standardURL.spec;
+    }
+    uri.spec = "xmpp://" +
+                 o.account +
+                 "/" +
+                 o.sendto +
+                 (o.resource ? "/" + o.resource : "") +
+                 (o.query ? "?" + o.query : "") +
+                 (o.href ? ";href=" + o.href : "");
     return uri;
   },
   newChannel: function XMPProtocolNewChannel(aURI) {
     var o = parseURI(aURI.spec);
-    var url = o ? o.href : "http://www.google.co.jp";
+    var url = o ? o.href : "about:blank";
     return IOService.newChannel(url, null, null);
   }
 };
