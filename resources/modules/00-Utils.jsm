@@ -72,20 +72,42 @@ function decapitalize(aString) {
   return aString.substr(0, 1).toLowerCase() + aString.substr(1);
 }
 
-function parseLocationHref(aURISpec) {
-  var sh = /share;href=(.*)$/.exec(aURISpec);
+function parseURI(aURISpec) {
+  var href = /;href=(.*)$/.exec(aURISpec);
   var m = null;
-  m = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/.exec(aURISpec);
+  var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
+  m = reXMPPColonDoubleSlash.exec(aURISpec);
   if (m) {
-    return [m[1], m[2], sh ? sh[1] : ""];
+    return {
+      account: m[1],
+      sendto:  m[2],
+      action:  aURISpec.slice(m[0].length, href ? -href[0].length : aURISpec.length),
+      href:    href ? href[1] : ""
+    };
   }
-  m = /^xmpp:([^\/\?#]+)/.exec(aURISpec);
+  var reXMPPColon = /^xmpp:([^\/\?#]+)/;
+  m = reXMPPColon.exec(aURISpec);
   if (m) {
+    var action = aURISpec.slice(m[0].length,
+                                href ? -href[0].length : aURISpec.length);
     try {
-      return [PrefService.getBranch("extensions.musubi.").
-              getComplexValue("defaultJID", Ci.nsISupportsString).data,
-              m[1],
-              sh ? sh[1] : ""];
+      var browserWindow = WindowMediator.getMostRecentWindow("navigator:browser");
+      var m1 = reXMPPColonDoubleSlash.exec(browserWindow.content.location.href);
+      if (m1) {
+        return {
+          account: m1[1],
+          sendto:  m[1],
+          action:  action,
+          href:    href ? href[1] : ""
+        };
+      }
+      return {
+        account: PrefService.getBranch("extensions.musubi.").
+                   getComplexValue("defaultJID", Ci.nsISupportsString).data,
+        sendto:  m[1],
+        action:  action,
+        href:    href ? href[1] : ""
+      };
     } catch (e) {};
   }
   return null;

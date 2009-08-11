@@ -109,7 +109,7 @@ function openContact(aAccount, aContact) {
     });
   }
   if (/^xmpp/.test(url))
-    url = Musubi.parseLocationHref(url)[2];
+    url = Musubi.parseURI(url).href;
   openUILink("xmpp://" +
              XMPP.JID(aAccount).address +
              "/" +

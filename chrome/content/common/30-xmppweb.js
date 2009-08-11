@@ -91,7 +91,7 @@ function onMessage(aMessageObj) {
     var notfound = true;
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
-      if (Musubi.parseLocationHref(b.currentURI.spec)[1] == stanzaFrom) {
+      if (Musubi.parseURI(b.currentURI.spec).account == stanzaFrom) {
         notfound = false;
         appendE4XToXmppIn(b.contentDocument, stanza);
       }
@@ -116,7 +116,7 @@ function onIQ(aIQObj) {
   var stanza = aIQObj.stanza;
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
-    if (Musubi.parseLocationHref(b.currentURI.spec)[1] == stanza.@from) {
+    if (Musubi.parseURI(b.currentURI.spec).account == stanza.@from) {
       appendE4XToXmppIn(b.contentDocument, stanza);
     }
   }

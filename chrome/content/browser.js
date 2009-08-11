@@ -19,22 +19,26 @@ function onXmppEventAtDocument(aEvent) {
       }
     }
   }
+  var o = Musubi.parseURI(doc.location.href);
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
   case "message":
-    var [user, sendto, url] = Musubi.parseLocationHref(doc.location.href);
-    xml.@to = sendto;
+    xml.@to = o.sendto;
     xml.*   += <x xmlns="jabber:x:oob">
-                <url>{url}</url>
+                <url>{o.href}</url>
                 <desc>{aEvent.target.ownerDocument.title}</desc>
               </x>;
-    var account = Musubi.onlineAccounts[user];
-    XMPP.send(account, xml);
+    XMPP.send(Musubi.onlineAccounts[o.account], xml);
     break;
   case "iq":
-    var [user, sendto, url] = Musubi.parseLocationHref(doc.location.href);
-    xml.@to = sendto;
-    XMPP.send(Musubi.onlineAccounts[user], xml);
+    xml.@to = o.sendto;
+    XMPP.send(Musubi.onlineAccounts[o.account], xml);
+    break;
+  case "musubi":
+    if (xml.joinroom.length()) {
+      var joinroom = <presence to={o.sendto + "/" + xml.joinroom.@nick}/>;
+      XMPP.send(Musubi.onlineAccounts[o.account], joinroom);
+    }
     break;
   }
 }

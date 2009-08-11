@@ -20,39 +20,58 @@ XMPProtocol.prototype = {
     function makeXmppSpec(aSpec, aCharset, aBaseURI) {
       if (aBaseURI) {
         var m;
-        m = /^(xmpp:\/\/[^\/\?#]+\/[^\/\?#]+)/.exec(aBaseURI.spec);
-        if (m) return m[1];
-        m = /^(xmpp:[^\/\?#]+)/.exec(aBaseURI.spec);
-        if (m) return m[1];
+        var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
+        var reXMPPColon = /^xmpp:([^\/\?#]+)/;
+
+        m = reXMPPColonDoubleSlash.exec(aBaseURI.spec);
+        if (m) {
+          var m1 = reXMPPColon.exec(aSpec);
+          if (m1 && m1[1] != m[2]) return "xmpp://" + m[1] + "/" + m1[1];
+          return "xmpp://" + m[1] + "/" + m[2];
+        }
+        m = reXMPPColon.exec(aBaseURI.spec);
+        if (m) return "xmpp:" + m[1];
       }
       return "";
     }
-    function makeShareHrefSpec(aSpec, aCharset, aBaseURI) {
-      var sh;
-      sh = parseLocationHref(aSpec);
-      if (sh) return sh[2];
+    function makeActnSpec(aSpec, aCharset, aBaseURI) {
+      var o;
+      o = parseURI(aSpec);
+      if (o) return o.action;
       if (aBaseURI) {
-        sh = parseLocationHref(aBaseURI.spec);
-        if (!sh) return "";
-        var urlBase = IOService.newURI(sh[2], null, null);
-        var url = Cc["@mozilla.org/network/standard-url;1"]
-                    .createInstance(Ci.nsIStandardURL);
-        url.init(1, -1, aSpec, aCharset, urlBase);
-        url.QueryInterface(Ci.nsIURI);
-        return url.spec;
+        o = parseURI(aBaseURI.spec);
+        if (o) return o.action;
+      }
+      return "";
+    }
+    function makeHrefSpec(aSpec, aCharset, aBaseURI) {
+      var o;
+      o = parseURI(aSpec);
+      if (o) return o.href;
+      if (aBaseURI) {
+        o = parseURI(aBaseURI.spec);
+        if (o) {
+          var base = IOService.newURI(o.href, null, null);
+          var url = Cc["@mozilla.org/network/standard-url;1"]
+                      .createInstance(Ci.nsIStandardURL);
+          url.init(1, -1, aSpec, aCharset, base);
+          url.QueryInterface(Ci.nsIURI);
+          return url.spec;
+        }
       }
       return aSpec;
     }
-    var sp = makeXmppSpec(aSpec, aCharset, aBaseURI);
-    var sh = makeShareHrefSpec(aSpec, aCharset, aBaseURI);
+    var xmpp = makeXmppSpec(aSpec, aCharset, aBaseURI);
+    var actn = makeActnSpec(aSpec, aCharset, aBaseURI);
+    var href = makeHrefSpec(aSpec, aCharset, aBaseURI);
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = sp ? sp + (sh ? "?share;href=" + sh : "") : aSpec;
+    uri.spec = xmpp ? xmpp + actn + (href ? ";href=" + href : "") : aSpec;
     return uri;
   },
   newChannel: function XMPProtocolNewChannel(aURI) {
-    var href = parseLocationHref(aURI.spec);
-    var url = href ? href[2] : "http://www.google.co.jp";
+    var o = parseURI(aURI.spec);
+    var url = o ? o.href : "http://www.google.co.jp";
     return IOService.newChannel(url, null, null);
   }
 };
