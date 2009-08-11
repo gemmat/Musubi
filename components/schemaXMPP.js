@@ -57,6 +57,11 @@ XMPProtocol.prototype = {
     // aSpec         : "/page0.html"
     // aBaseURI      : "xmpp...;href=http://www.acme.com/index.html"
     // Result        : "xmpp...;href=http://www.acme.com/page0.html"
+
+    // aSpec         : "xmpp...;href=page0.html"
+    // aBaseURI      : "xmpp...;href=http://www.acme.com/index.html"
+    // Result        : "xmpp...;href=http://www.acme.com/page0.html"
+
     if (aBaseURI) {
       var spec = o0 ? o0.href : aSpec;
       var base = IOService.newURI(o1.href, null, null);
