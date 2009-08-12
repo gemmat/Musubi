@@ -158,6 +158,7 @@ function findAccountFromAddress(aAddress) {
 }
 
 function xmppConnect(aAddress) {
+  if (Musubi.onlineAccounts[aAddress]) return;
   var account = findAccountFromAddress(aAddress);
   XMPP.up(account);
   account.channel = XMPP.createChannel();
