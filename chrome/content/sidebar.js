@@ -1,4 +1,4 @@
-const EXPORT = ["onXmppEventAtIframe", "onLoadAtIframe", "onUnloadAtIframe"];
+const EXPORT = ["onXmppEventAtIframe", "onLoadAtIframe", "onUnloadAtIframe", "byeContacts"];
 
 function res(aXML) {
   Musubi.appendE4XToXmppIn(document.getElementById("sidebar-iframe").contentDocument,
@@ -163,6 +163,10 @@ function onXmppEventAtIframe(aEvent) {
     Musubi.p("oops At MusubiSidebarOnXmppEventAtIframe" + xml.name().localName);
     break;
   }
+}
+
+function byeContacts(aSendto) {
+  res(<presence from={aSendto} type="unavailable"/>);
 }
 
 function onLoadAtIframe(aEvent) {

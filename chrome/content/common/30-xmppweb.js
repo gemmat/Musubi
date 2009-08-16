@@ -57,35 +57,23 @@ function appendE4XToXmppIn(aDocument, aE4X) {
 
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aMessageObj) {
-  function debugP(o, stanzaFrom, stanzaTo, stanzaUrl) {
-    Application.console.log("o.account:" + o.account + "\n" +
-                            "o.sendto:" + o.sendto + "\n" +
-                            "o.resource:" + o.resource + "\n" +
-                            "o.href:" + o.href + "\n" +
-                            "stanzaFrom.address:" + stanzaFrom.address + "\n" +
-                            "stanzaTo.address:" + stanzaTo.address + "\n" +
-                            "stanzaTo.resource:" + stanzaTo.resource + "\n" +
-                            "stanzaUrl:" + stanzaUrl);
-  }
   var stanza = aMessageObj.stanza;
-  if (!stanza.@to.length() || !stanza.@from.length() || !stanza.body.length()) return;
-  var nsoob = new Namespace("jabber:x:oob");
+  if (!stanza.@from.length() || !stanza.@to.length()) return;
   var stanzaFrom = XMPP.JID(stanza.@from.toString());
   var stanzaTo   = XMPP.JID(stanza.@to  .toString());
+  var nsoob = new Namespace("jabber:x:oob");
   var stanzaUrl  = stanza.nsoob::x.nsoob::url.toString();
   if (stanzaUrl) {
     var found = false;
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
       var o = Musubi.parseURI(b.currentURI.spec);
-      if (!o) continue;
-      if (o.account  == stanzaTo  .address  &&
+      if (o &&
+          o.account  == stanzaTo  .address  &&
           o.sendto   == stanzaFrom.address  &&
           o.href     == stanzaUrl) {
         found = true;
         appendE4XToXmppIn(b.contentDocument, stanza);
-      } else {
-        debugP(o, stanzaFrom, stanzaTo, stanzaUrl);
       }
     }
     if (found) return;
@@ -110,13 +98,11 @@ function onMessage(aMessageObj) {
     for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
       var b = gBrowser.getBrowserAtIndex(i);
       var o = Musubi.parseURI(b.currentURI.spec);
-      if (!o) continue;
-      if (o.account  == stanzaTo.address  &&
+      if (o &&
+          o.account  == stanzaTo.address  &&
           o.sendto   == stanzaFrom.address) {
         found = true;
         appendE4XToXmppIn(b.contentDocument, stanza);
-      } else {
-        debugP(o, stanzaFrom, stanzaTo, "");
       }
     }
     if (found) return;
@@ -128,6 +114,19 @@ function onMessage(aMessageObj) {
 }
 
 function onPresence(aPresenceObj) {
+  var stanza = aPresenceObj.stanza;
+  if (!stanza.@from.length() || !stanza.@to.length()) return;
+  var stanzaFrom = XMPP.JID(stanza.@from.toString());
+  var stanzaTo   = XMPP.JID(stanza.@to  .toString());
+  for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
+    var b = gBrowser.getBrowserAtIndex(i);
+    var o = Musubi.parseURI(b.currentURI.spec);
+    if (o &&
+        o.account  == stanzaTo.address  &&
+        o.sendto   == stanzaFrom.address) {
+      appendE4XToXmppIn(b.contentDocument, stanza);
+    }
+  }
   var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
   // Check the sidebar's iframe is open.
   if (!iframe) return;
@@ -136,13 +135,14 @@ function onPresence(aPresenceObj) {
 
 function onIQ(aIQObj) {
   var stanza = aIQObj.stanza;
+  if (!stanza.@from.length() || !stanza.@to.length()) return;
   var stanzaFrom = XMPP.JID(stanza.@from.toString());
   var stanzaTo   = XMPP.JID(stanza.@to  .toString());
-  Application.console.log(stanza.toXMLString());
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = Musubi.parseURI(b.currentURI.spec);
-    if (o.account  == stanzaTo.address  &&
+    if (o &&
+        o.account  == stanzaTo.address  &&
         o.sendto   == stanzaFrom.address) {
       appendE4XToXmppIn(b.contentDocument, stanza);
     }
