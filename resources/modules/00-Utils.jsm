@@ -72,6 +72,8 @@ function decapitalize(aString) {
   return aString.substr(0, 1).toLowerCase() + aString.substr(1);
 }
 
+// We'll reuse this parseURI function at App_Musubi/musubi.js
+// so please implement it in Javascript ver. 1.5.
 function parseURI(aURISpec) {
   function parseHref(aURISpec) {
     var m;
@@ -82,15 +84,12 @@ function parseURI(aURISpec) {
   }
   function parseXmpp(aURISpec) {
     var m;
-
     var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
     m = reXMPPColonDoubleSlash.exec(aURISpec);
     if (m) return [m[1], m[2], aURISpec.slice(m[0].length)];
-
     var reXMPPColon = /^xmpp:([^\/\?#]+)/;
     m = reXMPPColon.exec(aURISpec);
     if (m) return ["", m[1], aURISpec.slice(m[0].length)];
-
     return null;
   }
   function parseResource(aString) {
@@ -107,20 +106,21 @@ function parseURI(aURISpec) {
     if (m) return m[1];
     return "";
   }
-
-  var [href, spec]          = parseHref(aURISpec);
-  var x                     = parseXmpp(spec);
-  if (!x) return null;
-  var [account, sendto, r0] = x;
-  var [resource, r1]        = parseResource(r0);
-  var query                 = parseQuery(r1);
+  var e0 = parseHref(aURISpec);
+  var href = e0[0], spec = e0[1];
+  var e1 = parseXmpp(spec);
+  if (!e1) return null;
+  var account = e1[0], sendto = e1[1], r0 = e1[2];
+  var e2 = parseResource(r0);
+  var resource = e2[0], r1 = e2[1];
+  var q  = parseQuery(r1);
   return {
     href:     href,
     account:  account,
     sendto:   sendto,
     resource: resource,
     jid:      sendto + (resource ? "/" + resource : ""),
-    query:    query
+    query:    q
   };
 }
 

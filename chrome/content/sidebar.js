@@ -92,7 +92,8 @@ function setDefaultJID(aXML) {
   getDefaultJID();
 }
 
-function getCachedPresences() {
+function getCachedPresences(aXML) {
+  //TODO check aXML.@from with presence.@from.
   XMPP.cache.all(XMPP.q().event("presence")).forEach(function (x) {
     res(x.stanza);
   });
@@ -158,8 +159,9 @@ function onXmppEventAtIframe(aEvent) {
     } else if (xml.@type == "set" && xml.defaultjid.length()) {
       setDefaultJID(xml);
     } else if (xml.@type == "get" && xml.cachedpresences.length()) {
-      getCachedPresences();
+      getCachedPresences(xml);
     } else if (xml.@type == "get" && xml.opencontanct.length()) {
+      //TODO now then, we don't need @account any more...
       openContact(xml.opencontanct.account.toString(),
                   xml.opencontanct.contact.toString());
     } else if (xml.@type == "set" && xml.deleteitem.length()) {
