@@ -1,4 +1,4 @@
-const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSendURL"];
+const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSend"];
 
 var onlineAccounts = [];
 
@@ -26,10 +26,10 @@ function updateXMPP4MOZAccount(aAccount) {
     key = Date.now();
   }
   var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
-  prefs.set("address",  aAccount.address);
-  prefs.set("resouce", aAccount.resource);
-  prefs.set("connectionHost", aAccount.connectionHost);
-  prefs.set("connectionPort", aAccount.connectionPort);
+  prefs.set("address",            aAccount.address);
+  prefs.set("resource",           aAccount.resource);
+  prefs.set("connectionHost",     aAccount.connectionHost);
+  prefs.set("connectionPort",     aAccount.connectionPort);
   prefs.set("connectionSecurity", aAccount.connectionSecurity);
 }
 
@@ -194,14 +194,11 @@ function xmppDisconnect(aAddress) {
 
 }
 
-//jabber:x:oob is XEP-0066 Out of Band Data.
-function xmppSendURL(aAddress, aSendto, aURL) {
-  var account = Musubi.onlineAccounts[aAddress];
-  XMPP.send(account,
-    <message to={aSendto} type="chat">
-	    <x xmlns="jabber:x:oob">
-        <url>{aURL}</url>
-        <desc></desc>
-      </x>
-	  </message>);
+function xmppSend(aAddress, aXML) {
+  if (!aAddress) return;
+  var address = XMPP.JID(aAddress).address;
+  if (!address) return;
+  var account = Musubi.onlineAccounts[address];
+  if (!account) return;
+  XMPP.send(account, aXML);
 }

@@ -109,8 +109,10 @@ function openContact(aAccount, aContact) {
       return Karaage.storeHTML(conn);
     });
   }
-  if (/^xmpp/.test(url))
-    url = Musubi.parseURI(url).href;
+  if (/^xmpp/.test(url)) {
+    var o = Musubi.parseURI(url);
+    if (o) url = o.href;
+  }
   openUILink("xmpp://" +
              XMPP.JID(aAccount).address +
              "/" +
@@ -118,7 +120,13 @@ function openContact(aAccount, aContact) {
              "?share;href=" +
              url,
              "tabshifted");
-  getMainWin().Musubi.xmppSendURL(XMPP.JID(aAccount).address, aContact, url);
+  getMainWin().Musubi.xmppSend(aAccount,
+    <message to={aContact} type="chat">
+      <x xmlns="jabber:x:oob">
+        <url>{url}</url>
+        <desc></desc>
+      </x>
+    </message>);
 }
 
 function onXmppEventAtIframe(aEvent) {
@@ -128,6 +136,7 @@ function onXmppEventAtIframe(aEvent) {
     // skip it, Musubi.browser.onXmppEventAtDocument will do.
     break;
   case "presence":
+    getMainWin().Musubi.xmppSend(xml.@from.toString(), xml);
     break;
   case "iq":
     break;
@@ -154,13 +163,11 @@ function onXmppEventAtIframe(aEvent) {
       openContact(xml.opencontanct.account.toString(),
                   xml.opencontanct.contact.toString());
     } else if (xml.@type == "set" && xml.deleteitem.length()) {
-      if (xml.deleteitem.account.@id.length()) {
-        deleteAccount(xml);
-      }
+      deleteAccount(xml);
     }
     break;
   default:
-    Musubi.p("oops At MusubiSidebarOnXmppEventAtIframe" + xml.name().localName);
+    Musubi.p("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
     break;
   }
 }
