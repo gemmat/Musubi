@@ -42,7 +42,7 @@ function onXmppEventAtDocument(aEvent) {
   case "iq":
     break;
   case "presence":
-    if (xml.@res && xml.@type == "unavailable") {
+    if (xml.@res.length() && xml.@type == "unavailable") {
       var sidebar = document.getElementById("sidebar");
       if (sidebar) {
         sidebar.contentWindow.Musubi.sidebar.byeContacts(o.sendto);
@@ -50,5 +50,6 @@ function onXmppEventAtDocument(aEvent) {
     }
     break;
   }
+  if (xml.@res.length()) delete xml.@res;
   XMPP.send(Musubi.onlineAccounts[o.account], xml);
 }

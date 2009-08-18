@@ -49,7 +49,7 @@ XMPProtocol.prototype = {
       try {
         o.account = PrefService.getBranch("extensions.musubi.").
                       getComplexValue("defaultJID", Ci.nsISupportsString).data;
-      } catch (e) {};
+      } catch (e) {}
       o.account = "default@localhost";
     }
 
@@ -75,13 +75,7 @@ XMPProtocol.prototype = {
       standardURL.QueryInterface(Ci.nsIURI);
       o.href = standardURL.spec;
     }
-    uri.spec = "xmpp://" +
-                 o.account +
-                 "/" +
-                 o.sendto +
-                 (o.resource ? "/" + o.resource : "") +
-                 (o.query ? "?" + o.query : "") +
-                 (o.href ? ";href=" + o.href : "");
+    uri.spec = makeXmppURI(o.account, o.sendto, o.resource, o.query, o.href);
     return uri;
   },
   newChannel: function XMPProtocolNewChannel(aURI) {

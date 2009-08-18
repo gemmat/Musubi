@@ -72,7 +72,17 @@ function decapitalize(aString) {
   return aString.substr(0, 1).toLowerCase() + aString.substr(1);
 }
 
-// We'll reuse this parseURI function at App_Musubi/musubi.js
+function makeXmppURI(aAccount, aSendto, aResource, aQuery, aHref) {
+  return "xmpp://" + aAccount + "/" + aSendto +
+          (aResource == null ? ""
+                             : "/" + aResource) +
+          (aQuery ? "?" + aQuery +
+                   (aHref ? ";href=" + aHref
+                          : "")
+                  : "");
+}
+
+// We'll reuse parseURI and parseJID functions at App_Musubi/musubi.js
 // so please implement it in Javascript ver. 1.5.
 function parseURI(aURISpec) {
   function parseHref(aURISpec) {
@@ -94,10 +104,10 @@ function parseURI(aURISpec) {
   }
   function parseResource(aString) {
     var m;
-    var reResource = /^\/([^\/\?#]+)/;
+    var reResource = /^\/([^\/\?#]*)/;
     m = reResource.exec(aString);
     if (m) return [m[1], aString.slice(m[0].length)];
-    return ["", aString];
+    return [null, aString];
   }
   function parseQuery(aString) {
     var m;
@@ -119,8 +129,24 @@ function parseURI(aURISpec) {
     account:  account,
     sendto:   sendto,
     resource: resource,
-    jid:      sendto + (resource ? "/" + resource : ""),
+    jid:      sendto + (resource == null ? "" : "/" + resource),
     query:    q
+  };
+}
+
+function parseJID(aString) {
+  var m = null;
+  m = /^([^\/@\?\#]+)@([^\/@\?\#]+)/.exec(aString);
+  if (!m) return null;
+  var r = aString.slice(m[0].length), name = m[1], host = m[2];
+  m = /^\/([^\/@\?\#]+)$/.exec(r);
+  var resource = m ? m[1] : null;
+  return {
+    name: name,
+    host: host,
+    resource: resource,
+    jid: name + "@" + host,
+    fulljid: name + "@" + host + "/" + resource
   };
 }
 

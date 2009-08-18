@@ -133,13 +133,12 @@ function openContact(aAccount, aContact) {
 function onXmppEventAtIframe(aEvent) {
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
-  case "message":
-    // skip it, Musubi.browser.onXmppEventAtDocument will do.
-    break;
-  case "presence":
-    getMainWin().Musubi.xmppSend(xml.@from.toString(), xml);
-    break;
+  case "message":  //FALLTHROUGH
+  case "presence": //FALLTHROUGH
   case "iq":
+    var from = xml.@from.toString();
+    delete xml.@from;
+    getMainWin().Musubi.xmppSend(from, xml);
     break;
   case "musubi":
     // Only the sidebar should handle these internal xmpp events. They often include user's info.

@@ -55,6 +55,22 @@ function appendE4XToXmppIn(aDocument, aE4X) {
     xmppins[i].appendChild(E4XToDOM(aE4X));
 }
 
+function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
+  var arr = [];
+  for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
+    var b = gBrowser.getBrowserAtIndex(i);
+    var o = Musubi.parseURI(b.currentURI.spec);
+    if (o &&
+        o.account  == aAccount &&
+        o.sendto   == aSendto &&
+        (!aResource || o.resource == aResource) &&
+        (!aHref     || o.href     == aHref)) {
+      arr.push(b);
+    }
+  }
+  return arr;
+}
+
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aMessageObj) {
   var stanza = aMessageObj.stanza;
@@ -63,27 +79,21 @@ function onMessage(aMessageObj) {
   var stanzaTo   = XMPP.JID(stanza.@to  .toString());
   var nsoob = new Namespace("jabber:x:oob");
   var stanzaUrl  = stanza.nsoob::x.nsoob::url.toString();
+  var bs = filterBrowsersByURI(stanzaTo.address,
+                               stanzaFrom.address,
+                               stanzaFrom.resource,
+                               stanzaUrl);
+  for (var i = 0, len = bs.length; i < len; i++) {
+    appendE4XToXmppIn(bs[i].contentDocument, stanza);
+  }
   if (stanzaUrl) {
-    var found = false;
-    for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
-      var b = gBrowser.getBrowserAtIndex(i);
-      var o = Musubi.parseURI(b.currentURI.spec);
-      if (o &&
-          o.account  == stanzaTo  .address  &&
-          o.sendto   == stanzaFrom.address  &&
-          o.href     == stanzaUrl) {
-        found = true;
-        appendE4XToXmppIn(b.contentDocument, stanza);
-      }
-    }
-    if (found) return;
-    var newUrl = "xmpp://" +
-                 stanzaTo.address +
-                 "/" +
-                 stanzaFrom.address +
-                 "?share;href=" +
-                 stanzaUrl;
-    var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(newUrl));
+    var newTab = gBrowser.getBrowserForTab(
+                   gBrowser.addTab(
+                     Musubi.makeXmppURI(stanzaTo.address,
+                                        stanzaFrom.address,
+                                        stanzaFrom.resource,
+                                        "share",
+                                        stanzaUrl)));
     var appendOnload0 = function(e) {
       newTab.contentDocument.addEventListener("load", appendOnload1, true);
       newTab.removeEventListener("load", appendOnload0, true);
@@ -94,20 +104,7 @@ function onMessage(aMessageObj) {
     };
     newTab.addEventListener("load", appendOnload0, true);
   } else {
-    var found = false;
-    for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
-      var b = gBrowser.getBrowserAtIndex(i);
-      var o = Musubi.parseURI(b.currentURI.spec);
-      if (o &&
-          o.account  == stanzaTo.address  &&
-          o.sendto   == stanzaFrom.address) {
-        found = true;
-        appendE4XToXmppIn(b.contentDocument, stanza);
-      }
-    }
-    if (found) return;
     var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
-    // Check the sidebar's iframe is open.
     if (!iframe) return;
     appendE4XToXmppIn(iframe.contentDocument, stanza);
   }
@@ -118,19 +115,15 @@ function onPresence(aPresenceObj) {
   if (!stanza.@from.length() || !stanza.@to.length()) return;
   var stanzaFrom = XMPP.JID(stanza.@from.toString());
   var stanzaTo   = XMPP.JID(stanza.@to  .toString());
-  for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
-    var b = gBrowser.getBrowserAtIndex(i);
-    var o = Musubi.parseURI(b.currentURI.spec);
-    if (o &&
-        o.account  == stanzaTo.address  &&
-        o.sendto   == stanzaFrom.address) {
-      appendE4XToXmppIn(b.contentDocument, stanza);
-    }
+  var bs = filterBrowsersByURI(stanzaTo.address,
+                               stanzaFrom.address,
+                               stanzaFrom.resource);
+  for (var i = 0, len = bs.length; i < len; i++) {
+    appendE4XToXmppIn(bs[i].contentDocument, stanza);
   }
   var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
-  // Check the sidebar's iframe is open.
   if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, aPresenceObj.stanza);
+  appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
 
 function onIQ(aIQObj) {
@@ -138,15 +131,15 @@ function onIQ(aIQObj) {
   if (!stanza.@from.length() || !stanza.@to.length()) return;
   var stanzaFrom = XMPP.JID(stanza.@from.toString());
   var stanzaTo   = XMPP.JID(stanza.@to  .toString());
-  for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
-    var b = gBrowser.getBrowserAtIndex(i);
-    var o = Musubi.parseURI(b.currentURI.spec);
-    if (o &&
-        o.account  == stanzaTo.address  &&
-        o.sendto   == stanzaFrom.address) {
-      appendE4XToXmppIn(b.contentDocument, stanza);
-    }
+  var bs = filterBrowsersByURI(stanzaTo.address,
+                               stanzaFrom.address,
+                               stanzaFrom.resource);
+  for (var i = 0, len = bs.length; i < len; i++) {
+    appendE4XToXmppIn(bs[i].contentDocument, stanza);
   }
+  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  if (!iframe) return;
+  appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
 
 function findAccountFromAddress(aAddress) {
@@ -158,8 +151,10 @@ function findAccountFromAddress(aAddress) {
 }
 
 function xmppConnect(aAddress) {
-  if (Musubi.onlineAccounts[aAddress]) return;
-  var account = findAccountFromAddress(aAddress);
+  var p = Musubi.parseJID(aAddress);
+  if (!p) return;
+  if (Musubi.onlineAccounts[p.jid]) return;
+  var account = findAccountFromAddress(p.jid);
   XMPP.up(account);
   account.channel = XMPP.createChannel();
   account.channel.on({
@@ -168,37 +163,40 @@ function xmppConnect(aAddress) {
                      },
                      onMessage);
   account.channel.on({
+                       direction : "in",
                        event     : "presence"
                      },
                      onPresence);
   account.channel.on({
+                       direction : "in",
                        event     : "iq"
                      },
                      onIQ);
   XMPP.send(account, <presence/>);
-  Musubi.onlineAccounts[aAddress] = account;
+  Musubi.onlineAccounts[p.jid] = account;
 }
 
 function xmppDisconnect(aAddress) {
+  var p = Musubi.parseJID(aAddress);
+  if (!p) return;
   var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
   // Check the sidebar's iframe is open.
   if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={aAddress}/>);
+  appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={p.jid}/>);
 
-  var account = Musubi.onlineAccounts[aAddress];
+  var account = Musubi.onlineAccounts[p.jid];
   if (!account) return;
 
   account.channel.release();
   XMPP.down(account.jid);
-  Musubi.onlineAccounts[aAddress] = null;
+  Musubi.onlineAccounts[p.jid] = null;
 
 }
 
 function xmppSend(aAddress, aXML) {
-  if (!aAddress) return;
-  var address = XMPP.JID(aAddress).address;
-  if (!address) return;
-  var account = Musubi.onlineAccounts[address];
+  var p = Musubi.parseJID(aAddress);
+  if (!p) return;
+  var account = Musubi.onlineAccounts[p.jid];
   if (!account) return;
   XMPP.send(account, aXML);
 }
