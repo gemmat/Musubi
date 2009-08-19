@@ -5,20 +5,20 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
-const Application = Cc["@mozilla.org/fuel/application;1"].
-                      getService(Ci.fuelIApplication);
-const IOService = Cc["@mozilla.org/network/io-service;1"].
-                    getService(Ci.nsIIOService);
-const WindowMediator = Cc["@mozilla.org/appshell/window-mediator;1"]
-                         .getService(Ci.nsIWindowMediator);
-const PrefService = Cc["@mozilla.org/preferences-service;1"].
-                      getService(Ci.nsIPrefService).
-                      QueryInterface(Ci.nsIPrefBranch).
-                      QueryInterface(Ci.nsIPrefBranch2);
+const Application      = Cc["@mozilla.org/fuel/application;1"].
+                           getService(Ci.fuelIApplication);
+const IOService        = Cc["@mozilla.org/network/io-service;1"].
+                           getService(Ci.nsIIOService);
+const WindowMediator   = Cc["@mozilla.org/appshell/window-mediator;1"].
+                           getService(Ci.nsIWindowMediator);
+const PrefService      = Cc["@mozilla.org/preferences-service;1"].
+                           getService(Ci.nsIPrefService).
+                           QueryInterface(Ci.nsIPrefBranch).
+                           QueryInterface(Ci.nsIPrefBranch2);
 const DirectoryService = Cc["@mozilla.org/file/directory_service;1"].
                            getService(Ci.nsIProperties);
-const StorageService = Cc["@mozilla.org/storage/service;1"].
-                         getService(Ci.mozIStorageService);
+const StorageService   = Cc["@mozilla.org/storage/service;1"].
+                           getService(Ci.mozIStorageService);
 const StorageStatementWrapper = Components.Constructor(
                                   "@mozilla.org/storage/statement-wrapper;1",
                                   "mozIStorageStatementWrapper",
@@ -129,7 +129,7 @@ function parseURI(aURISpec) {
     account:  account,
     sendto:   sendto,
     resource: resource,
-    jid:      sendto + (resource == null ? "" : "/" + resource),
+    to:       sendto + (resource == null ? "" : "/" + resource),
     query:    q
   };
 }
@@ -142,11 +142,11 @@ function parseJID(aString) {
   m = /^\/([^\/@\?\#]+)$/.exec(r);
   var resource = m ? m[1] : null;
   return {
-    name: name,
-    host: host,
+    name:     name,
+    host:     host,
     resource: resource,
-    jid: name + "@" + host,
-    fulljid: name + "@" + host + "/" + resource
+    barejid:  name + "@" + host,
+    fulljid:  name + "@" + host + "/" + resource
   };
 }
 

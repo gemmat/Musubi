@@ -58,7 +58,7 @@ Prefs.prototype = {
       }
     } catch(e) {
       p(e.name + ": " + e.message);
-    return aDefValue;
+      return aDefValue;
     }
   },
   set: function PrefsSet(aPrefName, aValue, aType, aRelFilePrefRelToKey) {

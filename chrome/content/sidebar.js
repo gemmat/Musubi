@@ -1,4 +1,4 @@
-const EXPORT = ["onXmppEventAtIframe", "onLoadAtIframe", "onUnloadAtIframe", "byeContacts"];
+const EXPORT = ["onLoadAtIframe", "onUnloadAtIframe", "byeContacts"];
 
 function res(aXML) {
   Musubi.appendE4XToXmppIn(document.getElementById("sidebar-iframe").contentDocument,
@@ -32,23 +32,21 @@ function getAccounts() {
   var accountXMLs = Musubi.callWithMusubiDB(function f2(msbdb) {
     return msbdb.account.findAll().map(msbdb.account.objectToE4X);
   });
-  var elt = <musubi type="result"><accounts/></musubi>;
+  var xml = <musubi type="result"><accounts/></musubi>;
   accountXMLs.forEach(function f3(x) {
-    elt.accounts.appendChild(x);
+    xml.accounts.appendChild(x);
   });
-  res(elt);
+  res(xml);
 }
 
 function getAccount(aXML) {
-  var id = +aXML.account.@id;
   var accountXML = Musubi.callWithMusubiDB(function f1(msbdb) {
-    var account = msbdb.account.findById(id);
-    if (account) return msbdb.account.objectToE4X(account[0]);
-    return null;
+    var account = msbdb.account.findById(+aXML.account.@id);
+    if (!account) return null;
+    return msbdb.account.objectToE4X(account[0]);
   });
   if (!accountXML) return;
-  var elt = <musubi type="result">{accountXML}</musubi>;
-  res(elt);
+  res(<musubi type="result">{accountXML}</musubi>);
 }
 
 function setAccount(aXML) {
@@ -57,7 +55,7 @@ function setAccount(aXML) {
       var account = new msbdb.account(msbdb.account.E4XToObject(aXML.account));
       // Save the password to the browser's password manager.
       Musubi.updateXMPP4MOZAccount(account);
-      XMPP.setPassword(account.jid, account.password);
+      XMPP.setPassword(account.barejid, account.password);
       // ...And don't save it to the Musubi DB.
       account.password = null;
       if (msbdb.account.countById(account.id)) {
@@ -73,9 +71,9 @@ function setAccount(aXML) {
 }
 
 function deleteAccount(aXML) {
-  var accountId = aXML.deleteitem.account.@id.toString();
+  var id = +aXML.deleteitem.account.@id;
   Musubi.callWithMusubiDB(function (msbdb) {
-    msbdb.account.deleteById(accountId);
+    msbdb.account.deleteById(id);
   });
   aXML.@type = "result";
   res(aXML);
@@ -99,8 +97,10 @@ function getCachedPresences(aXML) {
   });
 }
 
-function openContact(aAccount, aContact) {
-  if (!aAccount || !aContact) return;
+function openContact(aAccount, aSendto) {
+  aAccount = Musubi.parseJID(aAccount);
+  aSendto  = Musubi.parseJID(aSendto);
+  if (!aAccount || !aSendto) return;
   var url = getMainWin().content.document.location.href;
   if (url == "about:blank")
     url = "http://sites.google.com/site/musubichat/";
@@ -114,15 +114,10 @@ function openContact(aAccount, aContact) {
     var o = Musubi.parseURI(url);
     if (o) url = o.href;
   }
-  openUILink("xmpp://" +
-             XMPP.JID(aAccount).address +
-             "/" +
-             XMPP.JID(aContact).address +
-             "?share;href=" +
-             url,
+  openUILink(Musubi.makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource, "share", url),
              "tabshifted");
-  getMainWin().Musubi.xmppSend(aAccount,
-    <message to={aContact} type="chat">
+  getMainWin().Musubi.xmppSend(aAccount.barejid,
+    <message to={aSendto.fulljid} type="chat">
       <x xmlns="jabber:x:oob">
         <url>{url}</url>
         <desc></desc>
@@ -179,13 +174,16 @@ function byeContacts(aSendto) {
 
 function onLoadAtIframe(aEvent) {
   var iframe = document.getElementById("sidebar-iframe");
-  if (iframe) iframe.addEventListener("XmppEvent", Musubi.sidebar.onXmppEventAtIframe, false, true);
+  if (!iframe) return;
+  iframe.addEventListener("XmppEvent", onXmppEventAtIframe, false, true);
 }
 
 function onUnloadAtIframe(aEvent) {
   var iframe = document.getElementById("sidebar-iframe");
-  if (iframe) iframe.removeEventListener("XmppEvent", Musubi.sidebar.onXmppEventAtIframe, false, true);
+  if (!iframe) return;
+  iframe.removeEventListener("XmppEvent", onXmppEventAtIframe, false, true);
 }
 
 // repl.enter(document.getElementById("sidebar").contentWindow)
+// var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
 // var mainWin = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIWebNavigation).QueryInterface(Components.interfaces.nsIDocShellTreeItem).rootTreeItem.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindow);

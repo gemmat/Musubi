@@ -6,15 +6,15 @@ function MusubiDB() {
     Entity({
       name : "accounts",
       fields : {
-        id                 : "INTEGER PRIMARY KEY",
-        name               : "TEXT",
-        domain             : "TEXT",
-        resource           : "TEXT",
-        jid                : "TEXT UNIQUE NOT NULL",
-        address            : "TEXT UNIQUE NOT NULL",
-        connectionHost     : "TEXT NOT NULL",
-        connectionPort     : "INTEGER NOT NULL",
-        connectionSecurity : "INTEGER NOT NULL"
+        id              : "INTEGER PRIMARY KEY",
+        name            : "TEXT",
+        domain          : "TEXT",
+        resource        : "TEXT",
+        barejid         : "TEXT UNIQUE NOT NULL",
+        fulljid         : "TEXT UNIQUE NOT NULL",
+        connectionHost  : "TEXT NOT NULL",
+        connectionPort  : "INTEGER NOT NULL",
+        connectionScrty : "INTEGER NOT NULL"
       }
     });
   extend(this.account, {
@@ -23,26 +23,26 @@ function MusubiDB() {
                <name>{aObject.name}</name>
                <domain>{aObject.domain}</domain>
                <resource>{aObject.resource}</resource>
-               <jid>{aObject.jid}</jid>
-               <address>{aObject.address}</address>
+               <barejid>{aObject.barejid}</barejid>
+               <fulljid>{aObject.fulljid}</fulljid>
                <password>{aObject.password}</password>
                <connectionHost>{aObject.connectionHost}</connectionHost>
                <connectionPort>{aObject.connectionPort}</connectionPort>
-               <connectionSecurity>{aObject.connectionSecurity}</connectionSecurity>
+               <connectionScrty>{aObject.connectionScrty}</connectionScrty>
              </account>;
     },
     E4XToObject: function accountE4XtoObject(aXML) {
       return {
-        id:                 +aXML.@id               .toString(),
-        name:                aXML.name              .toString(),
-        domain:              aXML.domain            .toString(),
-        resource:            aXML.resource          .toString(),
-        jid:                 aXML.jid               .toString(),
-        address:             aXML.address           .toString(),
-        password:            aXML.password          .toString(),
-        connectionHost:      aXML.connectionHost    .toString(),
-        connectionPort:     +aXML.connectionPort    .toString(),
-        connectionSecurity: +aXML.connectionSecurity.toString()
+        id:              +aXML.@id            .toString(),
+        name:             aXML.name           .toString(),
+        domain:           aXML.domain         .toString(),
+        resource:         aXML.resource       .toString(),
+        barejid:          aXML.barejid        .toString(),
+        fulljid:          aXML.fulljid        .toString(),
+        password:         aXML.password       .toString(),
+        connectionHost:   aXML.connectionHost .toString(),
+        connectionPort:  +aXML.connectionPort .toString(),
+        connectionScrty: +aXML.connectionScrty.toString()
       };
     }
   });

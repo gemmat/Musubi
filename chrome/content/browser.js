@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "onXmppEventAtDocument"];
+const EXPORT = ["onLoad", "onUnload"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
@@ -28,9 +28,11 @@ function onXmppEventAtDocument(aEvent) {
   if (!o) return;
   var xml = Musubi.DOMToE4X(aEvent.target);
   if (o.resource) {
-    xml.@to = o.jid;
+    xml.@to = o.sendto + "/" + o.resource;
+  } else if (xml.@res.length()) {
+    xml.@to = o.sendto + "/" + xml.@res;
   } else {
-    xml.@to = o.sendto + (xml.@res.length() ? "/" + xml.@res : "");
+    xml.@to = o.sendto;
   }
   switch (xml.name().localName) {
   case "message":
@@ -50,6 +52,6 @@ function onXmppEventAtDocument(aEvent) {
     }
     break;
   }
-  if (xml.@res.length()) delete xml.@res;
+  delete xml.@res;
   XMPP.send(Musubi.onlineAccounts[o.account], xml);
 }
