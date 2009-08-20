@@ -28,7 +28,7 @@ function disconnect(aXML) {
   res(aXML);
 }
 
-function getAccounts() {
+function readAllAccount() {
   var accountXMLs = Musubi.callWithMusubiDB(function f2(msbdb) {
     return msbdb.account.findAll().map(msbdb.account.objectToE4X);
   });
@@ -39,7 +39,7 @@ function getAccounts() {
   res(xml);
 }
 
-function getAccount(aXML) {
+function readAccount(aXML) {
   var accountXML = Musubi.callWithMusubiDB(function f1(msbdb) {
     var account = msbdb.account.findByBarejid(aXML.account.barejid.toString());
     if (!account) return null;
@@ -49,7 +49,7 @@ function getAccount(aXML) {
   res(<musubi type="result">{accountXML}</musubi>);
 }
 
-function setAccount(aXML) {
+function createupdateAccount(aXML) {
   Musubi.callWithMusubiDB(function f4(msbdb) {
     try {
       var account = new msbdb.account(msbdb.account.E4XToObject(aXML.account));
@@ -72,14 +72,13 @@ function setAccount(aXML) {
 
 function deleteAccount(aXML) {
   Musubi.callWithMusubiDB(function (msbdb) {
-    var o = msbdb.account.findByBarejid(aXML.deleteitem.account.barejid.toString());
+    var o = msbdb.account.findByBarejid(aXML.account.barejid.toString());
     if (o) {
       Musubi.updateXMPP4MOZAccount(o[0], true);
       msbdb.account.deleteById(o[0].id);
     }
   });
-  aXML.@type = "result";
-  res(aXML);
+  res(<musubi type="result"><account del="del"/></musubi>);
 }
 
 function getDefaultAccount() {
@@ -143,11 +142,15 @@ function onXmppEventAtIframe(aEvent) {
     } else if (xml.disconnect.length()) {
       disconnect(xml);
     } else if (xml.@type == "get" && xml.accounts.length()) {
-      getAccounts();
+      readAllAccount();
     } else if (xml.@type == "get" && xml.account.length()) {
-      getAccount(xml);
+      readAccount(xml);
     } else if (xml.@type == "set" && xml.account.length()) {
-      setAccount(xml);
+      if (xml.account.@del.length()) {
+        deleteAccount(xml);
+      } else {
+        createupdateAccount(xml);
+      }
     } else if (xml.@type == "get" && xml.defaultaccount.length()) {
       getDefaultAccount();
     } else if (xml.@type == "set" && xml.defaultaccount.length()) {
@@ -158,8 +161,6 @@ function onXmppEventAtIframe(aEvent) {
       //TODO now then, we don't need @account any more...
       openContact(xml.opencontanct.account.toString(),
                   xml.opencontanct.contact.toString());
-    } else if (xml.@type == "set" && xml.deleteitem.length()) {
-      deleteAccount(xml);
     }
     break;
   default:
