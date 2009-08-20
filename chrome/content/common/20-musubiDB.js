@@ -7,11 +7,8 @@ function MusubiDB() {
       name : "accounts",
       fields : {
         id              : "INTEGER PRIMARY KEY",
-        name            : "TEXT",
-        domain          : "TEXT",
-        resource        : "TEXT",
         barejid         : "TEXT UNIQUE NOT NULL",
-        fulljid         : "TEXT UNIQUE NOT NULL",
+        resource        : "TEXT",
         connectionHost  : "TEXT NOT NULL",
         connectionPort  : "INTEGER NOT NULL",
         connectionScrty : "INTEGER NOT NULL"
@@ -19,12 +16,9 @@ function MusubiDB() {
     });
   Musubi.extend(this.account, {
     objectToE4X: function accountObjectToE4X(aObject) {
-      return <account id={aObject.id}>
-               <name>{aObject.name}</name>
-               <domain>{aObject.domain}</domain>
-               <resource>{aObject.resource}</resource>
+      return <account>
                <barejid>{aObject.barejid}</barejid>
-               <fulljid>{aObject.fulljid}</fulljid>
+               <resource>{aObject.resource}</resource>
                <password>{aObject.password}</password>
                <connectionHost>{aObject.connectionHost}</connectionHost>
                <connectionPort>{aObject.connectionPort}</connectionPort>
@@ -33,12 +27,8 @@ function MusubiDB() {
     },
     E4XToObject: function accountE4XtoObject(aXML) {
       return {
-        id:              +aXML.@id            .toString(),
-        name:             aXML.name           .toString(),
-        domain:           aXML.domain         .toString(),
-        resource:         aXML.resource       .toString(),
         barejid:          aXML.barejid        .toString(),
-        fulljid:          aXML.fulljid        .toString(),
+        resource:         aXML.resource       .toString(),
         password:         aXML.password       .toString(),
         connectionHost:   aXML.connectionHost .toString(),
         connectionPort:  +aXML.connectionPort .toString(),

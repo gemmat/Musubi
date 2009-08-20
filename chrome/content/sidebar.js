@@ -41,7 +41,7 @@ function getAccounts() {
 
 function getAccount(aXML) {
   var accountXML = Musubi.callWithMusubiDB(function f1(msbdb) {
-    var account = msbdb.account.findById(+aXML.account.@id);
+    var account = msbdb.account.findByBarejid(aXML.account.barejid.toString());
     if (!account) return null;
     return msbdb.account.objectToE4X(account[0]);
   });
@@ -58,7 +58,7 @@ function setAccount(aXML) {
       XMPP.setPassword(account.barejid, account.password);
       // ...And don't save it to the Musubi DB.
       account.password = null;
-      if (msbdb.account.countById(account.id)) {
+      if (msbdb.account.countByBarejid(account.barejid)) {
         msbdb.account.update(account);
       } else {
         msbdb.account.insert(account);
@@ -71,9 +71,9 @@ function setAccount(aXML) {
 }
 
 function deleteAccount(aXML) {
-  var id = +aXML.deleteitem.account.@id;
   Musubi.callWithMusubiDB(function (msbdb) {
-    msbdb.account.deleteById(id);
+    var o = msbdb.account.findByBarejid(aXML.deleteitem.account.barejid.toString());
+    if (o) msbdb.account.deleteById(o[0].id);
   });
   aXML.@type = "result";
   res(aXML);
