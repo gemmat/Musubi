@@ -3,7 +3,7 @@ const EXPORT = ["MusubiDB", "callWithMusubiDB"];
 function MusubiDB() {
   this.db = null;
   this.account =
-    Entity({
+    Musubi.Entity({
       name : "accounts",
       fields : {
         id              : "INTEGER PRIMARY KEY",
@@ -17,7 +17,7 @@ function MusubiDB() {
         connectionScrty : "INTEGER NOT NULL"
       }
     });
-  extend(this.account, {
+  Musubi.extend(this.account, {
     objectToE4X: function accountObjectToE4X(aObject) {
       return <account id={aObject.id}>
                <name>{aObject.name}</name>
@@ -50,17 +50,17 @@ function MusubiDB() {
 
 MusubiDB.prototype = {
   get file() {
-    let pd = DirectoryService.get("ProfD", Ci.nsIFile);
+    let pd = Musubi.DirectoryService.get("ProfD", Musubi.Ci.nsIFile);
     pd.append("musubi");
     if (!pd.exists() || !pd.isDirectory()) {
-      pd.create(Ci.nsIFile.DIRECTORY_TYPE, 0755);
+      pd.create(Musubi.Ci.nsIFile.DIRECTORY_TYPE, 0755);
     }
     pd.append("musubi.sqlite");
     return pd;
   },
   open: function MusubiDBOpen() {
     if (!this.db) {
-      this.db = new Database(this.file);
+      this.db = new Musubi.Database(this.file);
       this.db.setPragma("case_sensitive_like", 1);
       this.account.db = this.db;
       this.account.initialize();

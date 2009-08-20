@@ -116,8 +116,8 @@ function openContact(aAccount, aSendto) {
   }
   openUILink(Musubi.makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource, "share", url),
              "tabshifted");
-  getMainWin().Musubi.xmppSend(aAccount.barejid,
-    <message to={aSendto.fulljid} type="chat">
+  getMainWin().Musubi.xmppSend(
+    <message from={aAccount.fulljid} to={aSendto.fulljid} type="chat">
       <x xmlns="jabber:x:oob">
         <url>{url}</url>
         <desc></desc>
@@ -126,18 +126,15 @@ function openContact(aAccount, aSendto) {
 }
 
 function onXmppEventAtIframe(aEvent) {
+  aEvent.stopPropagation();
   var xml = Musubi.DOMToE4X(aEvent.target);
   switch (xml.name().localName) {
   case "message":  //FALLTHROUGH
   case "presence": //FALLTHROUGH
   case "iq":
-    var from = xml.@from.toString();
-    delete xml.@from;
-    getMainWin().Musubi.xmppSend(from, xml);
+    getMainWin().Musubi.xmppSend(xml);
     break;
   case "musubi":
-    // Only the sidebar should handle these internal xmpp events. They often include user's info.
-    aEvent.stopPropagation();
     if (xml.connect.length()) {
       connect(xml);
     } else if (xml.disconnect.length()) {

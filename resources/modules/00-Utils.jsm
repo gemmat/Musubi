@@ -135,18 +135,15 @@ function parseURI(aURISpec) {
 }
 
 function parseJID(aString) {
-  var m = null;
-  m = /^([^\/@\?\#]+)@([^\/@\?\#]+)/.exec(aString);
+  var m = /^(.+?@)?(.+?)(?:\/|$)(.*$)/.exec(aString);
   if (!m) return null;
-  var r = aString.slice(m[0].length), name = m[1], host = m[2];
-  m = /^\/([^\/@\?\#]+)$/.exec(r);
-  var resource = m ? m[1] : null;
+  if (m[1] == undefined) m[1] = "";
   return {
-    name:     name,
-    host:     host,
-    resource: resource,
-    barejid:  name + "@" + host,
-    fulljid:  name + "@" + host + "/" + resource
+    name:     m[1] ? m[1].slice(0, -1) : "",
+    host:     m[2],
+    resource: (aString.indexOf("/") == -1) ? null : m[3],
+    barejid:  m[1] + m[2],
+    fulljid:  m[1] + m[2] + "/" + m[3]
   };
 }
 

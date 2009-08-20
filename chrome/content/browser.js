@@ -36,10 +36,10 @@ function onXmppEventAtDocument(aEvent) {
   }
   switch (xml.name().localName) {
   case "message":
-    xml.*   += <x xmlns="jabber:x:oob">
-                <url>{o.href}</url>
-                <desc>{aEvent.target.ownerDocument.title}</desc>
-              </x>;
+    xml.* += <x xmlns="jabber:x:oob">
+               <url>{o.href}</url>
+               <desc>{aEvent.target.ownerDocument.title}</desc>
+             </x>;
     break;
   case "iq":
     break;
