@@ -139,8 +139,8 @@ function parseJID(aString) {
   if (!m) return null;
   if (m[1] == undefined) m[1] = "";
   return {
-    name:     m[1] ? m[1].slice(0, -1) : "",
-    host:     m[2],
+    node:     m[1] ? m[1].slice(0, -1) : "",
+    domain:   m[2],
     resource: (aString.indexOf("/") == -1) ? null : m[3],
     barejid:  m[1] + m[2],
     fulljid:  m[1] + m[2] + "/" + m[3]
