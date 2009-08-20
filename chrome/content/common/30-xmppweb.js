@@ -14,11 +14,11 @@ function E4XToDOM(aE4XXML) {
     true);
 }
 
-function updateXMPP4MOZAccount(aAccount) {
+function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   // The xmpp4moz's xmpp_impl.jsm says
   // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"
   // Roger that, however, here we use the getAccountByJid intentionally for the backward compatibility.
-  var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.fulljid);
+  var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.barejid + "/" + aAccount.resource);
   var key = 0;
   if (xmpp4mozAccount) {
     key = xmpp4mozAccount.key;
@@ -26,11 +26,19 @@ function updateXMPP4MOZAccount(aAccount) {
     key = Date.now();
   }
   var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
-  prefs.set("address",            aAccount.barejid);
-  prefs.set("resource",           aAccount.resource);
-  prefs.set("connectionHost",     aAccount.connectionHost);
-  prefs.set("connectionPort",     aAccount.connectionPort);
-  prefs.set("connectionSecurity", aAccount.connectionScrty);
+  if (aDeleteP) {
+    prefs.clear("address");
+    prefs.clear("resource");
+    prefs.clear("connectionHost");
+    prefs.clear("connectionPort");
+    prefs.clear("connectionSecurity");
+  } else {
+    prefs.set("address",            aAccount.barejid);
+    prefs.set("resource",           aAccount.resource);
+    prefs.set("connectionHost",     aAccount.connectionHost);
+    prefs.set("connectionPort",     aAccount.connectionPort);
+    prefs.set("connectionSecurity", aAccount.connectionScrty);
+  }
 }
 
 function appendE4XToXmppIn(aDocument, aE4X) {

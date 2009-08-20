@@ -73,21 +73,24 @@ function setAccount(aXML) {
 function deleteAccount(aXML) {
   Musubi.callWithMusubiDB(function (msbdb) {
     var o = msbdb.account.findByBarejid(aXML.deleteitem.account.barejid.toString());
-    if (o) msbdb.account.deleteById(o[0].id);
+    if (o) {
+      Musubi.updateXMPP4MOZAccount(o[0], true);
+      msbdb.account.deleteById(o[0].id);
+    }
   });
   aXML.@type = "result";
   res(aXML);
 }
 
-function getDefaultJID() {
-  var d = new Musubi.Prefs("extensions.musubi.").get("defaultJID", "");
+function getDefaultAccount() {
+  var d = new Musubi.Prefs("extensions.musubi.").get("defaultaccount", "");
   if (!d) return;
-  res(<musubi type="result"><defaultjid>{d}</defaultjid></musubi>);
+  res(<musubi type="result"><defaultaccount>{d}</defaultaccount></musubi>);
 }
 
-function setDefaultJID(aXML) {
-  new Musubi.Prefs("extensions.musubi.").set("defaultJID", aXML.defaultjid.toString());
-  getDefaultJID();
+function setDefaultAccount(aXML) {
+  new Musubi.Prefs("extensions.musubi.").set("defaultaccount", aXML.defaultaccount.toString());
+  getDefaultAccount();
 }
 
 function getCachedPresences(aXML) {
@@ -145,10 +148,10 @@ function onXmppEventAtIframe(aEvent) {
       getAccount(xml);
     } else if (xml.@type == "set" && xml.account.length()) {
       setAccount(xml);
-    } else if (xml.@type == "get" && xml.defaultjid.length()) {
-      getDefaultJID();
-    } else if (xml.@type == "set" && xml.defaultjid.length()) {
-      setDefaultJID(xml);
+    } else if (xml.@type == "get" && xml.defaultaccount.length()) {
+      getDefaultAccount();
+    } else if (xml.@type == "set" && xml.defaultaccount.length()) {
+      setDefaultAccount(xml);
     } else if (xml.@type == "get" && xml.cachedpresences.length()) {
       getCachedPresences(xml);
     } else if (xml.@type == "get" && xml.opencontanct.length()) {
