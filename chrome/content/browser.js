@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload"];
+const EXPORT = ["onLoad", "onUnload", "getSidebar", "getSidebarIframe"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
@@ -6,6 +6,16 @@ function onLoad(aEvent) {
 
 function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
+}
+
+function getSidebar() {
+  return document.getElementById("sidebar");
+}
+
+function getSidebarIframe() {
+  var sidebar = getSidebar();
+  if (!sidebar) return null;
+  return sidebar.contentDocument.getElementById("sidebar-iframe");
 }
 
 function getDocument(aEvent) {
@@ -53,5 +63,6 @@ function onXmppEventAtDocument(aEvent) {
     break;
   }
   delete xml.@res;
-  XMPP.send(Musubi.onlineAccounts[o.account], xml);
+  xml.@from = o.account;
+  Musubi.xmppSend(xml);
 }

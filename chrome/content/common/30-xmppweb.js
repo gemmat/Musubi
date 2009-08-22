@@ -91,23 +91,29 @@ function onMessage(aObj) {
     for (var i = 0, len = bs.length; i < len; i++) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
-    if (url) {
-      var newTab = gBrowser.getBrowserForTab(
-                     gBrowser.addTab(
-                       Musubi.makeXmppURI(to.barejid, from.barejid, from.resource, "share", url)));
-      var appendOnload0 = function(e) {
-        newTab.contentDocument.addEventListener("load", appendOnload1, true);
-        newTab.removeEventListener("load", appendOnload0, true);
-      };
-      var appendOnload1 = function(e) {
-        appendE4XToXmppIn(newTab.contentDocument, stanza);
-        newTab.contentDocument.removeEventListener("load", appendOnload1, true);
-      };
-      newTab.addEventListener("load", appendOnload0, true);
-      return;
+    if (!bs.length) {
+      if (url) {
+        var newTab = gBrowser.getBrowserForTab(
+          gBrowser.addTab(
+            Musubi.makeXmppURI(to.barejid, from.barejid, from.resource, "share", url)));
+        var appendOnload0 = function(e) {
+          newTab.contentDocument.addEventListener("load", appendOnload1, true);
+          newTab.removeEventListener("load", appendOnload0, true);
+        };
+        var appendOnload1 = function(e) {
+          appendE4XToXmppIn(newTab.contentDocument, stanza);
+          newTab.contentDocument.removeEventListener("load", appendOnload1, true);
+        };
+        newTab.addEventListener("load", appendOnload0, true);
+      } else {
+        var iframe = Musubi.browser.getSidebarIframe();
+        if (!iframe) return;
+        appendE4XToXmppIn(iframe.contentDocument, stanza);
+      }
     }
+    return;
   }
-  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  var iframe = Musubi.browser.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -122,7 +128,7 @@ function onPresence(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  var iframe = Musubi.browser.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -137,7 +143,7 @@ function onIQ(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
+  var iframe = Musubi.browser.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -150,25 +156,32 @@ function findAccountFromBarejid(aBarejid) {
   return account;
 }
 
-function xmppConnect(aBarejid) {
-  var p = Musubi.parseJID(aBarejid);
+function xmppConnect(aFulljid) {
+  var p = Musubi.parseJID(aFulljid);
   if (!p) return;
   if (Musubi.onlineAccounts[p.barejid]) return;
   var account = findAccountFromBarejid(p.barejid);
-  XMPP.up(account);
   account.channel = XMPP.createChannel();
   account.channel.on({direction : "in", event : "message"},  onMessage);
   account.channel.on({direction : "in", event : "presence"}, onPresence);
   account.channel.on({direction : "in", event : "iq"},       onIQ);
-  XMPP.send(account, <presence/>);
-  Musubi.onlineAccounts[p.barejid] = account;
+  // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
+  XMPP.up(account.barejid + "/" + account.resource, function(jid) {
+    Musubi.onlineAccounts[account.barejid] = account;
+    xmppSend(<presence from={account.barejid}/>);
+    var iframe = Musubi.browser.getSidebarIframe();
+    if (!iframe) return;
+    appendE4XToXmppIn(iframe.contentDocument,
+                      <musubi type="result">
+                        <connect>{p.barejid}</connect>
+                      </musubi>);
+  });
 }
 
-function xmppDisconnect(aBarejid) {
-  var p = Musubi.parseJID(aBarejid);
+function xmppDisconnect(aFulljid) {
+  var p = Musubi.parseJID(aFulljid);
   if (!p) return;
-  var iframe = document.getElementById("sidebar").contentDocument.getElementById("sidebar-iframe");
-  // Check the sidebar's iframe is open.
+  var iframe = Musubi.browser.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={p.fulljid}/>);
   var account = Musubi.onlineAccounts[p.barejid];
@@ -176,7 +189,6 @@ function xmppDisconnect(aBarejid) {
   account.channel.release();
   XMPP.down(account);
   Musubi.onlineAccounts[p.barejid] = null;
-
 }
 
 function xmppSend(aXML) {
@@ -185,5 +197,6 @@ function xmppSend(aXML) {
   var account = Musubi.onlineAccounts[p.barejid];
   if (!account) return;
   delete aXML.@from;
-  XMPP.send(account, aXML);
+  // XMPP.send(account, ...) shows a useless dialog, so we use XMPP.send("romeo@localhost/Home", ...);
+  XMPP.send(account.barejid + "/" + account.resource, aXML);
 }
