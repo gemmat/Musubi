@@ -1,4 +1,4 @@
-const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSend"];
+const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSend", "filterBrowsersByURI"];
 
 var onlineAccounts = [];
 
@@ -64,19 +64,25 @@ function appendE4XToXmppIn(aDocument, aE4X) {
 }
 
 function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
-  var arr = [];
+  var res0 = [], res1 = [];
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = Musubi.parseURI(b.currentURI.spec);
-    if (o &&
-        o.account  == aAccount &&
+    if (!o) continue;
+    if (o.account  == aAccount &&
         o.sendto   == aSendto &&
-        (!aResource || o.resource == aResource) &&
-        (!aHref     || o.href     == aHref)) {
-      arr.push(b);
+        (!aHref || o.href == aHref)) {
+      if (o.resource) {
+        if (o.resource == aResource) {
+          res0.push(b);
+        }
+      } else {
+        res1.push(b);
+      }
     }
   }
-  return arr;
+  if (res0.length && res1.length) return res0;
+  return res0.concat(res1);
 }
 
 //We call onMessage many times so we need to be aware of the performance.
