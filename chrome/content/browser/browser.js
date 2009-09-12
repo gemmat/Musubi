@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "getSidebar", "getSidebarIframe"];
+const EXPORT = ["onLoad", "onUnload", "getMusubiSidebar"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
@@ -8,32 +8,23 @@ function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
 }
 
-function getSidebar() {
-  return document.getElementById("sidebar");
-}
-
-function getSidebarIframe() {
-  var sidebar = getSidebar();
-  if (!sidebar) return null;
-  return sidebar.contentDocument.getElementById("sidebar-iframe");
-}
-
-function getDocument(aEvent) {
-  var doc = aEvent.target.ownerDocument;
-  if (doc instanceof HTMLDocument) {
-    var dVFElt = doc.defaultView.frameElement;
-    if (dVFElt) {
-      while (dVFElt) {
-        doc = dVFElt.ownerDocument;
-        dVFElt = doc.defaultView.frameElement;
-      }
+function getMusubiSidebar() {
+  var sidebar = document.getElementById("sidebar");
+  if (!sidebar || !sidebar.contentWindow.Musubi) return null;
+  var iframe = sidebar.contentDocument.getElementById("sidebar-iframe");
+  return {
+    win:       sidebar.contentWindow,
+    doc:       sidebar.contentDocument,
+    Musubi:    sidebar.contentWindow.Musubi,
+    iframe: {
+      win: iframe.contentWindow,
+      doc: iframe.contentDocument
     }
-  }
-  return doc;
+  };
 }
 
 function onXmppEventAtDocument(aEvent) {
-  var doc = getDocument(aEvent);
+  var doc = Musubi.getDocumentFromEvent(aEvent);
   var o = Musubi.parseURI(doc.location.href);
   if (!o) return;
   var xml = Musubi.DOMToE4X(aEvent.target);
@@ -48,16 +39,16 @@ function onXmppEventAtDocument(aEvent) {
   case "message":
     xml.* += <x xmlns="jabber:x:oob">
                <url>{o.href}</url>
-               <desc>{aEvent.target.ownerDocument.title}</desc>
+               <desc>{doc.title}</desc>
              </x>;
     break;
   case "iq":
     break;
   case "presence":
     if (xml.@res.length() && xml.@type == "unavailable") {
-      var sidebar = document.getElementById("sidebar");
+      var sidebar = getMusubiSidebar();
       if (sidebar) {
-        sidebar.contentWindow.Musubi.byeContacts(o.sendto);
+        sidebar.Musubi.byeContacts(o.sendto);
       }
     }
     break;

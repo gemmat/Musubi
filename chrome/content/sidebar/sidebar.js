@@ -1,37 +1,24 @@
 const EXPORT = ["onLoadAtIframe", "onUnloadAtIframe", "byeContacts"];
 
-function res(aXML) {
+function res(aE4X) {
   Musubi.appendE4XToXmppIn(document.getElementById("sidebar-iframe").contentDocument,
-                           aXML);
+                           aE4X);
 }
 
-function getMainWin() {
-  const Ci = Components.interfaces;
-  return window.QueryInterface(Ci.nsIInterfaceRequestor)
-               .getInterface(Ci.nsIWebNavigation)
-               .QueryInterface(Ci.nsIDocShellTreeItem)
-               .rootTreeItem
-               .QueryInterface(Ci.nsIInterfaceRequestor)
-               .getInterface(Ci.nsIDOMWindow);
+function connect(aE4X) {
+  Musubi.xmppConnect(aE4X.connect.toString());
+  aE4X.@type = "result";
+  res(aE4X);
 }
 
-function connect(aXML) {
-  // We have to place the connection info to the browser, cuz sidebar can be closed anytime.
-  getMainWin().Musubi.xmppConnect(aXML.connect.toString());
-  aXML.@type = "result";
-  res(aXML);
-}
-
-function disconnect(aXML) {
-  getMainWin().Musubi.xmppDisconnect(aXML.disconnect.toString());
-  aXML.@type = "result";
-  res(aXML);
+function disconnect(aE4X) {
+  Musubi.xmppDisconnect(aE4X.disconnect.toString());
+  aE4X.@type = "result";
+  res(aE4X);
 }
 
 function readAllAccount() {
-  var accountXMLs = Musubi.callWithMusubiDB(function f2(msbdb) {
-    return msbdb.account.findAll().map(msbdb.account.objectToE4X);
-  });
+  var accountXMLs = Musubi.DBFindAllAccount({E4X: true});
   var xml = <musubi type="result"><accounts/></musubi>;
   accountXMLs.forEach(function f3(x) {
     xml.accounts.appendChild(x);
@@ -39,62 +26,42 @@ function readAllAccount() {
   res(xml);
 }
 
-function readAccount(aXML) {
-  var accountXML = Musubi.callWithMusubiDB(function f1(msbdb) {
-    var account = msbdb.account.findByBarejid(aXML.account.barejid.toString());
-    if (!account) return null;
-    return msbdb.account.objectToE4X(account[0]);
-  });
+function readAccount(aE4X) {
+  var accountXML = Musubi.DBFindAccountByBarejid(aE4X.account.barejid.toString(), {E4X: true});
   if (!accountXML) return;
   res(<musubi type="result">{accountXML}</musubi>);
 }
 
-function createupdateAccount(aXML) {
-  Musubi.callWithMusubiDB(function f4(msbdb) {
-    try {
-      var account = new msbdb.account(msbdb.account.E4XToObject(aXML.account));
-      // Save the password to the browser's password manager.
-      Musubi.updateXMPP4MOZAccount(account);
-      XMPP.setPassword(account.barejid, account.password);
-      // ...And don't save it to the Musubi DB.
-      account.password = null;
-      if (msbdb.account.countByBarejid(account.barejid)) {
-        msbdb.account.update(account);
-      } else {
-        msbdb.account.insert(account);
-      }
-    } catch(e) {
-      Musubi.p(e.name + ": " + e.message);
-    }
-  });
+function createupdateAccount(aE4X) {
+  var account = Musubi.DBNewAccountFromE4X(aE4X.account);
+  Musubi.updateXMPP4MOZAccount(account);
+  XMPP.setPassword(account.barejid, aE4X.account.password.toString());
   res(<musubi type="result"><account/></musubi>);
 }
 
-function deleteAccount(aXML) {
-  Musubi.callWithMusubiDB(function (msbdb) {
-    var o = msbdb.account.findByBarejid(aXML.account.barejid.toString());
-    if (o) {
-      Musubi.updateXMPP4MOZAccount(o[0], true);
-      msbdb.account.deleteById(o[0].id);
-    }
-  });
+function deleteAccount(aE4X) {
+  var account = Musubi.DBDeleteAccountByBarejid(aE4X.account.barejid.toString());
+  Musubi.updateXMPP4MOZAccount(account, true);
   res(<musubi type="result"><account del="del"/></musubi>);
 }
 
 function getDefaultAccount() {
-  var d = new Musubi.Prefs("extensions.musubi.").get("defaultaccount", "");
+  var p = new Musubi.Prefs("extensions.musubi.");
+  if (!p) return;
+  var d = p.get("defaultaccount", "");
   if (!d) return;
   res(<musubi type="result"><defaultaccount>{d}</defaultaccount></musubi>);
 }
 
-function setDefaultAccount(aXML) {
-  new Musubi.Prefs("extensions.musubi.").set("defaultaccount", aXML.defaultaccount.toString());
+function setDefaultAccount(aE4X) {
+  var p = new Musubi.Prefs("extensions.musubi.");
+  if (!p) return;
+  p.set("defaultaccount", aE4X.defaultaccount.toString());
   getDefaultAccount();
 }
 
-function getCachedPresences(aXML) {
-  //TODO check aXML.@from with presence.@from.
-  XMPP.cache.all(XMPP.q().event("presence")).forEach(function (x) {
+function getCachedPresences(aE4X) {
+  Musubi.xmppCachedPresences().forEach(function (x) {
     res(x.stanza);
   });
 }
@@ -103,7 +70,7 @@ function openContact(aAccount, aSendto) {
   aAccount = Musubi.parseJID(aAccount);
   aSendto  = Musubi.parseJID(aSendto);
   if (!aAccount || !aSendto) return;
-  var url = getMainWin().content.document.location.href;
+  var url = getTopWin().content.document.location.href;
   if (url == "about:blank")
     url = "http://sites.google.com/site/musubichat/";
   if (/^file/.test(url)) {
@@ -118,7 +85,7 @@ function openContact(aAccount, aSendto) {
   }
   openUILink(Musubi.makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource, "share", url),
              "tabshifted");
-  getMainWin().Musubi.xmppSend(
+  Musubi.xmppSend(
     <message from={aAccount.fulljid} to={aSendto.fulljid} type="chat">
       <x xmlns="jabber:x:oob">
         <url>{url}</url>
@@ -134,7 +101,7 @@ function onXmppEventAtIframe(aEvent) {
   case "message":  //FALLTHROUGH
   case "presence": //FALLTHROUGH
   case "iq":
-    getMainWin().Musubi.xmppSend(xml);
+    Musubi.xmppSend(xml);
     break;
   case "musubi":
     if (xml.connect.length()) {

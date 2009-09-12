@@ -1,66 +1,11 @@
-const EXPORT = ["onlineAccounts", "DOMToE4X", "E4XToDOM", "updateXMPP4MOZAccount", "appendE4XToXmppIn", "xmppConnect", "xmppDisconnect", "xmppSend", "filterBrowsersByURI"];
-
-var onlineAccounts = [];
-
-function DOMToE4X(aDOMNode) {
-  return new XML(new XMLSerializer().serializeToString(aDOMNode));
-}
-
-function E4XToDOM(aE4XXML) {
-  return window.content.document.importNode(
-    new DOMParser().
-          parseFromString(aE4XXML.toXMLString(), "application/xml").
-          documentElement,
-    true);
-}
-
-function updateXMPP4MOZAccount(aAccount, aDeleteP) {
-  // The xmpp4moz's xmpp_impl.jsm says
-  // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"
-  // Roger that, however, here we use the getAccountByJid intentionally for the backward compatibility.
-  var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.barejid + "/" + aAccount.resource);
-  var key = 0;
-  if (xmpp4mozAccount) {
-    key = xmpp4mozAccount.key;
-  } else {
-    key = Date.now();
-  }
-  var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
-  if (aDeleteP) {
-    prefs.clear("address");
-    prefs.clear("resource");
-    prefs.clear("connectionHost");
-    prefs.clear("connectionPort");
-    prefs.clear("connectionSecurity");
-  } else {
-    prefs.set("address",            aAccount.barejid);
-    prefs.set("resource",           aAccount.resource);
-    prefs.set("connectionHost",     aAccount.connectionHost);
-    prefs.set("connectionPort",     aAccount.connectionPort);
-    prefs.set("connectionSecurity", aAccount.connectionScrty);
-  }
-}
+const EXPORT = ["appendE4XToXmppIn", "filterBrowsersByURI", "xmppConnect", "xmppDisconnect", "xmppSend", "xmppCachedPresences"];
 
 function appendE4XToXmppIn(aDocument, aE4X) {
-  var xmppins = [];
-  var stack = [aDocument];
-  var i, len;
-  var doc;
-  var elts;
-  // deeply getElementsByTagName("xmppin") for nested iframes.
-  while (stack.length) {
-    doc = stack.pop();
-    elts = doc.getElementsByTagName("xmppin");
-    for (i = 0, len = elts.length; i < len; i++) {
-      xmppins.push(elts[i]);
-    }
-    elts = doc.getElementsByTagName("iframe");
-    for (i = 0, len = elts.length; i < len; i++) {
-      stack.push(elts[i].contentDocument);
-    }
+  var arr = Musubi.deeplyGetElementsByTagName(aDocument, "xmppin");
+  for (var i = 0, len = xmppins.length; i < len; i++) {
+    var dom = Musubi.E4XToDOM(arr[i].doc, aE4X);
+    arr[i].elt.appendChild(dom);
   }
-  for (i = 0, len = xmppins.length; i < len; i++)
-    xmppins[i].appendChild(E4XToDOM(aE4X));
 }
 
 function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
@@ -112,16 +57,16 @@ function onMessage(aObj) {
         };
         newTab.addEventListener("load", appendOnload0, true);
       } else {
-        var iframe = Musubi.getSidebarIframe();
-        if (!iframe) return;
-        appendE4XToXmppIn(iframe.contentDocument, stanza);
+        var sidebar = Musubi.getMusubiSidebar();
+        if (!sidebar) return;
+        appendE4XToXmppIn(sidebar.iframe.doc, stanza);
       }
     }
     return;
   }
-  var iframe = Musubi.getSidebarIframe();
-  if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, stanza);
+  var sidebar = Musubi.getMusubiSidebar();
+  if (!sidebar) return;
+  appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
 
 function onPresence(aObj) {
@@ -134,9 +79,9 @@ function onPresence(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = Musubi.getSidebarIframe();
-  if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, stanza);
+  var sidebar = Musubi.getMusubiSidebar();
+  if (!sidebar) return;
+  appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
 
 function onIQ(aObj) {
@@ -149,35 +94,27 @@ function onIQ(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = Musubi.getSidebarIframe();
-  if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, stanza);
-}
-
-function findAccountFromBarejid(aBarejid) {
-  var account = Musubi.callWithMusubiDB(function findAccountfromBarejidAtMusubiDB(msbdb) {
-    return msbdb.account.findByBarejid(aBarejid)[0];
-  });
-  if (!account) throw new Error("account data not found: " + aBarejid);
-  return account;
+  var sidebar = Musubi.getMusubiSidebar();
+  if (!sidebar) return;
+  appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
 
 function xmppConnect(aFulljid) {
   var p = Musubi.parseJID(aFulljid);
   if (!p) return;
-  if (Musubi.onlineAccounts[p.barejid]) return;
-  var account = findAccountFromBarejid(p.barejid);
+  if (Application.storage.get(p.barejid, null)) return;
+  var account = Musubi.DBFindAccountByBarejid(p.barejid);
   account.channel = XMPP.createChannel();
   account.channel.on({direction : "in", event : "message"},  onMessage);
   account.channel.on({direction : "in", event : "presence"}, onPresence);
   account.channel.on({direction : "in", event : "iq"},       onIQ);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
-  XMPP.up(account.barejid + "/" + account.resource, function(jid) {
-    Musubi.onlineAccounts[account.barejid] = account;
+  XMPP.up(account.barejid + "/" + account.resource, function cont(jid) {
+    Application.storage.set(account.barejid, account);
     xmppSend(<presence from={account.barejid}/>);
-    var iframe = Musubi.getSidebarIframe();
-    if (!iframe) return;
-    appendE4XToXmppIn(iframe.contentDocument,
+    var sidebar = Musubi.getMusubiSidebar();
+    if (!sidebar) return;
+    appendE4XToXmppIn(sidebar.iframe.doc,
                       <musubi type="result">
                         <connect>{p.barejid}</connect>
                       </musubi>);
@@ -187,22 +124,27 @@ function xmppConnect(aFulljid) {
 function xmppDisconnect(aFulljid) {
   var p = Musubi.parseJID(aFulljid);
   if (!p) return;
-  var iframe = Musubi.getSidebarIframe();
-  if (!iframe) return;
-  appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={p.fulljid}/>);
-  var account = Musubi.onlineAccounts[p.barejid];
+  var sidebar = Musubi.getMusubiSidebar();
+  if (!sidebar) return;
+  appendE4XToXmppIn(sidebar.iframe.doc, <presence type="unavailable" from={p.fulljid}/>);
+  var account = Application.storage.get(p.barejid, null);
   if (!account) return;
   account.channel.release();
   XMPP.down(account);
-  Musubi.onlineAccounts[p.barejid] = null;
+  Application.storage.set(p.barejid, null);
 }
 
 function xmppSend(aXML) {
   var p = Musubi.parseJID(aXML.@from.toString());
   if (!p) return;
-  var account = Musubi.onlineAccounts[p.barejid];
+  var account = Application.storage.get(p.barejid, null);
   if (!account) return;
   delete aXML.@from;
   // XMPP.send(account, ...) shows a useless dialog, so we use XMPP.send("romeo@localhost/Home", ...);
   XMPP.send(account.barejid + "/" + account.resource, aXML);
+}
+
+function xmppCachedPresences() {
+  //TODO check aE4X.@from with presence.@from.
+  return XMPP.cache.all(XMPP.q().event("presence"));
 }
