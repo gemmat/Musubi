@@ -106,14 +106,14 @@ function onMessage(aObj) {
         };
         newTab.addEventListener("load", appendOnload0, true);
       } else {
-        var iframe = Musubi.browser.getSidebarIframe();
+        var iframe = Musubi.getSidebarIframe();
         if (!iframe) return;
         appendE4XToXmppIn(iframe.contentDocument, stanza);
       }
     }
     return;
   }
-  var iframe = Musubi.browser.getSidebarIframe();
+  var iframe = Musubi.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -128,7 +128,7 @@ function onPresence(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = Musubi.browser.getSidebarIframe();
+  var iframe = Musubi.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -143,7 +143,7 @@ function onIQ(aObj) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var iframe = Musubi.browser.getSidebarIframe();
+  var iframe = Musubi.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, stanza);
 }
@@ -169,7 +169,7 @@ function xmppConnect(aFulljid) {
   XMPP.up(account.barejid + "/" + account.resource, function(jid) {
     Musubi.onlineAccounts[account.barejid] = account;
     xmppSend(<presence from={account.barejid}/>);
-    var iframe = Musubi.browser.getSidebarIframe();
+    var iframe = Musubi.getSidebarIframe();
     if (!iframe) return;
     appendE4XToXmppIn(iframe.contentDocument,
                       <musubi type="result">
@@ -181,7 +181,7 @@ function xmppConnect(aFulljid) {
 function xmppDisconnect(aFulljid) {
   var p = Musubi.parseJID(aFulljid);
   if (!p) return;
-  var iframe = Musubi.browser.getSidebarIframe();
+  var iframe = Musubi.getSidebarIframe();
   if (!iframe) return;
   appendE4XToXmppIn(iframe.contentDocument, <presence type="unavailable" from={p.fulljid}/>);
   var account = Musubi.onlineAccounts[p.barejid];

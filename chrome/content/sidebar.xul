@@ -22,10 +22,8 @@
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
     (function() {
-       Musubi.sidebar = {};
-       Musubi.loadSubScript("chrome://musubi/content/sidebar.js", Musubi.sidebar);
-       document.addEventListener("load",   Musubi.sidebar.onLoadAtIframe,   true);
-       document.addEventListener("unload", Musubi.sidebar.onUnloadAtIframe, true);
+       document.addEventListener("load",   Musubi.onLoadAtIframe,   true);
+       document.addEventListener("unload", Musubi.onUnloadAtIframe, true);
     })();
     // ]]>
     </script>

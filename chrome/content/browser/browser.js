@@ -57,7 +57,7 @@ function onXmppEventAtDocument(aEvent) {
     if (xml.@res.length() && xml.@type == "unavailable") {
       var sidebar = document.getElementById("sidebar");
       if (sidebar) {
-        sidebar.contentWindow.Musubi.sidebar.byeContacts(o.sendto);
+        sidebar.contentWindow.Musubi.byeContacts(o.sendto);
       }
     }
     break;

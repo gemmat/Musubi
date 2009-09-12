@@ -147,19 +147,34 @@ function parseJID(aString) {
   };
 }
 
-function loadModules(aScope) {
-  function getModuleFiles() {
-    var filenames = [];
-    var files = __LOCATION__.parent.directoryEntries;
-    while (files.hasMoreElements()) {
-      var file = files.getNext().QueryInterface(Ci.nsIFile);
-      if (/\.jsm$/.test(file.leafName)) filenames.push(file.leafName);
-    }
-    return filenames.sort();
+const _MODULE_BASE_URI = "resource://musubi/modules/";
+
+function loadModules() {
+  var uris = _getModuleURIs();
+  uris.forEach(function (uri) {
+    return Cu.import(uri, this);
+  }, this);
+}
+
+function loadPrecedingModules() {
+  var uris = _getModuleURIs();
+  var self = _MODULE_BASE_URI + this.__LOCATION__.leafName;
+  var i = uris.indexOf(self);
+  if (i === -1) return;
+  uris.slice(0, i).forEach(function (uri) {
+    return Cu.import(uri, this);
+  }, this);
+}
+
+function _getModuleURIs() {
+  var uris = [];
+  var files = __LOCATION__.parent.directoryEntries;
+  while (files.hasMoreElements()) {
+    var file = files.getNext().QueryInterface(Ci.nsIFile);
+    if (/\.jsm$/.test(file.leafName))
+      uris.push(_MODULE_BASE_URI + file.leafName);
   }
-  getModuleFiles().forEach(function (uri) {
-    Cu.import("resource://musubi/modules/" + uri, aScope);
-  });
+  return uris.sort();
 }
 
 /*
