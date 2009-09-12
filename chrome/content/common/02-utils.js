@@ -45,6 +45,14 @@ function deeplyGetElementsByTagName(aDocument, aTagName) {
   return result;
 }
 
+function appendE4XToXmppIn(aDocument, aE4X) {
+  var arr = Musubi.deeplyGetElementsByTagName(aDocument, "xmppin");
+  for (var i = 0, len = arr.length; i < len; i++) {
+    var dom = Musubi.E4XToDOM(arr[i].doc, aE4X);
+    arr[i].elt.appendChild(dom);
+  }
+}
+
 function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   // The xmpp4moz's xmpp_impl.jsm says
   // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"

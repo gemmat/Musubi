@@ -1,0 +1,49 @@
+h1.description, h2.description {
+  font-size: large;
+  text-align: center;  
+}
+
+ul#services {
+  list-style-type: none;
+  padding-left: 0px;
+  text-align: center;
+}
+
+ul#services > li {
+  display: inline-block;
+  margin-left:  30px;
+  margin-right: 30px;
+  margin-bottom: 20px; 
+}
+
+ul#accounts {
+  list-style-type: none;
+  padding-left: 0px;
+  text-align: center;
+}
+
+ul#accounts > li {
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+ul.service {
+  list-style-type: none;
+  padding-left: 0px;
+}
+
+ul.service img {
+  background:#C2CFF1 none repeat scroll 0 0;
+}
+
+div#delete-account > p {
+  margin-top: 3em;
+  text-align: center;
+}
+
+.delete-button {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}

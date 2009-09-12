@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Musubiサイドバー</title>
+    <link rel="stylesheet" type="text/css" href="sidebar2.css">
+    <script type="text/javascript" src="../musubi.js"></script>
+    <script type="text/javascript" src="../prototype.js"></script>
+    <script type="text/javascript" src="../builder.js"></script>
+    <script type="text/javascript" src="sidebar2.js"></script>
+  </head>
+  <body>
+    <div id="account-container"></div>
+    <div id="contacts-container">
+      フレンド
+      <ul id="contacts"></ul>
+      <ul id="contacts-message"></ul>
+      <div id="contacts-config">
+        <a href="../contact/contact.html">オプション</a>
+      </div>
+    </div>
+    <div id="history-container">
+      チャット
+      <dl id="history"></dl>
+    </div>
+    <form id="chat">
+      <textarea id="msg" name="msg" cols="30" rows="4"></textarea>
+      <br/>
+      <input type="submit" value="言う"></input>
+      <select id="sendto" name="sendto" size="1"></select>
+    </form>
+  </body>
+</html>

@@ -1,12 +1,4 @@
-const EXPORT = ["appendE4XToXmppIn", "filterBrowsersByURI", "xmppConnect", "xmppDisconnect", "xmppSend", "xmppCachedPresences"];
-
-function appendE4XToXmppIn(aDocument, aE4X) {
-  var arr = Musubi.deeplyGetElementsByTagName(aDocument, "xmppin");
-  for (var i = 0, len = xmppins.length; i < len; i++) {
-    var dom = Musubi.E4XToDOM(arr[i].doc, aE4X);
-    arr[i].elt.appendChild(dom);
-  }
-}
+const EXPORT = ["filterBrowsersByURI", "setChannel"];
 
 function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
   var res0 = [], res1 = [];
@@ -28,6 +20,12 @@ function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
   }
   if (res0.length && res1.length) return res0;
   return res0.concat(res1);
+}
+
+function setChannel(aChannel) {
+  aChannel.on({direction : "in", event : "message"},  onMessage);
+  aChannel.on({direction : "in", event : "presence"}, onPresence);
+  aChannel.on({direction : "in", event : "iq"},       onIQ);
 }
 
 //We call onMessage many times so we need to be aware of the performance.
@@ -97,54 +95,4 @@ function onIQ(aObj) {
   var sidebar = Musubi.getMusubiSidebar();
   if (!sidebar) return;
   appendE4XToXmppIn(sidebar.iframe.doc, stanza);
-}
-
-function xmppConnect(aFulljid) {
-  var p = Musubi.parseJID(aFulljid);
-  if (!p) return;
-  if (Application.storage.get(p.barejid, null)) return;
-  var account = Musubi.DBFindAccountByBarejid(p.barejid);
-  account.channel = XMPP.createChannel();
-  account.channel.on({direction : "in", event : "message"},  onMessage);
-  account.channel.on({direction : "in", event : "presence"}, onPresence);
-  account.channel.on({direction : "in", event : "iq"},       onIQ);
-  // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
-  XMPP.up(account.barejid + "/" + account.resource, function cont(jid) {
-    Application.storage.set(account.barejid, account);
-    xmppSend(<presence from={account.barejid}/>);
-    var sidebar = Musubi.getMusubiSidebar();
-    if (!sidebar) return;
-    appendE4XToXmppIn(sidebar.iframe.doc,
-                      <musubi type="result">
-                        <connect>{p.barejid}</connect>
-                      </musubi>);
-  });
-}
-
-function xmppDisconnect(aFulljid) {
-  var p = Musubi.parseJID(aFulljid);
-  if (!p) return;
-  var sidebar = Musubi.getMusubiSidebar();
-  if (!sidebar) return;
-  appendE4XToXmppIn(sidebar.iframe.doc, <presence type="unavailable" from={p.fulljid}/>);
-  var account = Application.storage.get(p.barejid, null);
-  if (!account) return;
-  account.channel.release();
-  XMPP.down(account);
-  Application.storage.set(p.barejid, null);
-}
-
-function xmppSend(aXML) {
-  var p = Musubi.parseJID(aXML.@from.toString());
-  if (!p) return;
-  var account = Application.storage.get(p.barejid, null);
-  if (!account) return;
-  delete aXML.@from;
-  // XMPP.send(account, ...) shows a useless dialog, so we use XMPP.send("romeo@localhost/Home", ...);
-  XMPP.send(account.barejid + "/" + account.resource, aXML);
-}
-
-function xmppCachedPresences() {
-  //TODO check aE4X.@from with presence.@from.
-  return XMPP.cache.all(XMPP.q().event("presence"));
 }

@@ -16,7 +16,7 @@
     <vbox flex="1" style="overflow: auto" >
       <iframe id="sidebar-iframe"
               flex="1"
-              src="file:///home/teruaki/App_Musubi/sidebar/sidebar.html"
+              src="resource://musubi/app/sidebar/sidebar.html"
               type="content"/>
     </vbox>
     <script type="text/javascript; version=1.8" charset="utf-8">

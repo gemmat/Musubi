@@ -30,7 +30,7 @@ Prefs.prototype = {
    * nsIRelativeFilePref    : nsIRelativeFilePref,    "relFile"
    */
   get: function PrefsGet(aPrefName, aDefValue, aType) {
-    let prefs = this.prefs;
+    var prefs = this.prefs;
     aType = aType || prefs.getPrefType(aPrefName);
     try {
       switch (aType) {
@@ -52,9 +52,9 @@ Prefs.prototype = {
       case "relFile":
         return prefs.getComplexValue(aPrefName, Ci.nsIRelativeFilePref);
       case PrefService.PREF_INVALID:
-        throw new Error("oops. " + aPrefName + " gets PREF_INVALID type");
+        throw new Error(aPrefName + " gets PREF_INVALID type");
       default:
-        throw new Error("oops. " + aPrefName + " gets an unknown type");
+        throw new Error(aPrefName + " gets an unknown type");
       }
     } catch(e) {
       p(e.name + ": " + e.message);
@@ -62,7 +62,7 @@ Prefs.prototype = {
     }
   },
   set: function PrefsSet(aPrefName, aValue, aType, aRelFilePrefRelToKey) {
-    let prefs = this.prefs;
+    var prefs = this.prefs;
     aType = aType || prefs.getPrefType(aPrefName) || typeof aValue;
     aRelFilePrefRelToKey = aRelFilePrefRelToKey || "ProfD";
     switch (aType) {
@@ -96,9 +96,9 @@ Prefs.prototype = {
       relFile.file = aValue;
       return prefs.setComplexValue(aPrefName, Ci.nsIRelativeFilePref, relFile);
     case PrefService.PREF_INVALID:
-      throw new Error("oops. " + aPrefName + " sets PREF_INVALID type");
+      throw new Error(aPrefName + " sets PREF_INVALID type");
     default:
-      throw new Error("oops. " + aPrefName + " sets a wrong type " + aValue + " , " + aType);
+      throw new Error(aPrefName + " sets a wrong type " + aValue + " , " + aType);
     }
   },
   clear: function PrefsClear(aPrefName) {
