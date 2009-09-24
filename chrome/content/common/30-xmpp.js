@@ -1,7 +1,7 @@
 const EXPORT = ["xmppSend", "xmppCachedPresences"];
 
 function xmppSend(aXML) {
-  var p = Musubi.parseJID(aXML.@from.toString());
+  var p = parseJID(aXML.@from.toString());
   if (!p) return;
   var account = Application.storage.get(p.barejid, null);
   if (!account) return;

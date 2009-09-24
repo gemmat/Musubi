@@ -4,7 +4,7 @@ function filterBrowsersByURI(aAccount, aSendto, aResource, aHref) {
   var res0 = [], res1 = [];
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
-    var o = Musubi.parseURI(b.currentURI.spec);
+    var o = parseURI(b.currentURI.spec);
     if (!o) continue;
     if (o.account  == aAccount &&
         o.sendto   == aSendto &&
@@ -31,8 +31,8 @@ function setChannel(aChannel) {
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aObj) {
   var stanza = aObj.stanza;
-  var from = Musubi.parseJID(stanza.@from.toString());
-  var to   = Musubi.parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
+  var from = parseJID(stanza.@from.toString());
+  var to   = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
   if (from && to) {
     var nsOob = new Namespace("jabber:x:oob");
     var url  = stanza.nsOob::x.nsOob::url.toString();
@@ -44,7 +44,7 @@ function onMessage(aObj) {
       if (url) {
         var newTab = gBrowser.getBrowserForTab(
           gBrowser.addTab(
-            Musubi.makeXmppURI(to.barejid, from.barejid, from.resource, "share", url)));
+            makeXmppURI(to.barejid, from.barejid, from.resource, "share", url)));
         var appendOnload0 = function(e) {
           newTab.contentDocument.addEventListener("load", appendOnload1, true);
           newTab.removeEventListener("load", appendOnload0, true);
@@ -55,44 +55,44 @@ function onMessage(aObj) {
         };
         newTab.addEventListener("load", appendOnload0, true);
       } else {
-        var sidebar = Musubi.getMusubiSidebar();
+        var sidebar = getMusubiSidebar();
         if (!sidebar) return;
         appendE4XToXmppIn(sidebar.iframe.doc, stanza);
       }
     }
     return;
   }
-  var sidebar = Musubi.getMusubiSidebar();
+  var sidebar = getMusubiSidebar();
   if (!sidebar) return;
   appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
 
 function onPresence(aObj) {
   var stanza = aObj.stanza;
-  var from = Musubi.parseJID(stanza.@from.toString());
-  var to   = Musubi.parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
+  var from = parseJID(stanza.@from.toString());
+  var to   = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
   if (from && to) {
     var bs = filterBrowsersByURI(to.barejid, from.barejid, from.resource);
     for (var i = 0, len = bs.length; i < len; i++) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var sidebar = Musubi.getMusubiSidebar();
+  var sidebar = getMusubiSidebar();
   if (!sidebar) return;
   appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
 
 function onIQ(aObj) {
   var stanza = aObj.stanza;
-  var from = Musubi.parseJID(stanza.@from.toString());
-  var to   = Musubi.parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
+  var from = parseJID(stanza.@from.toString());
+  var to   = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObj.account);
   if (from && to) {
     var bs = filterBrowsersByURI(to.barejid, from.barejid, from.resource);
     for (var i = 0, len = bs.length; i < len; i++) {
       appendE4XToXmppIn(bs[i].contentDocument, stanza);
     }
   }
-  var sidebar = Musubi.getMusubiSidebar();
+  var sidebar = getMusubiSidebar();
   if (!sidebar) return;
   appendE4XToXmppIn(sidebar.iframe.doc, stanza);
 }
