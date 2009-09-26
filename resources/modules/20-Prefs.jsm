@@ -34,9 +34,11 @@ Prefs.prototype = {
     aType = aType || prefs.getPrefType(aPrefName);
     try {
       switch (aType) {
-      case PrefService.PREF_INT:
+      case PrefService.PREF_INT:      //FALLTHROUGH
+      case "integer":
         return prefs.getIntPref(aPrefName);
       case PrefService.PREF_BOOL:
+      case "boolean":                 //FALLTHROUGH
         return prefs.getBoolPref(aPrefName);
       case PrefService.PREF_STRING:   //FALLTHROUGH
       case Ci.nsISupportsString:      //FALLTHROUGH
@@ -67,7 +69,7 @@ Prefs.prototype = {
     aRelFilePrefRelToKey = aRelFilePrefRelToKey || "ProfD";
     switch (aType) {
     case PrefService.PREF_INT:      //FALLTHROUGH
-    case "number":
+    case "integer":
       return prefs.setIntPref(aPrefName, +aValue);
     case PrefService.PREF_BOOL:     //FALLTHROUGH
     case "boolean":
