@@ -8,29 +8,17 @@ function res(aE4X) {
 function connect(aE4X) {
   var p = parseJID(aE4X.connect.toString());
   if (!p) return;
-  if (!Application.storage.get(p.barejid, null)) {
-    var account = DBFindAccountByBarejid(p.barejid);
-    account.channel = XMPP.createChannel();
-    getTopWin().Musubi.setChannel(account.channel);
-    // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
-    XMPP.up(account.barejid + "/" + account.resource, function cont(jid) {
-      Application.storage.set(account.barejid, account);
-      xmppSend(<presence from={account.barejid}/>);
-    });
-  }
-  aE4X.@type = "result";
-  res(aE4X);
+  xmppConnect(p.barejid, function cont() {
+    aE4X.@type = "result";
+    res(aE4X);
+  });
 }
 
 function disconnect(aE4X) {
   var p = parseJID(aE4X.disconnect.toString());
   if (!p) return;
+  xmppDisconnect(p.barejid);
   res(<presence type="unavailable" from={p.fulljid}/>);
-  var account = Application.storage.get(p.barejid, null);
-  if (!account) return;
-  account.channel.release();
-  XMPP.down(account);
-  Application.storage.set(p.barejid, null);
   aE4X.@type = "result";
   res(aE4X);
 }
@@ -88,7 +76,8 @@ function openContact(aAccount, aSendto) {
   aAccount = parseJID(aAccount);
   aSendto  = parseJID(aSendto);
   if (!aAccount || !aSendto) return;
-  var url = getTopWin().content.document.location.href;
+  var mw = getTopWin();
+  var url = mw.content.document.location.href;
   if (url == "about:blank")
     url = "http://sites.google.com/site/musubichat/";
   if (/^file/.test(url)) {
@@ -101,7 +90,6 @@ function openContact(aAccount, aSendto) {
     var o = parseURI(url);
     if (o) url = o.href;
   }
-  var mw = getTopWin();
   var newTab = mw.gBrowser.getBrowserForTab(
                  mw.gBrowser.addTab(
                    makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource || "", "share", url)));

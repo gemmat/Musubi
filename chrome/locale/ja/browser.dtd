@@ -1,4 +1,5 @@
 <!ENTITY Musubi.toolbar.title "Musubiツールバー">
 <!ENTITY Musubi.toolbar.titleKey "S">
 <!ENTITY Musubi.sidebar.label "Musubiサイドバー">
-<!ENTITY Musubi.sidebar.key "S">
+<!ENTITY Musubi.sidebar.key "#">
+<!ENTITY Musubi.sidebar.modifiers "control">
