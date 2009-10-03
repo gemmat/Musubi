@@ -24,10 +24,10 @@ function getMusubiSidebar() {
 }
 
 function onXmppEventAtDocument(aEvent) {
-  var doc = Musubi.getDocumentFromEvent(aEvent);
-  var o = Musubi.parseURI(doc.location.href);
+  var doc = getDocumentFromEvent(aEvent);
+  var o = parseURI(doc.location.href);
   if (!o) return;
-  var xml = Musubi.DOMToE4X(aEvent.target);
+  var xml = DOMToE4X(aEvent.target);
   if (o.resource) {
     xml.@to = o.sendto + "/" + o.resource;
   } else if (xml.@res.length()) {
@@ -55,5 +55,5 @@ function onXmppEventAtDocument(aEvent) {
   }
   delete xml.@res;
   xml.@from = o.account;
-  Musubi.xmppSend(xml);
+  xmppSend(xml);
 }

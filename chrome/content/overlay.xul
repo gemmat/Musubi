@@ -12,8 +12,11 @@
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
 
     <menupopup id="viewSidebarMenu">
-        <menuitem observes="viewMusubiSidebar" />
+        <menuitem key="key_viewMusubiSidebar" observes="viewMusubiSidebar" />
     </menupopup>
+    <keyset id="mainKeyset">
+      <key id="key_viewMusubiSidebar" command="viewMusubiSidebar" key="&Musubi.sidebar.key;" modifiers="&Musubi.sidebar.modifiers;"/>
+    </keyset>
 
     <toolbarpalette id="BrowserToolbarPalette">
         <!--  Watch out the "defaultset" property to reflect your addition of toolbar[button|item] -->

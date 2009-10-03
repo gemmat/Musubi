@@ -1,12 +1,8 @@
 function findContacts(aJID) {
-  return [];
   var res = [];
-  var arr = [].concat($("contacts-none").childElements(),
-                      $("contacts-from").childElements(),
-                      $("contacts-to").childElements(),
-                      $("contacts-both").childElements());
+  var arr = $$("span.contact");
   for (var i = 0, len = arr.length; i < len; i++) {
-    if (aJID == arr[i].textContent) res.push(arr[i]);
+    if (aJID == arr[i].textContent) res.push(Element.up(arr[i]));
   }
   return res;
 }
@@ -18,89 +14,105 @@ function appendPresenceUnsubscribed(aFrom) {
 }
 
 function appendPresenceSubscribe(aFrom) {
+  appendContactFrom(aFrom);
 }
 
 function appendPresenceSubscribed(aFrom) {
 }
 
-function appendContactNone(aJID) {
-  findContacts(aJID).forEach(function(x) {
-    Element.remove(x);
+function makeButtonSubscribe(aJID) {
+  var elt = BUTTON("アイサツ");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendPresenceSubscribe(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
   });
-  var buttonSubscribe = BUTTON("アイサツ");
-  var elt = LI(SPAN({className: "contact"}, aJID),
-                buttonSubscribe);
-  Event.observe(buttonSubscribe, "click", function(e) {
-                  if (Musubi.info) {
-                    sendPresenceSubscribe(Musubi.info.account, aJID);
-                  }
-                  Element.remove(buttonSubscribe);
-                  elt.appendChild(SPAN("アイサツしました"));
-                });
-  $("contacts-none").appendChild(elt);
+  return elt;
+}
 
+function makeButtonSubscribed(aJID) {
+  var elt = BUTTON("アイサツを返す");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendPresenceSubscribed(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
+  });
+  return elt;
+}
+
+function makeButtonUnsubscribed(aJID) {
+  var elt = BUTTON("シカト");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendPresenceUnsubscribed(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
+  });
+  return elt;
+}
+
+function makeButtonUnsubscribe(aJID) {
+  var elt = BUTTON("サヨナラ");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendPresenceUnsubscribe(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
+  });
+  return elt;
+}
+
+function makeButtonRemove(aJID) {
+  var elt = BUTTON("サヨナラ");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendIQRemoveRoster(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
+  });
+  return elt;
+}
+
+function makeButtonRemoveCompletely(aJID) {
+  var elt = BUTTON("ワスれる");
+  Event.observe(elt, "click", function(e) {
+    if (Musubi.info) {
+      sendIQRemoveRosterCompletely(Musubi.info.account, aJID);
+      findContacts(aJID).forEach(Element.remove);
+    }
+  });
+  return elt;
+}
+
+function appendContactNone(aJID) {
+  findContacts(aJID).forEach(Element.remove);
+  $("contacts-none").appendChild(LI(SPAN({className: "contact"}, aJID),
+                                    makeButtonSubscribe(aJID),
+                                    makeButtonRemoveCompletely(aJID)));
 }
 
 function appendContactFrom(aJID) {
-  findContacts(aJID).forEach(function(x) {
-    Element.remove(x);
-  });
-  var buttonSubscribed   = BUTTON("アイサツ");
-  var buttonUnsubscribed = BUTTON("シカト");
-  var elt = LI(SPAN({className: "contact"}, aJID),
-                buttonSubscribe,
-                buttonUnsubscribe);
-  Event.observe(buttonSubscribe, "click", function(e) {
-                  if (Musubi.info) {
-                    sendPresenceSubscribe(Musubi.info.account, aJID);
-                  }
-                  Element.remove(buttonSubscribe);
-                  Element.remove(buttonUnsubscribe);
-                  elt.appendChild(SPAN("フレンドになりました"));
-                });
-  Event.observe(buttonUnsubscribe, "click", function(e) {
-                  if (Musubi.info) {
-                    sendPresenceUnsubscribe(Musubi.info.account, aJID);
-                  }
-                  Element.remove(buttonSubscribe);
-                  Element.remove(buttonUnsubscribe);
-                  elt.appendChild(SPAN("ムカンケイになりました"));
-                });
-  $("contacts-from").appendChild(elt);
+  findContacts(aJID).forEach(Element.remove);
+  $("contacts-from").appendChild(LI(SPAN({className: "contact"}, aJID),
+                                    makeButtonSubscribe(aJID),
+                                    makeButtonSubscribed(aJID),
+                                    makeButtonUnsubscribed(aJID)));
 }
 
 function appendContactTo(aJID) {
-  findContacts(aJID).forEach(function(x) {
-    Element.remove(x);
-  });
-  var buttonUnsubscribed = BUTTON("キャンセル");
-  var elt = LI(SPAN({className: "contact"}, aJID),
-                buttonUnsubscribed);
-  Event.observe(buttonUnsubscribed, "click", function(e) {
-                  if (Musubi.info) {
-                    sendPresenceUnsubscribed(Musubi.info.account, aJID);
-                  }
-                  Element.remove(buttonUnsubscribed);
-                  elt.appendChild(SPAN("ムカンケイになりました"));
-                });
-  $("contacts-to").appendChild(elt);
+  findContacts(aJID).forEach(Element.remove);
+  $("contacts-to").appendChild(LI(SPAN({className: "contact"}, aJID),
+                                  makeButtonSubscribe(aJID),
+                                  makeButtonUnsubscribe(aJID),
+                                  makeButtonRemoveCompletely(aJID)));
 }
 
 function appendContactBoth(aJID) {
-  findContacts(aJID).forEach(function(x) {
-    Element.remove(x);
-  });
-  var buttonUnsubscribe = BUTTON("やめる");
-  var elt = LI(SPAN({className: "contact"}, aJID),
-                buttonUnsubscribe);
-  Event.observe(buttonUnsubscribe, "click", function(e) {
-                  if (Musubi.info) {
-                    sendPresenceUnsubscribe(Musubi.info.account, aJID);
-                  }
-                  Element.remove(buttonUnsubscribe);
-                  elt.appendChild(SPAN("フレンドをやめました"));
-                });
-  $("contacts-both").appendChild(elt);
+  findContacts(aJID).forEach(Element.remove);
+  $("contacts-both").appendChild(LI(SPAN({className: "contact"}, aJID),
+                                    makeButtonUnsubscribe(aJID)));
 }
 
 function sendIQGetRoster(aFulljid, aBarejid) {
@@ -111,6 +123,32 @@ function sendIQGetRoster(aFulljid, aBarejid) {
 
 function sendIQResult(aFrom, aTo, aId) {
   Musubi.send(<iq from={aFrom} to={aTo} type="result" id={aId}/>);
+}
+
+function sendIQRemoveRoster(aFrom, aTo) {
+  Musubi.send(<iq from={aFrom} type="set" id="remove1">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={aTo}
+                        subscription="remove"/>
+                </query>
+              </iq>);
+}
+
+function sendIQRemoveRosterCompletely(aFrom, aTo) {
+  Musubi.send(<iq from={aFrom} type="set" id="roster_4">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={aTo}
+                        subscription="remove"/>
+                </query>
+              </iq>);
+}
+
+function sendIQAddRoster(aFrom, aTo) {
+  Musubi.send(<iq from={aFrom} type="set" id="set1">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={aTo}/>
+                </query>
+              </iq>);
 }
 
 function sendPresenceSubscribe(aFrom, aTo) {
@@ -165,7 +203,11 @@ function recv(xml) {
             appendContactNone(jid);
             break;
           case "from":
-            appendContactFrom(jid);
+            if (item.@ask.toString() == "subscribe") {
+              appendContactTo(jid);
+            } else {
+              appendContactFrom(jid);
+            }
             break;
           case "to":
             appendContactTo(jid);
@@ -232,7 +274,9 @@ Event.observe(window, "load", function (evt) {
   }
   Event.observe("subscribe-form", "submit", function(e) {
     if (Musubi.info) {
-      sendPresenceSubscribe(Musubi.info.account, $("subscribe-jid").value);
+      var v = $("subscribe-jid").value;
+      sendIQAddRoster(Musubi.info.account, v);
+      sendPresenceSubscribe(Musubi.info.account, v);
     }
     Event.stop(e);
   });

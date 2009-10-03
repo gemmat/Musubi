@@ -46,9 +46,9 @@ function deeplyGetElementsByTagName(aDocument, aTagName) {
 }
 
 function appendE4XToXmppIn(aDocument, aE4X) {
-  var arr = Musubi.deeplyGetElementsByTagName(aDocument, "xmppin");
+  var arr = deeplyGetElementsByTagName(aDocument, "xmppin");
   for (var i = 0, len = arr.length; i < len; i++) {
-    var dom = Musubi.E4XToDOM(arr[i].doc, aE4X);
+    var dom = E4XToDOM(arr[i].doc, aE4X);
     arr[i].elt.appendChild(dom);
   }
 }
@@ -64,7 +64,7 @@ function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   } else {
     key = Date.now();
   }
-  var prefs = new Musubi.Prefs("xmpp.account." + key + ".");
+  var prefs = new Prefs("xmpp.account." + key + ".");
   if (aDeleteP) {
     prefs.clear("address");
     prefs.clear("resource");
