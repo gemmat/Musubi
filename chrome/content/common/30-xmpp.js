@@ -27,15 +27,17 @@ function xmppConnect(aFulljid, aCont) {
     aCont(a);
     return;
   }
+  print(p.barejid);
   var account = DBFindAccountByBarejid(p.barejid);
   if (!account) {
     print("xmppConnect: account is null.");
     print(aFulljid);
     return;
   }
-  account.resource = p.resoure;
+  account.resource = p.resource;
   account.fulljid  = p.fulljid;
   account.channel  = getTopWin().Musubi.makeChannel();
+  updateXMPP4MOZAccount(account);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
   XMPP.up(p.fulljid, function cont(jid) {
     Application.storage.set(p.fulljid, account);
