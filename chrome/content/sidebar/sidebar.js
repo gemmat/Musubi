@@ -140,7 +140,7 @@ function onXmppEventAtIframe(aEvent) {
     }
     break;
   default:
-    p("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
+    print("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
     break;
   }
 }

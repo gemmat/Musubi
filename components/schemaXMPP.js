@@ -1,5 +1,6 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
+Components.utils.import("resource://musubi/modules/20-Prefs.jsm");
 
 function XMPProtocol() {}
 
@@ -20,8 +21,8 @@ XMPProtocol.prototype = {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
     // handle following two cases.
-    // defaultJID    : "default@localhost/Home"
-    // aSpec         : "xmpp:juliet@localhost"
+    // defaultAccount    : "default@localhost/Default"
+    // aSpec             : "xmpp:juliet@localhost"
 
     // case 1.
     // aBaseURI.spec : "xmpp://romeo@localhost/someone@localhost"
@@ -45,8 +46,19 @@ XMPProtocol.prototype = {
     }
     if (!o.auth) {
       var pref = new Prefs("extensions.musubi.");
-      o.auth = pref.get("defaultJID", "default@localhost/Home");
+      o.auth = pref.get("defaultAccount", "default@localhost") + "/Default";
     }
+    if (/^share/.test(o.query)) {
+      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+      var currentURI = mw.content.document.documentURI;
+      var q = parseURI(currentURI);
+      if (q) {
+        o.frag = q.frag;
+      } else {
+        o.frag = currentURI;
+      }
+      o.query = null;
+    } else {
     // handle the frag.
     // aSpec         : "page0.html"
     // aBaseURI      : "xmpp...#http://www.acme.com/index.html"
@@ -59,24 +71,27 @@ XMPProtocol.prototype = {
     // aSpec         : "xmpp...#page0.html"
     // aBaseURI      : "http://www.acme.com/index.html"
     // Result        : "xmpp...#http://www.acme.com/page0.html"
-
-    if (aBaseURI) {
-      var spec = o0 ? o0.frag : aSpec;
-      var base = IOService.newURI(o1 && o1.frag ? o1.frag : aBaseURI.spec, null, null);
-      var standardURL = Cc["@mozilla.org/network/standard-url;1"]
+      if (aBaseURI) {
+        var spec = o0 ? o0.frag : aSpec;
+        var base = IOService.newURI(o1 && o1.frag ? o1.frag : aBaseURI.spec, null, null);
+        var standardURL = Cc["@mozilla.org/network/standard-url;1"]
                           .createInstance(Ci.nsIStandardURL);
-      standardURL.init(1, -1, spec, aCharset, base);
-      standardURL.QueryInterface(Ci.nsIURI);
-      o.frag = standardURL.spec;
+        standardURL.init(1, -1, spec, aCharset, base);
+        standardURL.QueryInterface(Ci.nsIURI);
+        o.frag = standardURL.spec;
+      }
     }
     uri.spec = makeXmppURI(o.auth, o.path, o.query, o.frag);
     return uri;
   },
   newChannel: function XMPProtocolNewChannel(aURI) {
     var o = parseURI(aURI.spec);
-    var url = o ? o.frag : "about:blank";
-    var mainWindow = WindowMediator.getMostRecentWindow("navigator:browser");
-    mainWindow.Musubi.xmppConnect(o.auth, function(x) {});
+    var url = "about:blank";
+    if (o && o.frag) url = o.frag;
+    if (o.auth) {
+      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+      mw.Musubi.xmppConnect(o.auth, function(x) {});
+    }
     return IOService.newChannel(url, null, null);
   }
 };

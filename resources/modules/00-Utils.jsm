@@ -40,7 +40,7 @@ function toJSON(aObject) {
   return "{" + results.join(", ") + "}";
 }
 
-function p(x) {
+function print(x) {
   Application.console.log(x ? x : "**");
 }
 

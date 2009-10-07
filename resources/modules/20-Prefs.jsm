@@ -57,7 +57,7 @@ Prefs.prototype = {
         throw new Error(aPrefName + " gets an unknown type");
       }
     } catch(e) {
-      p(e.name + ": " + e.message);
+      print(e.name + ": " + e.message);
       return aDefValue;
     }
   },
@@ -105,7 +105,7 @@ Prefs.prototype = {
     try {
       this.prefs.clearUserPref(aPrefName);
     } catch(e) {
-      p(e.name + ": " + e.message);
+      print(e.name + ": " + e.message);
     }
   },
   getChildList: function getChildList(aStartingAt) {

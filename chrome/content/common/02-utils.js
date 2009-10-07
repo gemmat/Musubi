@@ -80,13 +80,5 @@ function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   }
 }
 
-var Debug = true;
-
-function p(x) {
-  if (Debug) {
-    Application.console.log(x);
-  }
-}
-
 var EXPORT = [m for (m in new Iterator(this, true))
                           if (m[0] !== "_" && m !== "EXPORT")];

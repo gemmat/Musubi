@@ -5,8 +5,8 @@ function xmppSend(aXML) {
   if (!p) return;
   var account = Application.storage.get(p.fulljid, null);
   if (!account) {
-    p("xmppSend: account is null.");
-    p(aXML.toXMLString());
+    print("xmppSend: account is null.");
+    print(aXML.toXMLString());
     return;
   }
   delete aXML.@from;
@@ -28,6 +28,11 @@ function xmppConnect(aFulljid, aCont) {
     return;
   }
   var account = DBFindAccountByBarejid(p.barejid);
+  if (!account) {
+    print("xmppConnect: account is null.");
+    print(aFulljid);
+    return;
+  }
   account.resource = p.resoure;
   account.fulljid  = p.fulljid;
   account.channel  = getTopWin().Musubi.makeChannel();
