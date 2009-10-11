@@ -35,9 +35,9 @@ function parseXMPP4MOZEvent(aObject) {
   var stanza = aObject.stanza;
   var from = parseJID(stanza.@from.toString());
   var to   = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObject.account);
-  print("stanza:" + stanza.toXMLString());
-  print("from:" + toJSON(from));
-  print("to:"   + toJSON(to));
+  //print("stanza:" + stanza.toXMLString());
+  //print("from:" + toJSON(from));
+  //print("to:"   + toJSON(to));
   return [stanza, from, to];
 }
 
@@ -77,6 +77,7 @@ function onIQ(aObj) {
   var [stanza, from, to] = parseXMPP4MOZEvent(aObj);
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
+    getMusubiSidebar().win.Musubi.insertRoster(stanza);
   }
   appendStanzaToSidebar(stanza);
 }

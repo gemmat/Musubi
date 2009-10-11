@@ -86,12 +86,7 @@ XMPProtocol.prototype = {
   },
   newChannel: function XMPProtocolNewChannel(aURI) {
     var o = parseURI(aURI.spec);
-    var url = "about:blank";
-    if (o && o.frag) url = o.frag;
-    if (o.auth) {
-      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-      mw.Musubi.xmppConnect(o.auth, function(x) {});
-    }
+    var url = (o && o.frag) ? o.frag : "about:blank";
     return IOService.newChannel(url, null, null);
   }
 };

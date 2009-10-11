@@ -24,10 +24,9 @@ function xmppConnect(aFulljid, aCont) {
   if (!p) return;
   var a = Application.storage.get(p.fulljid, null);
   if (a) {
-    aCont(a);
+    if (aCont) aCont(a);
     return;
   }
-  print(p.barejid);
   var account = DBFindAccountByBarejid(p.barejid);
   if (!account) {
     print("xmppConnect: account is null.");
@@ -38,11 +37,16 @@ function xmppConnect(aFulljid, aCont) {
   account.fulljid  = p.fulljid;
   account.channel  = getTopWin().Musubi.makeChannel();
   updateXMPP4MOZAccount(account);
+  // TODO: move a following line to XMPP.up's continuation? How I guard from duplicated tries to connect?
+  Application.storage.set(p.fulljid, account);
+  print("connect:" + p.fulljid);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
   XMPP.up(p.fulljid, function cont(jid) {
-    Application.storage.set(p.fulljid, account);
     xmppSend(<presence from={p.fulljid}/>);
-    aCont(account);
+    xmppSend(<iq from={p.fulljid} to={p.barejid} type="get">
+               <query xmlns="jabber:iq:roster"/>
+             </iq>);
+    if (aCont) aCont(account);
   });
 }
 
