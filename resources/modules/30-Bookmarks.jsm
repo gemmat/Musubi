@@ -3,36 +3,50 @@ Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 
 var inBatch = false;
 
+function gM() {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  return mw.Musubi.getMusubiSidebar().win.Musubi;
+}
+
 function onItemAdded(aItemId, aFolder, aIndex) {
-  Application.console.log("added:" + aItemId + ":" + BookmarksService.getItemTitle(aItemId));
-  if (inBatch) Application.console.log("ok");
+  if (inBatch) return;
+  gM().onItemAdded(aItemId, aFolder, aIndex);
 }
 
 function onItemRemoved(aItemId, aFolder, aIndex) {
+  if (inBatch) return;
+  gM().onItemRemoved(aItemId, aFolder, aIndex);
 }
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
+  if (inBatch) return;
+  gM().onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue);
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
-  Application.console.log("visit:" + aBookmarkId + ":" + BookmarksService.getItemTitle(aBookmarkId));
-  if (inBatch) Application.console.log("ok");
+  if (inBatch) return;
+  gM().onItemVisited(aBookmarkId, aVisitID, aTime);
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
-}
-
-function onBeginUpdateBatch() {
-  Application.console.log("begin");
-  inBatch = true;
-}
-
-function onEndUpdateBatch() {
-  Application.console.log("end");
-  inBatch = false;
+  if (inBatch) return;
+  gM().onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex);
 }
 
 function onBeforeItemRemoved(aItemId) {
+  if (inBatch) return;
+  gM().onBeforeItemRemoved(aItemId);
+}
+
+function onBeginUpdateBatch() {
+  inBatch = true;
+  Application.console.log("!");
+  gM().onBeginUpdateBatch();
+}
+
+function onEndUpdateBatch() {
+  inBatch = false;
+  gM().onEndUpdateBatch();
 }
 
 var observer = {
@@ -41,9 +55,9 @@ var observer = {
   onItemChanged:       onItemChanged,
   onItemVisited:       onItemVisited,
   onItemMoved:         onItemMoved,
+  onBeforeItemRemoved: onBeforeItemRemoved,
   onBeginUpdateBatch:  onBeginUpdateBatch,
-  onEndUpdateBatch:    onEndUpdateBatch,
-  onBeforeItemRemoved: onBeforeItemRemoved
+  onEndUpdateBatch:    onEndUpdateBatch
 };
 
 BookmarksService.addObserver(observer, false);
