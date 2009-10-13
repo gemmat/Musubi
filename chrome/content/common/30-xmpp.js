@@ -1,15 +1,17 @@
 const EXPORT = ["xmppSend", "xmppCachedPresences", "xmppConnect", "xmppDisconnect"];
 
-function xmppSend(aXML) {
-  var p = parseJID(aXML.@from.toString());
-  if (!p) return;
+function xmppSend(aAuth, aXML) {
+  var p = parseJID(aAuth);
+  if (!p) {
+    print("xmppSend: aAuth is not JID." + aAuth);
+    return;
+  }
   var account = Application.storage.get(p.fulljid, null);
   if (!account) {
-    print("xmppSend: account is null.");
+    print("xmppSend: account is null." + p.fulljid);
     print(aXML.toXMLString());
     return;
   }
-  delete aXML.@from;
   // XMPP.send(account, ...) shows a useless dialog, so we use XMPP.send("romeo@localhost/Home", ...);
   XMPP.send(p.fulljid, aXML);
 }
@@ -42,8 +44,9 @@ function xmppConnect(aFulljid, aCont) {
   print("connect:" + p.fulljid);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
   XMPP.up(p.fulljid, function cont(jid) {
-    xmppSend(<presence from={p.fulljid}/>);
-    xmppSend(<iq from={p.fulljid} to={p.barejid} type="get">
+    xmppSend(p.fulljid, <presence/>);
+    xmppSend(p.fulljid,
+             <iq type="get" id="roster_1">
                <query xmlns="jabber:iq:roster"/>
              </iq>);
     if (aCont) aCont(account);

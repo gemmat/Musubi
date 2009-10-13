@@ -50,11 +50,11 @@ function onXmppEventAtDocument(aEvent) {
     if (xml.@res.length() && xml.@type == "unavailable") {
       var sidebar = getMusubiSidebar();
       if (sidebar) {
-        sidebar.Musubi.byeContacts(o.sendto);
+        sidebar.Musubi.byeContacts(o.path);
       }
     }
     break;
   }
   delete xml.@res;
-  xmppSend(xml);
+  xmppSend(o.auth, xml);
 }

@@ -90,8 +90,8 @@ function openContact(aAccount, aSendto) {
                  mw.gBrowser.addTab(
                    makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource || "", "share", url)));
   var onLoadFunc = function(e) {
-     mw.Musubi.xmppSend(
-         <message from={aAccount.fulljid} to={aSendto.fulljid} type="chat">
+    mw.Musubi.xmppSend(aAccount.fulljid,
+         <message to={aSendto.fulljid} type="chat">
            <body>{url}</body>
            <x xmlns="jabber:x:oob">
              <url>{url}</url>
@@ -110,7 +110,9 @@ function onXmppEventAtIframe(aEvent) {
   case "message":  //FALLTHROUGH
   case "presence": //FALLTHROUGH
   case "iq":
-    getTopWin().Musubi.xmppSend(xml);
+    var o = parseURI(doc.location.href);
+    if (!o) return;
+    getTopWin().Musubi.xmppSend(o.auth, xml);
     break;
   case "musubi":
     if (xml.connect.length()) {

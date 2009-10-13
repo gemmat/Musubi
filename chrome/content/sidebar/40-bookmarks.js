@@ -25,7 +25,7 @@ function createFolders(aAuth) {
 // TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
 
 function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, aQuery) {
-  aSubscription = aSubscription || "both";
+  if (!aSubscription || aSubscription == "remove") return;
   aName = aName || aPath;
   aQuery = aQuery || "share";
   var p = parseJID(aAuth);
@@ -33,14 +33,12 @@ function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, a
   var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
   uri.spec = makeXmppURI(p.barejid + "/Musubi", aPath, aQuery);
-  if (BookmarksService.isBookmarked(uri)) {
-    BookmarksService.getBookmarkIdsForURI(uri, {}).forEach(function(x) {
-      if (aFolder != BookmarksService.getFolderIdForItem(x)) {
-        BookmarksService.removeItem(x);
-        BookmarksService.insertBookmark(aFolder, uri, -1, aName);
-      }
-    });
-  } else {
+  BookmarksService.getBookmarkIdsForURI(uri, {}).forEach(function(x) {
+    if (aFolder != BookmarksService.getFolderIdForItem(x)) {
+      BookmarksService.removeItem(x);
+    }
+  });
+  if (!BookmarksService.isBookmarked(uri)) {
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
@@ -48,7 +46,6 @@ function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, a
 function insertRoster(aStanza) {
   var type= aStanza.@type.toString();
   if (type != "result" && type != "set") return;
-  Application.console.log("insertRoster" + type);
   var nsIQRoster = new Namespace("jabber:iq:roster");
   if (!aStanza.nsIQRoster::query.length() ||
       !aStanza.nsIQRoster::query.nsIQRoster::item.length()) return;
@@ -65,8 +62,7 @@ function insertRoster(aStanza) {
                          item.@jid.toString(),
                          subs,
                          item.@name.toString(),
-                         item.nsIQRoster::group.toString(),
-                         item.@ask.toString());
+                         item.nsIQRoster::group.toString());
       }
     }
   }, null);
@@ -106,8 +102,8 @@ function findPWDSubscription(aAuth, aPWD) {
   for (var i = 0; i < aPWD.length; i++) {
     switch (aPWD[i]) {
     case folders.none: return "none";
-    case folders.from: return "from";
     case folders.to:   return "to";
+    case folders.from: return "from";
     case folders.both: return "both";
     }
   }
@@ -125,11 +121,13 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   if (!o) return;
   var p = parseJID(o.path);
   if (!p) return;
-  xmppSend(<iq from={o.auth} type="set" id="roster_2">
+  xmppSend(o.auth,
+           <iq type="set" id="roster_2">
              <query xmlns="jabber:iq:roster">
                <item jid={p.barejid} name={title}/>
              </query>
            </iq>);
+  xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
 }
 
 // WTF, the observer calls onItemRemoved *after* it removed the item.
@@ -147,7 +145,8 @@ function onItemRemoved(aItemId, aFolder, aIndex) {
     if (!p) return;
     switch (changed.subscription) {
     case "none":
-      xmppSend(<iq from={changed.o.auth} type="set" id="roster_4">
+      xmppSend(changed.o.auth,
+               <iq type="set" id="roster_4">
                  <query xmlns="jabber:iq:roster">
                    <item jid={p.barejid} subscription="remove"/>
                  </query>
@@ -156,7 +155,8 @@ function onItemRemoved(aItemId, aFolder, aIndex) {
     case "from":
     case "to":
     case "both":
-      xmppSend(<iq from={changed.o.auth} type="set" id="remove1">
+      xmppSend(changed.o.auth,
+               <iq type="set" id="remove1">
                  <query xmlns="jabber:iq:roster">
                    <item jid={p.barejid} subscription="remove"/>
                  </query>
@@ -184,17 +184,74 @@ function onItemVisited(aBookmarkId, aVisitID, aTime) {
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
   Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
+  var uri = BookmarksService.getBookmarkURI(aItemId);
+  var o = parseURI(uri.spec);
+  if (!o || !o.auth || !o.path) return;
+  var p = parseJID(o.path);
+  if (!p) return;
+  var oldSubscription = findPWDSubscription(o.auth, pwdBookmark(aOldParent));
+  var newSubscription = findPWDSubscription(o.auth, pwdBookmark(aNewParent));
+  if (!oldSubscription || !newSubscription) return;
+  if (oldSubscription == newSubscription) return;
+  switch (oldSubscription) {
+  case "none":
+    switch (newSubscription) {
+    case "to":
+      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+      break;
+    case "both":
+      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+      break;
+    }
+    break;
+  case "to":
+    switch (newSubscription) {
+    case "none":
+      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
+      break;
+    case "from":
+      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+      break;
+    case "both":
+      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+      break;
+    }
+    break;
+  case "from":
+    switch (newSubscription) {
+    case "none":
+      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
+      break;
+    case "to":
+      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
+      break;
+    case "both":
+      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+      break;
+    }
+    break;
+  case "both":
+    switch (newSubscription) {
+    case "none":
+      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
+      break;
+    case "from":
+      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
+      break;
+    }
+    break;
+  }
 }
 
 function onBeforeItemRemoved(aItemId) {
 }
 
 function onBeginUpdateBatch() {
-  Application.console.log("!!");
+  Application.console.log("beginBatch");
 }
 
 function onEndUpdateBatch() {
-  Application.console.log("!!!");
+  Application.console.log("endBatch");
 }
 
 var EXPORT = [m for (m in new Iterator(this, true))

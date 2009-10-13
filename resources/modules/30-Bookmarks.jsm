@@ -5,7 +5,7 @@ var inBatch = false;
 
 function gM() {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  return mw.Musubi.getMusubiSidebar().win.Musubi;
+  return mw.Musubi.getMusubiSidebar().Musubi;
 }
 
 function onItemAdded(aItemId, aFolder, aIndex) {

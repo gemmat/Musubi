@@ -35,7 +35,7 @@ function parseXMPP4MOZEvent(aObject) {
   var stanza = aObject.stanza;
   var from = parseJID(stanza.@from.toString());
   var to   = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObject.account);
-  print("stanza:" + stanza.toXMLString());
+  //print("stanza:" + stanza.toXMLString());
   //print("from:" + toJSON(from));
   //print("to:"   + toJSON(to));
   return [stanza, from, to];
@@ -67,6 +67,7 @@ function onMessage(aObj) {
 
 function onPresence(aObj) {
   var [stanza, from, to] = parseXMPP4MOZEvent(aObj);
+  print("presence:" + stanza.toXMLString());
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
   }
@@ -75,9 +76,14 @@ function onPresence(aObj) {
 
 function onIQ(aObj) {
   var [stanza, from, to] = parseXMPP4MOZEvent(aObj);
+  print("iq:" + stanza.toXMLString());
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
+    // TODO: OK, this is the Twitter style. We have to implement the "private mode".
+    if (stanza.@type.toString() == "subscribe") {
+      xmppSend(to.fulljid, <presence to={from.barejid} type="subscribed"/>);
+    }
   }
-  getMusubiSidebar().win.Musubi.insertRoster(stanza);
+  getMusubiSidebar().Musubi.insertRoster(stanza);
   appendStanzaToSidebar(stanza);
 }
