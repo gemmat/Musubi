@@ -70,6 +70,7 @@ function onPresence(aObj) {
   print("presence:" + stanza.toXMLString());
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
+    getMusubiSidebar().Musubi.insertPresence(stanza);
   }
   appendStanzaToSidebar(stanza);
 }
