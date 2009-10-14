@@ -1,3 +1,32 @@
+function queryXmppBookmark(aAuth) {
+  var query = HistoryService.getNewQuery();
+  var options = HistoryService.getNewQueryOptions();
+  var uri = Cc["@mozilla.org/network/simple-uri;1"].
+                createInstance(Ci.nsIURI);
+  uri.spec = "xmpp://" + aAuth;
+  query.uri = uri;
+  query.uriIsPrefix = true;
+  query.onlyBookmarked = true;
+  options.queryType = options.QUERY_TYPE_BOOKMARKS;
+  // hack to get the intersection of all folders of container.
+  var folders = [BookmarksService.placesRoot, BookmarksService.placesRoot];
+  query.setFolders(folders, folders.length);
+  var result = HistoryService.executeQuery(query, options);
+  return Places.getURLsForContainerNode(result.root);
+}
+
+function filterQuery(aArray, aPathBarejid) {
+  return aArray.filter(function (x) {
+    if (!x.isBookmark) return false;
+    var o = parseURI(x.uri);
+    if (!o) return false;
+    var p = parseJID(o.path);
+    if (!p) return false;
+    if (p.barejid != aPathBarejid) return false;
+    return true;
+  });
+}
+
 function createFolderIfNotExist(aCurrentFolderId, aName, aPosition) {
   return BookmarksService.getChildFolder(aCurrentFolderId, aName) ||
     BookmarksService.createFolder(aCurrentFolderId, aName, aPosition);
@@ -30,15 +59,26 @@ function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, a
   aQuery = aQuery || "share";
   var p = parseJID(aAuth);
   if (!p) return;
-  var uri = Cc["@mozilla.org/network/simple-uri;1"].
+  var q = parseJID(aPath);
+  if (!q) return;
+  var arr = filterQuery(queryXmppBookmark(p.barejid), q.barejid);
+  if (arr.length) {
+    arr.forEach(function(x) {
+      var uri = Cc["@mozilla.org/network/simple-uri;1"].
+                    createInstance(Ci.nsIURI);
+      uri.spec = x.uri;
+      BookmarksService.getBookmarkIdsForURI(uri, {}).forEach(function(id) {
+        if (aFolder != BookmarksService.getFolderIdForItem(id)) {
+          Application.console.log("mv:" + [id, "from=", BookmarksService.getFolderIdForItem(id), "to=", aFolder]);
+          BookmarksService.moveItem(id, aFolder, -1);
+        }
+      });
+    });
+  } else {
+    var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-  uri.spec = makeXmppURI(p.barejid + "/Musubi", aPath, aQuery);
-  BookmarksService.getBookmarkIdsForURI(uri, {}).forEach(function(x) {
-    if (aFolder != BookmarksService.getFolderIdForItem(x)) {
-      BookmarksService.removeItem(x);
-    }
-  });
-  if (!BookmarksService.isBookmarked(uri)) {
+    uri.spec = makeXmppURI(p.barejid + "/Musubi", q.barejid, "share");
+    Application.console.log("ins:" + [uri.spec, "to=", aFolder].join(":"));
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
@@ -169,8 +209,11 @@ function onItemRemoved(aItemId, aFolder, aIndex) {
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   Application.console.log("changed:" + [aBookmarkId, aProperty, aIsAnnotationProperty, aValue].join(":"));
-  var title = BookmarksService.getItemTitle(aBookmarkId);
-  var uri   = BookmarksService.getBookmarkURI(aBookmarkId);
+  try {
+    var uri = BookmarksService.getBookmarkURI(aBookmarkId);
+  } catch (e) {
+    return;
+  };
   var o = parseURI(uri.spec);
   if (!o || !o.auth) return;
   var subscription = findPWDSubscription(o.auth, pwdBookmark(aBookmarkId));

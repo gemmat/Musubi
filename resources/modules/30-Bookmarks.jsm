@@ -40,7 +40,6 @@ function onBeforeItemRemoved(aItemId) {
 
 function onBeginUpdateBatch() {
   inBatch = true;
-  Application.console.log("!");
   gM().onBeginUpdateBatch();
 }
 

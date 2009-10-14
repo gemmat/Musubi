@@ -25,8 +25,10 @@ const StorageStatementWrapper = Components.Constructor(
                                   "@mozilla.org/storage/statement-wrapper;1",
                                   "mozIStorageStatementWrapper",
                                   "initialize");
+const HistoryService   = PlacesUtils.history;
 const BookmarksService = PlacesUtils.bookmarks;
 const TaggingService   = PlacesUtils.tagging;
+const Places           = PlacesUtils;
 
 function toJSON(aObject) {
   switch (typeof aObject) {
