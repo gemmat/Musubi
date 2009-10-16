@@ -6,19 +6,15 @@ function res(aE4X) {
 }
 
 function connect(aE4X) {
-  var p = parseJID(aE4X.connect.toString());
-  if (!p) return;
-  xmppConnect(p.barejid, function cont() {
+  xmppConnect(aE4X.connect.toString(), function cont() {
     aE4X.@type = "result";
     res(aE4X);
   });
 }
 
 function disconnect(aE4X) {
-  var p = parseJID(aE4X.disconnect.toString());
-  if (!p) return;
-  xmppDisconnect(p.barejid);
-  res(<presence type="unavailable" from={p.fulljid}/>);
+  xmppDisconnect(aE4X.disconnect.toString());
+  res(<presence type="unavailable" from={aE4X.disconnect.toString()}/>);
   aE4X.@type = "result";
   res(aE4X);
 }
@@ -26,7 +22,7 @@ function disconnect(aE4X) {
 function readAllAccount() {
   var accountXMLs = DBFindAllAccount({E4X: true});
   var xml = <musubi type="result"><accounts/></musubi>;
-  accountXMLs.forEach(function f3(x) {
+  accountXMLs.forEach(function f(x) {
     xml.accounts.appendChild(x);
   });
   res(xml);
@@ -52,17 +48,17 @@ function deleteAccount(aE4X) {
 }
 
 function getDefaultAccount() {
-  var p = new Prefs("extensions.musubi.");
-  if (!p) return;
-  var d = p.get("defaultaccount", "");
+  var pref = new Prefs("extensions.musubi.");
+  if (!pref) return;
+  var d = pref.get("defaultaccount", "");
   if (!d) return;
   res(<musubi type="result"><defaultaccount>{d}</defaultaccount></musubi>);
 }
 
 function setDefaultAccount(aE4X) {
-  var p = new Prefs("extensions.musubi.");
-  if (!p) return;
-  p.set("defaultaccount", aE4X.defaultaccount.toString());
+  var pref = new Prefs("extensions.musubi.");
+  if (!pref) return;
+  pref.set("defaultaccount", aE4X.defaultaccount.toString());
   getDefaultAccount();
 }
 
@@ -94,8 +90,8 @@ function openContact(aAccount, aSendto) {
                  mw.gBrowser.addTab(
                    makeXmppURI(aAccount.barejid, aSendto.barejid, aSendto.resource || "", "share", url)));
   var onLoadFunc = function(e) {
-     mw.Musubi.xmppSend(
-         <message from={aAccount.fulljid} to={aSendto.fulljid} type="chat">
+    mw.Musubi.xmppSend(aAccount.fulljid,
+         <message to={aSendto.fulljid} type="chat">
            <body>{url}</body>
            <x xmlns="jabber:x:oob">
              <url>{url}</url>
@@ -114,7 +110,9 @@ function onXmppEventAtIframe(aEvent) {
   case "message":  //FALLTHROUGH
   case "presence": //FALLTHROUGH
   case "iq":
-    getTopWin().Musubi.xmppSend(xml);
+    var o = parseURI(doc.location.href);
+    if (!o) return;
+    getTopWin().Musubi.xmppSend(o.auth, xml);
     break;
   case "musubi":
     if (xml.connect.length()) {
@@ -144,7 +142,7 @@ function onXmppEventAtIframe(aEvent) {
     }
     break;
   default:
-    p("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
+    print("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
     break;
   }
 }

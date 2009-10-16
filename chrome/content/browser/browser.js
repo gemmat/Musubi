@@ -2,6 +2,9 @@ const EXPORT = ["onLoad", "onUnload", "getMusubiSidebar"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
+  var o = parseURI(window.content.document.location.href);
+  if (!o) return;
+  xmppConnect(o.auth);
 }
 
 function onUnload(aEvent) {
@@ -27,20 +30,19 @@ function onXmppEventAtDocument(aEvent) {
   var doc = getDocumentFromEvent(aEvent);
   var o = parseURI(doc.location.href);
   if (!o) return;
+  var p = parseJID(o.path);
+  if (!p) return;
   var xml = DOMToE4X(aEvent.target);
-  if (o.resource) {
-    xml.@to = o.sendto + "/" + o.resource;
+  xml.@from = o.auth;
+  if (p.resource) {
+    xml.@to = p.fulljid;
   } else if (xml.@res.length()) {
-    xml.@to = o.sendto + "/" + xml.@res;
+    xml.@to = p.barejid + "/" + xml.@res;
   } else {
-    xml.@to = o.sendto;
+    xml.@to = p.barejid;
   }
   switch (xml.name().localName) {
   case "message":
-    xml.* += <x xmlns="jabber:x:oob">
-               <url>{o.href}</url>
-               <desc>{doc.title}</desc>
-             </x>;
     break;
   case "iq":
     break;
@@ -48,12 +50,11 @@ function onXmppEventAtDocument(aEvent) {
     if (xml.@res.length() && xml.@type == "unavailable") {
       var sidebar = getMusubiSidebar();
       if (sidebar) {
-        sidebar.Musubi.byeContacts(o.sendto);
+        sidebar.Musubi.byeContacts(o.path);
       }
     }
     break;
   }
   delete xml.@res;
-  xml.@from = o.account;
-  xmppSend(xml);
+  xmppSend(o.auth, xml);
 }

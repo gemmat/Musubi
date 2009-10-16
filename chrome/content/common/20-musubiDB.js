@@ -8,7 +8,6 @@ function MusubiDB() {
       fields : {
         id              : "INTEGER PRIMARY KEY",
         barejid         : "TEXT UNIQUE NOT NULL",
-        resource        : "TEXT",
         connectionHost  : "TEXT NOT NULL",
         connectionPort  : "INTEGER NOT NULL",
         connectionScrty : "INTEGER NOT NULL"
@@ -18,7 +17,6 @@ function MusubiDB() {
     objectToE4X: function accountObjectToE4X(aObject) {
       return <account>
                <barejid>{aObject.barejid}</barejid>
-               <resource>{aObject.resource}</resource>
                <connectionHost>{aObject.connectionHost}</connectionHost>
                <connectionPort>{aObject.connectionPort}</connectionPort>
                <connectionScrty>{aObject.connectionScrty}</connectionScrty>
@@ -27,7 +25,6 @@ function MusubiDB() {
     E4XToObject: function accountE4XtoObject(aXML) {
       return {
         barejid:          aXML.barejid        .toString(),
-        resource:         aXML.resource       .toString(),
         connectionHost:   aXML.connectionHost .toString(),
         connectionPort:  +aXML.connectionPort .toString(),
         connectionScrty: +aXML.connectionScrty.toString()

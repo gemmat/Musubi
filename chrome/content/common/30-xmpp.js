@@ -1,13 +1,19 @@
 const EXPORT = ["xmppSend", "xmppCachedPresences", "xmppConnect", "xmppDisconnect"];
 
-function xmppSend(aXML) {
-  var p = parseJID(aXML.@from.toString());
-  if (!p) return;
-  var account = Application.storage.get(p.barejid, null);
-  if (!account) return;
-  delete aXML.@from;
+function xmppSend(aAuth, aXML) {
+  var p = parseJID(aAuth);
+  if (!p) {
+    print("xmppSend: aAuth is not JID." + aAuth);
+    return;
+  }
+  var account = Application.storage.get(p.fulljid, null);
+  if (!account) {
+    print("xmppSend: account is null." + p.fulljid);
+    print(aXML.toXMLString());
+    return;
+  }
   // XMPP.send(account, ...) shows a useless dialog, so we use XMPP.send("romeo@localhost/Home", ...);
-  XMPP.send(account.barejid + "/" + account.resource, aXML);
+  XMPP.send(p.fulljid, aXML);
 }
 
 function xmppCachedPresences() {
@@ -15,26 +21,44 @@ function xmppCachedPresences() {
   return XMPP.cache.all(XMPP.q().event("presence"));
 }
 
-function xmppConnect(aBarejid, aCont) {
-  var a = Application.storage.get(aBarejid, null);
+function xmppConnect(aFulljid, aCont) {
+  var p = parseJID(aFulljid);
+  if (!p) return;
+  var a = Application.storage.get(p.fulljid, null);
   if (a) {
-    aCont(a);
+    if (aCont) aCont(a);
     return;
   }
-  var account = DBFindAccountByBarejid(aBarejid);
-  account.channel = getTopWin().Musubi.makeChannel();
+  var account = DBFindAccountByBarejid(p.barejid);
+  if (!account) {
+    print("xmppConnect: account is null.");
+    print(aFulljid);
+    return;
+  }
+  account.resource = p.resource;
+  account.fulljid  = p.fulljid;
+  account.channel  = getTopWin().Musubi.makeChannel();
+  updateXMPP4MOZAccount(account);
+  // TODO: move a following line to XMPP.up's continuation? How I guard from duplicated tries to connect?
+  Application.storage.set(p.fulljid, account);
+  print("connect:" + p.fulljid);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);
-  XMPP.up(account.barejid + "/" + account.resource, function cont(jid) {
-    Application.storage.set(account.barejid, account);
-    xmppSend(<presence from={account.barejid}/>);
-    aCont(account);
+  XMPP.up(p.fulljid, function cont(jid) {
+    xmppSend(p.fulljid, <presence/>);
+    xmppSend(p.fulljid,
+             <iq type="get" id="roster_1">
+               <query xmlns="jabber:iq:roster"/>
+             </iq>);
+    if (aCont) aCont(account);
   });
 }
 
-function xmppDisconnect(aBarejid) {
-  var account = Application.storage.get(aBarejid, null);
+function xmppDisconnect(aFulljid) {
+  var p = parseJID(aFulljid);
+  if (!p) return;
+  var account = Application.storage.get(p.fulljid, null);
   if (!account) return;
   account.channel.release();
-  XMPP.down(account);
-  Application.storage.set(aBarejid, null);
+  XMPP.down(p.fulljid);
+  Application.storage.set(p.fulljid, null);
 }
