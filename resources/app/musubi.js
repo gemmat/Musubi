@@ -41,52 +41,64 @@ var Musubi = {
         true);
   },
   parseURI: function parseURI(aURISpec) {
-    function parseHref(aURISpec) {
+    function parseXmpp(aURISpec, aCont) {
       var m;
-      var reHref = /;href=(.*)$/;
-      m = reHref.exec(aURISpec);
-      if (m) return [m[1], aURISpec.slice(0, -m[0].length)];
-      return ["", aURISpec];
-    }
-    function parseXmpp(aURISpec) {
-      var m;
-      var reXMPPColonDoubleSlash = /^xmpp:\/\/([^\/\?#]+)\/([^\/\?#]+)/;
-      m = reXMPPColonDoubleSlash.exec(aURISpec);
-      if (m) return [m[1], m[2], aURISpec.slice(m[0].length)];
-      var reXMPPColon = /^xmpp:([^\/\?#]+)/;
-      m = reXMPPColon.exec(aURISpec);
-      if (m) return ["", m[1], aURISpec.slice(m[0].length)];
+      m = /^xmpp:\/\//.exec(aURISpec);
+      if (m) return ["xmpp://", aURISpec.slice(m[0].length)];
+      m = /^xmpp:/.exec(aURISpec);
+      if (m) return ["xmpp:", aURISpec.slice(m[0].length)];
       return null;
     }
-    function parseResource(aString) {
-      var m;
-      var reResource = /^\/([^\/\?#]*)/;
-      m = reResource.exec(aString);
-      if (m) return [m[1], aString.slice(m[0].length)];
-      return [null, aString];
+    function parseFrag(aURISpec) {
+      var m = /#(.*)/.exec(aURISpec);
+      if (m) return [m[1], aURISpec.slice(0, -m[0].length)];
+      return [null, aURISpec];
     }
-    function parseQuery(aString) {
-      var m;
-      var reQuery = /^\?(.*)/;
-      m = reQuery.exec(aString);
-      if (m) return m[1];
-      return "";
+    function parseQuery(aURISpec) {
+      var m = /\?(.*)$/.exec(aURISpec);
+      if (m) return [m[1], aURISpec.slice(0, -m[0].length)];
+      return [null, aURISpec];
     }
-    var e0 = parseHref(aURISpec);
-    var href = e0[0], spec = e0[1];
-    var e1 = parseXmpp(spec);
-    if (!e1) return null;
-    var account = e1[0], sendto = e1[1], r0 = e1[2];
-    var e2 = parseResource(r0);
-    var resource = e2[0], r1 = e2[1];
-    var q  = parseQuery(r1);
+    function parseHier(aURISpec, aScheme) {
+      var arr = aURISpec.split("/");
+      switch (arr.length) {
+      case 1:
+        if (aScheme == "xmpp:")
+          return [null, arr[0]];
+        break;
+      case 2:
+        if (aScheme == "xmpp:")
+          return [null, arr[0] + "/" + arr[1]];
+        if (aScheme == "xmpp://")
+          return [arr[0] + "/" + arr[1], null];
+        break;
+      case 3:
+        if (aScheme == "xmpp://")
+          return [arr[0] + "/" + arr[1], arr[2]];
+        break;
+      case 4:
+        if (aScheme == "xmpp://")
+          return [arr[0] + "/" + arr[1], arr[2] + "/" + arr[3]];
+        break;
+      }
+      return null;
+    }
+    var tmp;
+    tmp = parseXmpp(aURISpec);
+    if (!tmp) return null;
+    var scheme = tmp[0];
+    tmp = parseFrag(tmp[1]);
+    var frag = tmp[0];
+    tmp = parseQuery(tmp[1]);
+    var query = tmp[0];
+    tmp = parseHier(tmp[1], scheme);
+    if (!tmp) return null;
+    var auth = tmp[0], path = tmp[1];
     return {
-      href:     href,
-      account:  account,
-      sendto:   sendto,
-      resource: resource,
-      to:       sendto + (resource == null ? "" : "/" + resource),
-      query:    q
+      auth:  auth,
+      path:  path,
+      query: query,
+      frag:  frag
     };
   },
   parseJID: function parseJID(aString) {
