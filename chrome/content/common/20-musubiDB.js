@@ -1,4 +1,4 @@
-const EXPORT = ["MusubiDB", "callWithMusubiDB", "DBFindAccountByBarejid", "DBFindAllAccount", "DBNewAccountFromE4X", "DBDeleteAccountByBarejid"];
+const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccountByBarejid", "DBFindAllAccount", "DBNewAccount", "DBDeleteAccountByBarejid"];
 
 function MusubiDB() {
   this.db = null;
@@ -8,29 +8,32 @@ function MusubiDB() {
       fields : {
         id              : "INTEGER PRIMARY KEY",
         barejid         : "TEXT UNIQUE NOT NULL",
+        resource        : "TEXT NOT NULL",
         connectionHost  : "TEXT NOT NULL",
         connectionPort  : "INTEGER NOT NULL",
         connectionScrty : "INTEGER NOT NULL"
       }
     });
-  extend(this.account, {
-    objectToE4X: function accountObjectToE4X(aObject) {
-      return <account>
-               <barejid>{aObject.barejid}</barejid>
-               <connectionHost>{aObject.connectionHost}</connectionHost>
-               <connectionPort>{aObject.connectionPort}</connectionPort>
-               <connectionScrty>{aObject.connectionScrty}</connectionScrty>
-             </account>;
-    },
-    E4XToObject: function accountE4XtoObject(aXML) {
-      return {
-        barejid:          aXML.barejid        .toString(),
-        connectionHost:   aXML.connectionHost .toString(),
-        connectionPort:  +aXML.connectionPort .toString(),
-        connectionScrty: +aXML.connectionScrty.toString()
-      };
-    }
-  });
+}
+
+function accountObjToE4X(aObject) {
+  return <account>
+           <barejid>{aObject.barejid}</barejid>
+           <resource>{aObject.resource}</resource>
+           <connectionHost>{aObject.connectionHost}</connectionHost>
+           <connectionPort>{aObject.connectionPort}</connectionPort>
+           <connectionScrty>{aObject.connectionScrty}</connectionScrty>
+         </account>;
+}
+
+function accountE4XToObj(aE4X) {
+  return {
+    barejid:          aE4X.barejid        .toString(),
+    resource:         aE4X.resource       .toString(),
+    connectionHost:   aE4X.connectionHost .toString(),
+    connectionPort:   parseInt(aE4X.connectionPort .toString(), 10),
+    connectionScrty:  parseInt(aE4X.connectionScrty.toString(), 10)
+  };
 }
 
 MusubiDB.prototype = {
@@ -46,7 +49,6 @@ MusubiDB.prototype = {
   open: function MusubiDBOpen() {
     if (!this.db) {
       this.db = new Database(this.file);
-      this.db.setPragma("case_sensitive_like", 1);
       this.account.db = this.db;
       this.account.initialize();
     }
@@ -67,29 +69,25 @@ function callWithMusubiDB(aProc) {
   return r;
 }
 
-function DBFindAccountByBarejid(aBarejid, aOpt) {
-  aOpt = aOpt || {};
+function DBFindAccountByBarejid(aBarejid) {
   return callWithMusubiDB(function findByBarejid(msbdb) {
     var r = msbdb.account.findByBarejid(aBarejid);
     if (!r || !r[0]) return null;
-    return aOpt.E4X ? msbdb.account.objectToE4X(r[0]) : r[0];
+    return r[0];
   });
 }
 
-function DBFindAllAccount(aOpt) {
-  aOpt = aOpt || {};
+function DBFindAllAccount() {
   return callWithMusubiDB(function findAll(msbdb) {
     var r = msbdb.account.findAll();
     if (!r) return null;
-    return aOpt.E4X ? r.map(msbdb.account.objectToE4X) : r;
+    return r;
   });
 }
 
-function DBNewAccountFromE4X(aE4X) {
+function DBNewAccount(aObj) {
   return callWithMusubiDB(function newAccount(msbdb) {
-    var obj = msbdb.account.E4XToObject(aE4X);
-    if (!obj) return null;
-    var account = new msbdb.account(obj);
+    var account = new msbdb.account(aObj);
     if (!account) return null;
     if (msbdb.account.countByBarejid(account.barejid)) {
       msbdb.account.update(account);
@@ -103,8 +101,8 @@ function DBNewAccountFromE4X(aE4X) {
 function DBDeleteAccountByBarejid(aBarejid) {
   return callWithMusubiDB(function deleteAccount(msbdb) {
     var r = msbdb.account.findByBarejid(aBarejid);
-    if (!r || !r[0]) return null;
+    if (!r || !r[0]) return false;
     msbdb.account.deleteById(r[0].id);
-    return r[0];
+    return true;
   });
 }

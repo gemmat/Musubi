@@ -4,17 +4,16 @@
     <title>Jabber(XMPP)</title>
     <script type="text/javascript" src="../musubi.js"></script>
     <script type="text/javascript" src="../prototype.js"></script>
-    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="common.js"></script>
     <script type="text/javascript" src="jabber.js"></script>
   </head>
   <body>
-    <a href="account.html">もどる</a><br/>
-    <img src="jabber.png" alt="Google Talk"/>
-    <span>Jabber/XMPPのアカウント</span>
-    <form id="account">
+    <img src="jabber.png" alt="Jabber(XMPP)"/>
+    <span>Jabber(XMPP)のアカウント</span>
+    <form id="form">
       <dl>
         <dt>ユーザ名</dt>
-        <dd><input type="text" id="username" name="username"></input></dd>
+        <dd><input type="text" id="node" name="node"></input></dd>
         <dt>ドメイン</dt>
         <dd><input type="text" id="domain" name="domain"></input></dd>
         <dt>パスワード</dt>
@@ -24,15 +23,13 @@
       <hr/>
       高度な設定
       <dl>
-        <dt>リソース(Home, Office など)</dt>
-        <dd><input type="text" id="resource" name="resource"></input></dd>        
         <dt>接続ホスト</dt>
-        <dd><input type="text" id="connection-host" name="connection-host"></input></dd>
+        <dd><input type="text" id="connection-host" name="connection-host" value="talk.google.com"></input></dd>
         <dt>接続ポート</dt>
-        <dd><input type="text" id="connection-port" name="connection-port" value="5222"></input></dd>
+        <dd><input type="text" id="connection-port" name="connection-port" value="443"></input></dd>
         <dt>暗号化</dt>
         <dd>
-          <input type="radio" id="connection-scrty-ssl"  name="connection-scrty" value="1" checked="checked">あり</input>
+          <input type="radio" id="connection-scrty-ssl"  name="connection-scrty" value="1"  checked="checked">あり</input>
           <input type="radio" id="connection-scrty-none" name="connection-scrty" value="0">なし</input>
         </dd>
       </dl>

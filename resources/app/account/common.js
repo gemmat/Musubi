@@ -1,7 +1,7 @@
 function makeServiceInfo(aDomain) {
   switch (aDomain) {
-  case "gmail":       //FALLTHROUGH
-  case "googlemail":
+  case "gmail.com":       //FALLTHROUGH
+  case "googlemail.com":
     return {
       href:    "gtalk.html",
       imgsrc:  "gtalk.png",
@@ -30,20 +30,17 @@ function sendMusubiReadAccount(aBarejid) {
               </musubi>);
 }
 
-function sendMusubiCreateUpdateAccount() {
-  var o = Form.serialize("account", true);
+function sendMusubiCreateUpdateAccount(aBarejid, aResource, aPassword, aConnectionHost, aConnectionPort, aConnectionScrty) {
   Musubi.send(<musubi type="set">
                 <account>
-                  <barejid>{o["username"] + "@" + o["domain"]}</barejid>
-                  <resource>{o["resource"]}</resource>
-                  <password>{o["password"]}</password>
-                  <connectionHost>{o["connection-host"]}</connectionHost>
-                  <connectionPort>{o["connection-port"]}</connectionPort>
-                  <connectionScrty>{o["connection-scrty"]}</connectionScrty>
-                  <comment></comment>
+                  <barejid>{aBarejid}</barejid>
+                  <resource>{aResource}</resource>
+                  <password>{aPassword}</password>
+                  <connectionHost>{aConnectionHost}</connectionHost>
+                  <connectionPort>{aConnectionPort}</connectionPort>
+                  <connectionScrty>{aConnectionScrty}</connectionScrty>
                 </account>
               </musubi>);
-  return false;
 }
 
 function sendMusubiDeleteAccount(aBarejid) {
@@ -71,19 +68,15 @@ function recvTestRAll() {
          <accounts>
            <account>
              <barejid>romeo@localhost</barejid>
-             <resource>Musubi</resource>
              <connectionHost>localhost</connectionHost>
              <connectionPort>5223</connectionPort>
              <connectionScrty>0</connectionScrty>
-             <comment></comment>
            </account>
            <account>
              <barejid>teruakigemma@gmail</barejid>
-             <resource></resource>
              <connectionHost>talk.google.com</connectionHost>
              <connectionPort>443</connectionPort>
              <connectionScrty>1</connectionScrty>
-             <comment></comment>
            </account>
          </accounts>
        </musubi>);
@@ -93,11 +86,9 @@ function recvTestR() {
   recv(<musubi type="result">
          <account>
            <barejid>romeo@localhost</barejid>
-           <resource></resource>
            <connectionHost>localhost</connectionHost>
            <connectionPort>5223</connectionPort>
            <connectionScrty>0</connectionScrty>
-           <comment></comment>
          </account>
        </musubi>);
 }
@@ -119,4 +110,3 @@ function recvTest0() {
          <defaultaccount>romeo@localhost</defaultaccount>
        </musubi>);
 }
-

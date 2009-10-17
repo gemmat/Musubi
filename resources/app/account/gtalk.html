@@ -4,17 +4,16 @@
     <title>Google Talk</title>
     <script type="text/javascript" src="../musubi.js"></script>
     <script type="text/javascript" src="../prototype.js"></script>
-    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="common.js"></script>
     <script type="text/javascript" src="gtalk.js"></script>
   </head>
   <body>
-    <a href="account.html">もどる</a><br/>
     <img src="gtalk.png" alt="Google Talk"/>
     <span>Google Talkのアカウント</span>
-    <form id="account">
+    <form id="form">
       <dl>
         <dt>ユーザ名</dt>
-        <dd><input type="text" id="username" name="username"></input></dd>
+        <dd><input type="text" id="node" name="node"></input></dd>
         <dt>ドメイン</dt>
         <dd>
           <select id="domain" name="domain">
@@ -29,8 +28,6 @@
       <hr/>
       高度な設定
       <dl>
-        <dt>リソース(Home, Office など)</dt>
-        <dd><input type="text" id="resource" name="resource"></input></dd>        
         <dt>接続ホスト</dt>
         <dd><input type="text" id="connection-host" name="connection-host" value="talk.google.com"></input></dd>
         <dt>接続ポート</dt>

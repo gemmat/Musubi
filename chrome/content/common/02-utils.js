@@ -58,12 +58,7 @@ function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"
   // Roger that, however, here we use the getAccountByJid intentionally for the backward compatibility.
   var xmpp4mozAccount = XMPP.getAccountByJid(aAccount.barejid + "/" + aAccount.resource);
-  var key = 0;
-  if (xmpp4mozAccount) {
-    key = xmpp4mozAccount.key;
-  } else {
-    key = Date.now();
-  }
+  var key = xmpp4mozAccount ? xmpp4mozAccount.key : Date.now();
   var prefs = new Prefs("xmpp.account." + key + ".");
   if (aDeleteP) {
     prefs.clear("address");

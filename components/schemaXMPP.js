@@ -21,7 +21,7 @@ XMPProtocol.prototype = {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
     // handle following two cases.
-    // defaultAccount    : "default@localhost/Musubi"
+    // defaultaccount    : "default@localhost/Musubi"
     // aSpec             : "xmpp:juliet@localhost"
 
     // case 1.
@@ -46,7 +46,7 @@ XMPProtocol.prototype = {
     }
     if (!o.auth) {
       var pref = new Prefs("extensions.musubi.");
-      o.auth = pref.get("defaultAccount", "default@localhost") + "/Musubi";
+      o.auth = pref.get("defaultaccount", "default@localhost") + "/Musubi";
     }
     if (/^share/.test(o.query)) {
       var mw = WindowMediator.getMostRecentWindow("navigator:browser");

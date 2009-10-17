@@ -6,31 +6,54 @@
 <?xml-stylesheet href="chrome://musubi/skin/config.css"?>
 
 <!DOCTYPE dialog SYSTEM "chrome://musubi/locale/config.dtd">
-<prefwindow id="Musubi-config"
+<prefwindow id="musubi-config"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     xmlns:html="http://www.w3.org/1999/xhtml"
     title="&Musubi.config.title;"
     >
 
 <prefpane 
-    id="prefpane-locationbar" label="&Musubi.config.general;" flex="1">
+    id="prefpane-account-add" label="&Musubi.config.new;" flex="1">
     <preferences>
     </preferences>
-    <vbox class="v">
+    <vbox>
       <iframe type="content"
-              src="file:///home/teruaki/garakuta-okiba/xmppwebApp/account/account.html"
+              src="resource://musubi/app/account/new.html"
               flex="1"/>
     </vbox>
 </prefpane>
 
 <prefpane 
-    id="prefpane-statusbar" label="&Musubi.config.statusbar;" flex="1">
+    id="prefpane-account-edit" label="&Musubi.config.edit;" flex="1">
     <preferences>
     </preferences>
     <vbox>
+      <iframe type="content"
+              src="resource://musubi/app/account/edit.html"
+              flex="1"/>
     </vbox>
 </prefpane>
+
+<prefpane 
+    id="prefpane-account-delete" label="&Musubi.config.delete;" flex="1">
+    <preferences>
+    </preferences>
+    <vbox>
+      <iframe type="content"
+              src="resource://musubi/app/account/delete.html"
+              flex="1"/>
+    </vbox>
+</prefpane>
+
 <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
 <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
 <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" /> 
+<script type="text/javascript; version=1.8" charset="utf-8">
+// <![CDATA[
+(function() {
+  document.addEventListener("load",   Musubi.onLoadAtIframe,   true);
+  document.addEventListener("unload", Musubi.onUnloadAtIframe, true);
+})();
+// ]]>
+</script>
 </prefwindow>

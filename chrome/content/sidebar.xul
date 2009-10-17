@@ -10,21 +10,6 @@
       title="&Musubi.sidebar.title;"
 >
     <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
-    <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
     <description></description>
-    <vbox flex="1" style="overflow: auto" >
-      <iframe id="sidebar-iframe"
-              flex="1"
-              src="resource://musubi/app/sidebar/sidebar.html"
-              type="content"/>
-    </vbox>
-    <script type="text/javascript; version=1.8" charset="utf-8">
-    // <![CDATA[
-    (function() {
-       document.addEventListener("load",   Musubi.onLoadAtIframe,   true);
-       document.addEventListener("unload", Musubi.onUnloadAtIframe, true);
-    })();
-    // ]]>
-    </script>
 </page>
