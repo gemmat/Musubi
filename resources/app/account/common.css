@@ -47,3 +47,7 @@ div#delete-account > p {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.hidden {
+  display: none;
+}

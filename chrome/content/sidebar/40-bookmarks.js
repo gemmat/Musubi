@@ -1,4 +1,4 @@
-function queryXmppBookmark(aAuth, aPathBarejid, aFolder) {
+function queryXmppBookmark(aAuth, aPath, aFolder) {
   var result;
   if (aFolder) {
     result = Places.getFolderContents(aFolder, false, false).root;
@@ -7,7 +7,7 @@ function queryXmppBookmark(aAuth, aPathBarejid, aFolder) {
     var options = HistoryService.getNewQueryOptions();
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = "xmpp://" + aAuth;
+    uri.spec = "xmpp://" + aAuth.barejid;
     query.uri = uri;
     query.uriIsPrefix = true;
     query.onlyBookmarked = true;
@@ -24,9 +24,9 @@ function queryXmppBookmark(aAuth, aPathBarejid, aFolder) {
     if (!Places.nodeIsBookmark(node)) continue;
     var o = parseURI(node.uri);
     if (!o) continue;
-    var p = parseJID(o.path);
-    if (!p) continue;
-    if (p.barejid != aPathBarejid) continue;
+    var q = parseJID(o.path);
+    if (!q) continue;
+    if (q.barejid != aPath.barejid) continue;
     arr.push(node.itemId);
   };
   result.containerOpen = false;
@@ -39,10 +39,8 @@ function createFolderIfNotExist(aCurrentFolderId, aName, aPosition) {
 }
 
 function createFolders(aAuth) {
-  var p = parseJID(aAuth);
-  if (!p) return null;
   var folderIdMenu  = BookmarksService.bookmarksMenuFolder;
-  var folderIdAuth  = createFolderIfNotExist(folderIdMenu, p.barejid, -1);
+  var folderIdAuth  = createFolderIfNotExist(folderIdMenu, aAuth.barejid, -1);
   var folderIdNone  = createFolderIfNotExist(folderIdAuth, "none", -1);
   var folderIdTo    = createFolderIfNotExist(folderIdAuth, "following", -1);
   var folderIdFrom  = createFolderIfNotExist(folderIdAuth, "followers", -1);
@@ -58,11 +56,9 @@ function createFolders(aAuth) {
 
 // TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
 
-function insertRosterItem(aFolder, aAccount, aPath, aSubscription, aName, aGroup) {
-  aName = aName || aPath;
-  var q = parseJID(aPath);
-  if (!q) return;
-  var arr = queryXmppBookmark(aAccount.barejid, q.barejid);
+function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup) {
+  aName = aName || aPath.barejid;
+  var arr = queryXmppBookmark(aAuth, aPath);
   if (arr.length) {
     arr.forEach(function(id) {
       if (aFolder != BookmarksService.getFolderIdForItem(id)) {
@@ -72,9 +68,20 @@ function insertRosterItem(aFolder, aAccount, aPath, aSubscription, aName, aGroup
   } else {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(aAccount.barejid + "/" + aAccount.resource, q.barejid, "share");
+    uri.spec = makeXmppURI(aAuth.fulljid, aPath.barejid, "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
+}
+
+//remove a resource and append the account's resource.
+function parseJIDwithResource(aString) {
+  var tmp = parseJID(aString);
+  if (!tmp) return null;
+  var account = DBFindAccount(tmp);
+  if (!account) return null;
+  var p = parseJID(account.barejid + "/" + account.resource);
+  if (!p) return null;
+  return p;
 }
 
 function insertRoster(aStanza) {
@@ -83,24 +90,23 @@ function insertRoster(aStanza) {
   var nsIQRoster = new Namespace("jabber:iq:roster");
   if (!aStanza.nsIQRoster::query.length() ||
       !aStanza.nsIQRoster::query.nsIQRoster::item.length()) return;
+  var p = parseJIDwithResource(aStanza.@to.toString());
+  if (!p) return;
   BookmarksService.runInBatchMode({
     runBatched: function batch(aData) {
-      //remove the resource and extend the account's resource.
-      var tmp = parseJID(aStanza.@to.toString());
-      if (!tmp) return;
-      var account = DBFindAccountByBarejid(tmp.barejid);
-      if (!account) return;
       var items = aStanza.nsIQRoster::query.nsIQRoster::item;
-      var folders = createFolders(auth);
+      var folders = createFolders(p);
       for (var i = 0, len = items.length(); i < len; i++) {
         var item = items[i];
+        var q = parseJID(item.@jid.toString());
+        if (!q) continue;
         var subs = item.@subscription.toString();
         if (!subs || subs == "remove") continue;
         insertRosterItem(folders[subs],
-                         account,
-                         item.@jid.toString(),
+                         p,
+                         q,
                          subs,
-                         item.@name.toString(),
+                         item.@name.length() && item.@name.toString(),
                          item.nsIQRoster::group.toString());
       }
     }
@@ -108,26 +114,18 @@ function insertRoster(aStanza) {
 }
 
 function insertPresenceItem(aFolder, aAuth, aPath, aName) {
-  var p = parseJID(aAuth);
-  if (!p) return;
-  var q = parseJID(aPath);
-  if (!q) return;
-  aName = aName || q.barejid;
-  var arr = queryXmppBookmark(p.barejid, q.barejid, aFolder);
+  aName = aName || aPath.barejid;
+  var arr = queryXmppBookmark(aAuth, aPath, aFolder);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(p.barejid + "/Musubi", q.barejid, "share");
+    uri.spec = makeXmppURI(aAuth.fulljid, aPath.barejid, "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
 
 function removePresenceItem(aFolder, aAuth, aPath) {
-  var p = parseJID(aAuth);
-  if (!p) return;
-  var q = parseJID(aPath);
-  if (!q) return;
-  var arr = queryXmppBookmark(p.barejid, q.barejid, aFolder);
+  var arr = queryXmppBookmark(aAuth, aPath, aFolder);
   arr.forEach(function(id) {
     if (aFolder == BookmarksService.getFolderIdForItem(id)) {
       BookmarksService.removeItem(id);
@@ -136,14 +134,16 @@ function removePresenceItem(aFolder, aAuth, aPath) {
 }
 
 function insertPresence(aStanza) {
-  var type = aStanza.@type.toString();
-  var auth = aStanza.@to.toString();
-  var path = aStanza.@from.toString();
-  switch (type) {
+  //remove the resource and extend the account's resource.
+  var p = parseJIDwithResource(aStanza.@to.toString());
+  if (!p) return;
+  var q = parseJID(aStanza.@from.toString());
+  if (!q) return;
+  switch (aStanza.@type.toString()) {
   case "unavailable":
     BookmarksService.runInBatchMode({
       runBatched: function batch(aData) {
-        removePresenceItem(createFolders(auth)["auth"], auth, path);
+        removePresenceItem(createFolders(p)["auth"], p, q);
       }
     }, null);
     break;
@@ -158,7 +158,7 @@ function insertPresence(aStanza) {
   default:
     BookmarksService.runInBatchMode({
       runBatched: function batch(aData) {
-        insertPresenceItem(createFolders(auth)["auth"], auth, path);
+        insertPresenceItem(createFolders(p)["auth"], p, q);
       }
     }, null);
   }
@@ -219,15 +219,16 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   if (!uri) return;
   var o = parseURI(uri.spec);
   if (!o) return;
-  var p = parseJID(o.path);
+  var p = parseJID(o.auth);
   if (!p) return;
-  xmppSend(o.auth,
-           <iq type="set" id="roster_2">
-             <query xmlns="jabber:iq:roster">
-               <item jid={p.barejid} name={title}/>
-             </query>
-           </iq>);
-  xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
+  var q = parseJID(o.path);
+  if (!q) return;
+  xmppSend(p, <iq type="set" id="roster_2">
+               <query xmlns="jabber:iq:roster">
+                 <item jid={q.barejid} name={title}/>
+               </query>
+              </iq>);
+  xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
 }
 
 // WTF, the observer calls onItemRemoved *after* it removed the item.
@@ -241,26 +242,26 @@ var changed = null;
 function onItemRemoved(aItemId, aFolder, aIndex) {
   Application.console.log("removed:" + aItemId);
   if (changed && changed.id == aItemId) {
-    var p = parseJID(changed.o.path);
+    var p = parseJID(changed.o.auth);
     if (!p) return;
+    var q = parseJID(changed.o.path);
+    if (!q) return;
     switch (changed.subscription) {
     case "none":
-      xmppSend(changed.o.auth,
-               <iq type="set" id="roster_4">
-                 <query xmlns="jabber:iq:roster">
-                   <item jid={p.barejid} subscription="remove"/>
-                 </query>
-               </iq>);
+      xmppSend(p, <iq type="set" id="roster_4">
+                    <query xmlns="jabber:iq:roster">
+                      <item jid={q.barejid} subscription="remove"/>
+                    </query>
+                  </iq>);
       break;
     case "from":
     case "to":
     case "both":
-      xmppSend(changed.o.auth,
-               <iq type="set" id="remove1">
-                 <query xmlns="jabber:iq:roster">
-                   <item jid={p.barejid} subscription="remove"/>
-                 </query>
-               </iq>);
+      xmppSend(p, <iq type="set" id="remove1">
+                    <query xmlns="jabber:iq:roster">
+                      <item jid={q.barejid} subscription="remove"/>
+                    </query>
+                  </iq>);
       break;
     }
   }
@@ -276,19 +277,20 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   };
   var o = parseURI(uri.spec);
   if (!o || !o.auth || !o.path) return;
+  var p = parseJID(o.auth);
+  if (!p) return;
+  var q = parseJID(o.path);
+  if (!q) return;
   switch (aProperty) {
   case "title":
-    var p = parseJID(o.path);
-    if (!p) return;
-    xmppSend(o.auth,
-             <iq type="set" id="roster_3">
-               <query xmlns="jabber:iq:roster">
-                 <item jid={p.barejid} name={aValue}/>
-               </query>
-             </iq>);
+    xmppSend(p, <iq type="set" id="roster_3">
+                  <query xmlns="jabber:iq:roster">
+                    <item jid={q.barejid} name={aValue}/>
+                  </query>
+                </iq>);
     break;
   default:
-    var subscription = findPWDSubscription(o.auth, pwdBookmark(aBookmarkId));
+    var subscription = findPWDSubscription(p, pwdBookmark(aBookmarkId));
     if (!subscription) return;
     changed = {id: aBookmarkId, o: o, subscription: subscription};
     break;
@@ -300,64 +302,52 @@ function onItemVisited(aBookmarkId, aVisitID, aTime) {
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
+  function evalMove(aTo, aOldSubscription, aNewSubscription) {
+    if (!aOldSubscription || !aNewSubscription) return null;
+    if (aOldSubscription == aNewSubscription) return null;
+    switch (aOldSubscription) {
+    case "none":
+      switch (aNewSubscription) {
+      case "to": return <presence to={aTo} type="subscribe"/>;
+      case "both": return <presence to={aTo} type="subscribe"/>;
+      }
+      break;
+    case "to":
+      switch (aNewSubscription) {
+      case "none": return <presence to={aTo} type="unsubscribe"/>;
+      case "from": return <presence to={aTo} type="subscribe"/>;
+      case "both": return <presence to={aTo} type="subscribe"/>;
+      }
+      break;
+    case "from":
+      switch (aNewSubscription) {
+      case "none": return <presence to={aTo} type="unsubscribe"/>;
+      case "to": return <presence to={aTo} type="unsubscribe"/>;
+      case "both": return <presence to={aTo} type="subscribe"/>;
+      }
+      break;
+    case "both":
+      switch (aNewSubscription) {
+      case "none": return <presence to={aTo} type="unsubscribe"/>;
+      case "from": return <presence to={aTo} type="unsubscribe"/>;
+      }
+      break;
+    }
+    return null;
+  }
   Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
   var uri = BookmarksService.getBookmarkURI(aItemId);
   var o = parseURI(uri.spec);
-  if (!o || !o.auth || !o.path) return;
-  var p = parseJID(o.path);
+  if (!o) return;
+  var p = parseJID(o.auth);
   if (!p) return;
-  var oldSubscription = findPWDSubscription(o.auth, pwdBookmark(aOldParent));
-  var newSubscription = findPWDSubscription(o.auth, pwdBookmark(aNewParent));
-  if (!oldSubscription || !newSubscription) return;
-  if (oldSubscription == newSubscription) return;
-  switch (oldSubscription) {
-  case "none":
-    switch (newSubscription) {
-    case "to":
-      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
-      break;
-    case "both":
-      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
-      break;
-    }
-    break;
-  case "to":
-    switch (newSubscription) {
-    case "none":
-      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
-      break;
-    case "from":
-      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
-      break;
-    case "both":
-      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
-      break;
-    }
-    break;
-  case "from":
-    switch (newSubscription) {
-    case "none":
-      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
-      break;
-    case "to":
-      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
-      break;
-    case "both":
-      xmppSend(o.auth, <presence to={p.barejid} type="subscribe"/>);
-      break;
-    }
-    break;
-  case "both":
-    switch (newSubscription) {
-    case "none":
-      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
-      break;
-    case "from":
-      xmppSend(o.auth, <presence to={p.barejid} type="unsubscribe"/>);
-      break;
-    }
-    break;
-  }
+  var q = parseJID(o.path);
+  if (!q) return;
+  var r = evalMove(q.barejid,
+                   findPWDSubscription(p, pwdBookmark(aOldParent)),
+                   findPWDSubscription(p, pwdBookmark(aNewParent)));
+  if (!r) return;
+  xmppSend(p, r);
 }
 
 function onBeforeItemRemoved(aItemId) {

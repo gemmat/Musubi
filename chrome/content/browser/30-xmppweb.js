@@ -8,12 +8,13 @@ function filterBrowsers(aFrom, aTo) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = parseURI(b.currentURI.spec);
     if (!o) continue;
-    var auth = parseJID(o.auth);
-    var path = parseJID(o.path);
-    if (!auth || !path) continue;
-    if (( aTo.resource && auth.fulljid == aTo.fulljid) ||
-        (!aTo.resource && auth.barejid == aTo.barejid)) {
-      if (path.barejid == aFrom.barejid) {
+    var p = parseJID(o.auth);
+    if (!p) continue;
+    var q = parseJID(o.path);
+    if (!q) continue;
+    if (( aTo.resource && p.fulljid == aTo.fulljid) ||
+        (!aTo.resource && p.barejid == aTo.barejid)) {
+      if (q.barejid == aFrom.barejid) {
       //if (( aFrom.resource && path.fulljid == aFrom.fulljid) ||
           //(!aFrom.resource && path.barejid == aFrom.barejid)) {
         res.push(b);
@@ -72,7 +73,7 @@ function onIQ(aObj) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
     // TODO: OK, this is the Twitter style. We have to implement the "private mode".
     if (stanza.@type.toString() == "subscribe") {
-      xmppSend(to.fulljid, <presence to={from.barejid} type="subscribed"/>);
+      xmppSend(to, <presence to={from.barejid} type="subscribed"/>);
     }
   }
   getMusubiSidebar().Musubi.insertRoster(stanza);

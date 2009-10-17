@@ -1,4 +1,4 @@
-const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccountByBarejid", "DBFindAllAccount", "DBNewAccount", "DBDeleteAccountByBarejid"];
+const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccount", "DBFindAllAccount", "DBNewAccount", "DBDeleteAccount"];
 
 function MusubiDB() {
   this.db = null;
@@ -69,9 +69,9 @@ function callWithMusubiDB(aProc) {
   return r;
 }
 
-function DBFindAccountByBarejid(aBarejid) {
+function DBFindAccount(aAuth) {
   return callWithMusubiDB(function findByBarejid(msbdb) {
-    var r = msbdb.account.findByBarejid(aBarejid);
+    var r = msbdb.account.findByBarejid(aAuth.barejid);
     if (!r || !r[0]) return null;
     return r[0];
   });
@@ -98,9 +98,9 @@ function DBNewAccount(aObj) {
   });
 }
 
-function DBDeleteAccountByBarejid(aBarejid) {
+function DBDeleteAccount(aAuth) {
   return callWithMusubiDB(function deleteAccount(msbdb) {
-    var r = msbdb.account.findByBarejid(aBarejid);
+    var r = msbdb.account.findByBarejid(aAuth.barejid);
     if (!r || !r[0]) return false;
     msbdb.account.deleteById(r[0].id);
     return true;

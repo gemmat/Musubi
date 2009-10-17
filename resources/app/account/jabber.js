@@ -22,14 +22,13 @@ Event.observe(window, "load", function windowOnLoad(evt) {
   Musubi.onRecv = recv;
   Event.observe("form", "submit", function(e) {
     var o = Form.serialize("form", true);
-    var barejid = o["node"] + "@" + o["domain"];
-    sendMusubiCreateUpdateAccount(barejid,
-                                  "Musubi",
+    sendMusubiCreateUpdateAccount(o["node"] + "@" + o["domain"],
+                                  o["resource"],
                                   o["password"],
                                   o["connection-host"],
                                   o["connection-port"],
                                   o["connection-scrty"]);
-    sendMusubiSetDefaultAccount(barejid);
+    sendMusubiSetDefaultAuth(o["node"] + "@" + o["domain"] + "/" + o["resource"]);
     Event.stop(e);
   });
   var m = /^\?barejid=(.+)/.exec(document.location.search);

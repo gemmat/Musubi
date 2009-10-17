@@ -11,7 +11,9 @@ function readAllAccount() {
 }
 
 function readAccount(aE4X) {
-  var account = DBFindAccountByBarejid(aE4X.account.barejid.toString());
+  var p = parseJID(aE4X.account.barejid.toString());
+  if (!p) return null;
+  var account = DBFindAccount(p);
   if (!account) return null;
   return <musubi type="result">{accountObjToE4X(account)}</musubi>;
 }
@@ -24,26 +26,28 @@ function createupdateAccount(aE4X) {
 }
 
 function deleteAccount(aE4X) {
-  var account = DBDeleteAccountByBarejid(aE4X.account.barejid.toString());
+  var p = parseJID(aE4X.account.barejid.toString());
+  if (!p) return null;
+  var account = DBDeleteAccount(p);
   updateXMPP4MOZAccount(account, true);
   return <musubi type="result"><account del="del"/></musubi>;
 }
 
-function getDefaultAccount() {
+function getDefaultAuth() {
   var pref = new Prefs("extensions.musubi.");
   if (!pref) return null;
-  var d = pref.get("defaultaccount", "");
+  var d = pref.get("defaultauth", "default@localhost/Default");
   if (!d) return null;
-  return <musubi type="result"><defaultaccount>{d}</defaultaccount></musubi>;
+  return <musubi type="result"><defaultauth>{d}</defaultauth></musubi>;
 }
 
-function setDefaultAccount(aE4X) {
+function setDefaultAuth(aE4X) {
   var pref = new Prefs("extensions.musubi.");
   if (!pref) return null;
-  var p = parseJID(aE4X.defaultaccount.toString());
+  var p = parseJID(aE4X.defaultauth.toString());
   if (!p) return null;
-  pref.set("defaultaccount", p.barejid);
-  return getDefaultAccount();
+  pref.set("defaultauth", p.fulljid);
+  return getDefaultAuth();
 }
 
 function onXmppEventAtIframe(aEvent) {
@@ -52,14 +56,14 @@ function onXmppEventAtIframe(aEvent) {
     case "get":
       if (xml.accounts.length()) return readAllAccount();
       if (xml.account.length()) return readAccount(xml);
-      if (xml.defaultaccount.length()) return getDefaultAccount();
+      if (xml.defaultauth.length()) return getDefaultAuth();
       break;
     case "set":
       if (xml.account.length()) {
         if (xml.account.@del.length()) return deleteAccount(xml);
         return createupdateAccount(xml);
       }
-      if (xml.defaultaccount.length()) return setDefaultAccount(xml);
+      if (xml.defaultauth.length()) return setDefaultAuth(xml);
       break;
     }
     return null;

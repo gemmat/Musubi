@@ -18,21 +18,30 @@ XMPProtocol.prototype = {
     return false;
   },
   newURI: function XMPProtocolNewURI(aSpec, aCharset, aBaseURI) {
+    function getCurrentDocumentURISpec() {
+      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+      if (!mw) return "about:blank";
+      var currentURI = mw.content.document.documentURI;
+      if (!currentURI) return "about:blank";
+      var q = parseURI(currentURI);
+      if (!q) return currentURI;
+      return q.frag;
+    }
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
     // handle following two cases.
-    // defaultaccount    : "default@localhost/Musubi"
-    // aSpec             : "xmpp:juliet@localhost"
+    // defaultauth   : "default@localhost/Musubi"
+    // aSpec         : "xmpp:juliet@localhost"
 
     // case 1.
-    // aBaseURI.spec : "xmpp://romeo@localhost/someone@localhost"
+    // aBaseURI.spec : "xmpp://romeo@localhost/Home/someone@localhost"
     // ---------------------------------------------------------
-    // Result        : "xmpp://romeo@localhost/juliet@localhost"
+    // Result        : "xmpp://romeo@localhost/Home/juliet@localhost"
 
     // case 2.
     // aBaseURI.spec : null
     // ---------------------------------------------------------
-    // Result        : "xmpp://default@localhost/Home/juliet@localhost"
+    // Result        : "xmpp://default@localhost/Musubi/juliet@localhost"
 
     var o0 = parseURI(aSpec);
     var o1 = aBaseURI ? parseURI(aBaseURI.spec) : null;
@@ -46,17 +55,10 @@ XMPProtocol.prototype = {
     }
     if (!o.auth) {
       var pref = new Prefs("extensions.musubi.");
-      o.auth = pref.get("defaultaccount", "default@localhost") + "/Musubi";
+      o.auth = pref.get("defaultauth", "default@localhost/Musubi");
     }
     if (/^share/.test(o.query)) {
-      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-      var currentURI = mw.content.document.documentURI;
-      var q = parseURI(currentURI);
-      if (q) {
-        o.frag = q.frag;
-      } else {
-        o.frag = currentURI;
-      }
+      o.frag = getCurrentDocumentURISpec();
       o.query = null;
     } else {
     // handle the frag.

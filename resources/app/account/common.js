@@ -51,15 +51,15 @@ function sendMusubiDeleteAccount(aBarejid) {
               </musubi>);
 }
 
-function sendMusubiGetDefaultAccount() {
+function sendMusubiGetDefaultAuth() {
   Musubi.send(<musubi type="get">
-                <defaultaccount/>
+                <defaultauth/>
               </musubi>);
 }
 
-function sendMusubiSetDefaultAccount(aBarejid) {
+function sendMusubiSetDefaultAuth(aFulljid) {
   Musubi.send(<musubi type="set">
-                <defaultaccount>{aBarejid}</defaultaccount>
+                <defaultauth>{aFulljid}</defaultauth>
               </musubi>);
 }
 
@@ -107,6 +107,6 @@ function recvTestD() {
 
 function recvTest0() {
   recv(<musubi type="result">
-         <defaultaccount>romeo@localhost</defaultaccount>
+         <defaultauth>romeo@localhost/Home</defaultauth>
        </musubi>);
 }
