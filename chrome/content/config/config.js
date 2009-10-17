@@ -47,28 +47,28 @@ function setDefaultAccount(aE4X) {
 }
 
 function onXmppEventAtIframe(aEvent) {
+  function evalRequest(aType, aXML) {
+    switch (aType) {
+    case "get":
+      if (xml.accounts.length()) return readAllAccount();
+      if (xml.account.length()) return readAccount(xml);
+      if (xml.defaultaccount.length()) return getDefaultAccount();
+      break;
+    case "set":
+      if (xml.account.length()) {
+        if (xml.account.@del.length()) return deleteAccount(xml);
+        return createupdateAccount(xml);
+      }
+      if (xml.defaultaccount.length()) return setDefaultAccount(xml);
+      break;
+    }
+    return null;
+  }
   aEvent.stopPropagation();
   var xml = DOMToE4X(aEvent.target);
   if (xml.name().localName != "musubi") return;
-  var r = null;
-  if (xml.@type == "get" && xml.accounts.length()) {
-    r = readAllAccount();
-  } else if (xml.@type == "get" && xml.account.length()) {
-    r = readAccount(xml);
-  } else if (xml.@type == "set" && xml.account.length()) {
-    if (xml.account.@del.length()) {
-      r = deleteAccount(xml);
-    } else {
-      r = createupdateAccount(xml);
-    }
-  } else if (xml.@type == "get" && xml.defaultaccount.length()) {
-    r = getDefaultAccount();
-  } else if (xml.@type == "set" && xml.defaultaccount.length()) {
-    r = setDefaultAccount(xml);
-  }
-  if (r) {
-    appendE4XToXmppIn(getDocumentFromEvent(aEvent), r);
-  }
+  appendE4XToXmppIn(getDocumentFromEvent(aEvent),
+                    evalRequest(xml.@type.toString(), xml));
 }
 
 function onLoadAtIframe(aEvent) {

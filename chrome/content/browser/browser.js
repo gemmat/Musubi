@@ -14,15 +14,10 @@ function onUnload(aEvent) {
 function getMusubiSidebar() {
   var sidebar = document.getElementById("sidebar");
   if (!sidebar || !sidebar.contentWindow.Musubi) return null;
-  var iframe = sidebar.contentDocument.getElementById("sidebar-iframe");
   return {
     win:       sidebar.contentWindow,
     doc:       sidebar.contentDocument,
-    Musubi:    sidebar.contentWindow.Musubi,
-    iframe: {
-      win: iframe.contentWindow,
-      doc: iframe.contentDocument
-    }
+    Musubi:    sidebar.contentWindow.Musubi
   };
 }
 
@@ -48,10 +43,6 @@ function onXmppEventAtDocument(aEvent) {
     break;
   case "presence":
     if (xml.@res.length() && xml.@type == "unavailable") {
-      var sidebar = getMusubiSidebar();
-      if (sidebar) {
-        sidebar.Musubi.byeContacts(o.path);
-      }
     }
     break;
   }

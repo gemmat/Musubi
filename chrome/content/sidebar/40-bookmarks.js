@@ -58,15 +58,11 @@ function createFolders(aAuth) {
 
 // TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
 
-function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, aQuery) {
-  if (!aSubscription || aSubscription == "remove") return;
+function insertRosterItem(aFolder, aAccount, aPath, aSubscription, aName, aGroup) {
   aName = aName || aPath;
-  aQuery = aQuery || "share";
-  var p = parseJID(aAuth);
-  if (!p) return;
   var q = parseJID(aPath);
   if (!q) return;
-  var arr = queryXmppBookmark(p.barejid, q.barejid);
+  var arr = queryXmppBookmark(aAccount.barejid, q.barejid);
   if (arr.length) {
     arr.forEach(function(id) {
       if (aFolder != BookmarksService.getFolderIdForItem(id)) {
@@ -76,7 +72,7 @@ function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup, a
   } else {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(p.barejid + "/Musubi", q.barejid, "share");
+    uri.spec = makeXmppURI(aAccount.barejid + "/" + aAccount.resource, q.barejid, "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
@@ -89,14 +85,19 @@ function insertRoster(aStanza) {
       !aStanza.nsIQRoster::query.nsIQRoster::item.length()) return;
   BookmarksService.runInBatchMode({
     runBatched: function batch(aData) {
-      var auth = aStanza.@to.toString();
+      //remove the resource and extend the account's resource.
+      var tmp = parseJID(aStanza.@to.toString());
+      if (!tmp) return;
+      var account = DBFindAccountByBarejid(tmp.barejid);
+      if (!account) return;
       var items = aStanza.nsIQRoster::query.nsIQRoster::item;
       var folders = createFolders(auth);
       for (var i = 0, len = items.length(); i < len; i++) {
         var item = items[i];
         var subs = item.@subscription.toString();
+        if (!subs || subs == "remove") continue;
         insertRosterItem(folders[subs],
-                         auth,
+                         account,
                          item.@jid.toString(),
                          subs,
                          item.@name.toString(),
@@ -274,10 +275,24 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
     return;
   };
   var o = parseURI(uri.spec);
-  if (!o || !o.auth) return;
-  var subscription = findPWDSubscription(o.auth, pwdBookmark(aBookmarkId));
-  if (!subscription) return;
-  changed = {id: aBookmarkId, o: o, subscription: subscription};
+  if (!o || !o.auth || !o.path) return;
+  switch (aProperty) {
+  case "title":
+    var p = parseJID(o.path);
+    if (!p) return;
+    xmppSend(o.auth,
+             <iq type="set" id="roster_3">
+               <query xmlns="jabber:iq:roster">
+                 <item jid={p.barejid} name={aValue}/>
+               </query>
+             </iq>);
+    break;
+  default:
+    var subscription = findPWDSubscription(o.auth, pwdBookmark(aBookmarkId));
+    if (!subscription) return;
+    changed = {id: aBookmarkId, o: o, subscription: subscription};
+    break;
+  }
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {

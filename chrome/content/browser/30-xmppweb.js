@@ -48,21 +48,12 @@ function appendStanzaToBrowsers(aBrowsers, aStanza) {
   return aBrowsers.length;
 }
 
-function appendStanzaToSidebar(aStanza) {
-  var sidebar = getMusubiSidebar();
-  if (!sidebar) return;
-  appendE4XToXmppIn(sidebar.iframe.doc, aStanza);
-}
-
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aObj) {
   var [stanza, from, to] = parseXMPP4MOZEvent(aObj);
   if (from && to) {
-    if (appendStanzaToBrowsers(filterBrowsers(from, to), stanza)) {
-      return;
-    }
+    appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
   }
-  appendStanzaToSidebar(stanza);
 }
 
 function onPresence(aObj) {
@@ -72,7 +63,6 @@ function onPresence(aObj) {
     appendStanzaToBrowsers(filterBrowsers(from, to), stanza);
     getMusubiSidebar().Musubi.insertPresence(stanza);
   }
-  appendStanzaToSidebar(stanza);
 }
 
 function onIQ(aObj) {
@@ -86,5 +76,4 @@ function onIQ(aObj) {
     }
   }
   getMusubiSidebar().Musubi.insertRoster(stanza);
-  appendStanzaToSidebar(stanza);
 }

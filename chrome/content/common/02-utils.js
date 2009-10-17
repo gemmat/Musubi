@@ -46,6 +46,7 @@ function deeplyGetElementsByTagName(aDocument, aTagName) {
 }
 
 function appendE4XToXmppIn(aDocument, aE4X) {
+  if (!aE4X) return;
   var arr = deeplyGetElementsByTagName(aDocument, "xmppin");
   for (var i = 0, len = arr.length; i < len; i++) {
     var dom = E4XToDOM(arr[i].doc, aE4X);
