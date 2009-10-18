@@ -4,6 +4,16 @@ Components.utils.import("resource://musubi/modules/20-Prefs.jsm");
 
 function XMPProtocol() {}
 
+function getCurrentDocumentURISpec() {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (!mw) return "about:blank";
+  var currentURI = mw.content.document.documentURI;
+  if (!currentURI) return "about:blank";
+  var o = parseURI(currentURI);
+  if (!o) return currentURI;
+  return o.frag;
+}
+
 XMPProtocol.prototype = {
   classDescription: "XMPP Protocol",
   contractID      : "@mozilla.org/network/protocol;1?name=xmpp",
@@ -18,15 +28,6 @@ XMPProtocol.prototype = {
     return false;
   },
   newURI: function XMPProtocolNewURI(aSpec, aCharset, aBaseURI) {
-    function getCurrentDocumentURISpec() {
-      var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-      if (!mw) return "about:blank";
-      var currentURI = mw.content.document.documentURI;
-      if (!currentURI) return "about:blank";
-      var q = parseURI(currentURI);
-      if (!q) return currentURI;
-      return q.frag;
-    }
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
     // handle following two cases.
@@ -55,7 +56,7 @@ XMPProtocol.prototype = {
     }
     if (!o.auth) {
       var pref = new Prefs("extensions.musubi.");
-      o.auth = pref.get("defaultauth", "default@localhost/Musubi");
+      o.auth = pref.get("defaultauth", "default@localhost/Default");
     }
     if (/^share/.test(o.query)) {
       o.frag = getCurrentDocumentURISpec();

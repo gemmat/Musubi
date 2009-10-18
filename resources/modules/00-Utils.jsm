@@ -5,8 +5,6 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
-Cu.import("resource://gre/modules/utils.js");
-
 const Application      = Cc["@mozilla.org/fuel/application;1"].
                            getService(Ci.fuelIApplication);
 const IOService        = Cc["@mozilla.org/network/io-service;1"].
@@ -25,10 +23,6 @@ const StorageStatementWrapper = Components.Constructor(
                                   "@mozilla.org/storage/statement-wrapper;1",
                                   "mozIStorageStatementWrapper",
                                   "initialize");
-const HistoryService   = PlacesUtils.history;
-const BookmarksService = PlacesUtils.bookmarks;
-const TaggingService   = PlacesUtils.tagging;
-const Places           = PlacesUtils;
 
 function toJSON(aObject) {
   switch (typeof aObject) {

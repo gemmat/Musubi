@@ -13,7 +13,7 @@ function queryXmppBookmark(aAuth, aPath, aFolder, aFulljidP) {
     query.onlyBookmarked = true;
     options.queryType = options.QUERY_TYPE_BOOKMARKS;
     var tmp = createFolders(aAuth);
-    var folders = [tmp.none, tmp.to, tmp.from, tmp.both];
+    var folders = [tmp.remv, tmp.none, tmp.to, tmp.from, tmp.both];
     query.setFolders(folders, folders.length);
     result = HistoryService.executeQuery(query, options).root;
   }
@@ -44,12 +44,14 @@ function createFolderIfNotExist(aCurrentFolderId, aName, aPosition) {
 function createFolders(aAuth) {
   var folderIdMenu  = BookmarksService.bookmarksMenuFolder;
   var folderIdAuth  = createFolderIfNotExist(folderIdMenu, aAuth.barejid, -1);
+  var folderIdRemv  = createFolderIfNotExist(folderIdAuth, "remove", -1);
   var folderIdNone  = createFolderIfNotExist(folderIdAuth, "none", -1);
   var folderIdTo    = createFolderIfNotExist(folderIdAuth, "following", -1);
   var folderIdFrom  = createFolderIfNotExist(folderIdAuth, "followers", -1);
   var folderIdBoth  = createFolderIfNotExist(folderIdAuth, "both", -1);
   return {
     auth: folderIdAuth,
+    remv: folderIdRemv,
     none: folderIdNone,
       to: folderIdTo,
     from: folderIdFrom,
@@ -57,9 +59,21 @@ function createFolders(aAuth) {
   };
 }
 
+//remove a resource and append the account's resource.
+function parseJIDwithResource(aString) {
+  var tmp = parseJID(aString);
+  if (!tmp) return null;
+  var account = DBFindAccount(tmp);
+  if (!account) return null;
+  var p = parseJID(account.barejid + "/" + account.resource);
+  if (!p) return null;
+  return p;
+}
+
 // TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
 
-function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup) {
+function insertRosterItem(aFolder, aAuth, aPath, aName, aGroup) {
+  if (!aFolder) return;
   aName = aName || aPath.barejid;
   var arr = queryXmppBookmark(aAuth, aPath);
   if (arr.length) {
@@ -74,17 +88,6 @@ function insertRosterItem(aFolder, aAuth, aPath, aSubscription, aName, aGroup) {
     uri.spec = makeXmppURI(aAuth.fulljid, aPath.barejid, "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
-}
-
-//remove a resource and append the account's resource.
-function parseJIDwithResource(aString) {
-  var tmp = parseJID(aString);
-  if (!tmp) return null;
-  var account = DBFindAccount(tmp);
-  if (!account) return null;
-  var p = parseJID(account.barejid + "/" + account.resource);
-  if (!p) return null;
-  return p;
 }
 
 function insertRoster(aStanza) {
@@ -103,12 +106,9 @@ function insertRoster(aStanza) {
         var item = items[i];
         var q = parseJID(item.@jid.toString());
         if (!q) continue;
-        var subs = item.@subscription.toString();
-        if (!subs || subs == "remove") continue;
-        insertRosterItem(folders[subs],
+        insertRosterItem(folders[item.@subscription.toString()],
                          p,
                          q,
-                         subs,
                          item.@name.length() && item.@name.toString(),
                          item.nsIQRoster::group.toString());
       }
@@ -200,6 +200,7 @@ function findPWDSubscription(aAuth, aPWD) {
   var folders = createFolders(aAuth);
   for (var i = 0; i < aPWD.length; i++) {
     switch (aPWD[i]) {
+    case folders.remv: return "remove";
     case folders.none: return "none";
     case folders.to:   return "to";
     case folders.from: return "from";
@@ -234,45 +235,17 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
 }
 
-// WTF, the observer calls onItemRemoved *after* it removed the item.
-// So I can't touch removed items' title nor uri.
-// Yes, Firefox 3.5 introduced onBeforeItemRemoved, but we want to target 3.0 or later.
-// For a adhoc solution, as an alternative way of "onBeforeItemRemoved",
-// we use a global variable "changed" and "onItemChanged just before onItemRemoved"
 
-var changed = null;
+// users often remove items easily, so we decided not to correspond "onItemRemoved" to "remove roster".
+// Instead of it, "onItemMoved to the 'remove' folder" do to "remove roster".
 
 function onItemRemoved(aItemId, aFolder, aIndex) {
   Application.console.log("removed:" + aItemId);
-  if (changed && changed.id == aItemId) {
-    var p = parseJID(changed.o.auth);
-    if (!p) return;
-    var q = parseJID(changed.o.path);
-    if (!q) return;
-    switch (changed.subscription) {
-    case "none":
-      xmppSend(p, <iq type="set" id="roster_4">
-                    <query xmlns="jabber:iq:roster">
-                      <item jid={q.barejid} subscription="remove"/>
-                    </query>
-                  </iq>);
-      break;
-    case "from":
-    case "to":
-    case "both":
-      xmppSend(p, <iq type="set" id="remove1">
-                    <query xmlns="jabber:iq:roster">
-                      <item jid={q.barejid} subscription="remove"/>
-                    </query>
-                  </iq>);
-      break;
-    }
-  }
-  changed = null;
 }
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   Application.console.log("changed:" + [aBookmarkId, aProperty, aIsAnnotationProperty, aValue].join(":"));
+  if (aProperty != "title") return;
   try {
     var uri = BookmarksService.getBookmarkURI(aBookmarkId);
   } catch (e) {
@@ -284,20 +257,11 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   if (!p) return;
   var q = parseJID(o.path);
   if (!q) return;
-  switch (aProperty) {
-  case "title":
-    xmppSend(p, <iq type="set" id="roster_3">
-                  <query xmlns="jabber:iq:roster">
-                    <item jid={q.barejid} name={aValue}/>
-                  </query>
-                </iq>);
-    break;
-  default:
-    var subscription = findPWDSubscription(p, pwdBookmark(aBookmarkId));
-    if (!subscription) return;
-    changed = {id: aBookmarkId, o: o, subscription: subscription};
-    break;
-  }
+  xmppSend(p, <iq type="set" id="roster_3">
+                 <query xmlns="jabber:iq:roster">
+                   <item jid={q.barejid} name={aValue}/>
+                 </query>
+               </iq>);
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
@@ -305,34 +269,41 @@ function onItemVisited(aBookmarkId, aVisitID, aTime) {
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
-  function evalMove(aTo, aOldSubscription, aNewSubscription) {
+  function evalMove(aPath, aOldSubscription, aNewSubscription) {
     if (!aOldSubscription || !aNewSubscription) return null;
     if (aOldSubscription == aNewSubscription) return null;
+    if (aNewSubscription == "remove") {
+      return <iq type="set" id="remove1">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={aPath.barejid} subscription="remove"/>
+                </query>
+             </iq>;
+    }
     switch (aOldSubscription) {
     case "none":
       switch (aNewSubscription) {
-      case "to": return <presence to={aTo} type="subscribe"/>;
-      case "both": return <presence to={aTo} type="subscribe"/>;
+      case "to":   return <presence to={aPath.barejid} type="subscribe"/>;
+      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
       }
       break;
     case "to":
       switch (aNewSubscription) {
-      case "none": return <presence to={aTo} type="unsubscribe"/>;
-      case "from": return <presence to={aTo} type="subscribe"/>;
-      case "both": return <presence to={aTo} type="subscribe"/>;
+      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "from": return <presence to={aPath.barejid} type="subscribe"/>;
+      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
       }
       break;
     case "from":
       switch (aNewSubscription) {
-      case "none": return <presence to={aTo} type="unsubscribe"/>;
-      case "to": return <presence to={aTo} type="unsubscribe"/>;
-      case "both": return <presence to={aTo} type="subscribe"/>;
+      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "to":   return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
       }
       break;
     case "both":
       switch (aNewSubscription) {
-      case "none": return <presence to={aTo} type="unsubscribe"/>;
-      case "from": return <presence to={aTo} type="unsubscribe"/>;
+      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "from": return <presence to={aPath.barejid} type="unsubscribe"/>;
       }
       break;
     }
@@ -346,7 +317,7 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
   if (!p) return;
   var q = parseJID(o.path);
   if (!q) return;
-  var r = evalMove(q.barejid,
+  var r = evalMove(q,
                    findPWDSubscription(p, pwdBookmark(aOldParent)),
                    findPWDSubscription(p, pwdBookmark(aNewParent)));
   if (!r) return;
