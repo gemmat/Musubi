@@ -1,4 +1,4 @@
-function queryXmppBookmark(aAuth, aPath, aFolder) {
+function queryXmppBookmark(aAuth, aPath, aFolder, aFulljidP) {
   var result;
   if (aFolder) {
     result = Places.getFolderContents(aFolder, false, false).root;
@@ -26,8 +26,11 @@ function queryXmppBookmark(aAuth, aPath, aFolder) {
     if (!o) continue;
     var q = parseJID(o.path);
     if (!q) continue;
-    if (q.barejid != aPath.barejid) continue;
-    arr.push(node.itemId);
+    if (aFulljidP) {
+      if (q.fulljid == aPath.fulljid) arr.push(node.itemId);
+    } else {
+      if (q.barejid == aPath.barejid) arr.push(node.itemId);
+    }
   };
   result.containerOpen = false;
   return arr;
@@ -115,17 +118,17 @@ function insertRoster(aStanza) {
 
 function insertPresenceItem(aFolder, aAuth, aPath, aName) {
   aName = aName || aPath.barejid;
-  var arr = queryXmppBookmark(aAuth, aPath, aFolder);
+  var arr = queryXmppBookmark(aAuth, aPath, aFolder, true);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(aAuth.fulljid, aPath.barejid, "share");
+    uri.spec = makeXmppURI(aAuth.fulljid, aPath.fulljid, "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
 
 function removePresenceItem(aFolder, aAuth, aPath) {
-  var arr = queryXmppBookmark(aAuth, aPath, aFolder);
+  var arr = queryXmppBookmark(aAuth, aPath, aFolder, true);
   arr.forEach(function(id) {
     if (aFolder == BookmarksService.getFolderIdForItem(id)) {
       BookmarksService.removeItem(id);
@@ -233,9 +236,9 @@ function onItemAdded(aItemId, aFolder, aIndex) {
 
 // WTF, the observer calls onItemRemoved *after* it removed the item.
 // So I can't touch removed items' title nor uri.
-// Yes, Firefox 3.5 introduced onBeforeItemRemoved, but I want to target 3.0 or later.
+// Yes, Firefox 3.5 introduced onBeforeItemRemoved, but we want to target 3.0 or later.
 // For a adhoc solution, as an alternative way of "onBeforeItemRemoved",
-// I use a global variable "changed" and "onItemChanged just before onItemRemoved"
+// we use a global variable "changed" and "onItemChanged just before onItemRemoved"
 
 var changed = null;
 
