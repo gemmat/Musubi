@@ -1,0 +1,1 @@
+pref("extensions.musubi.defaultauth", "default@localhost/Default");

@@ -41,11 +41,19 @@ function onXmppEventAtDocument(aEvent) {
   }
   switch (xml.name().localName) {
   case "message":
+    if (o.frag) {
+      xml.* += <x xmlns="jabber:x:oob">
+                 <url>{o.frag}</url>
+                 <desc>{doc.title}</desc>
+               </x>;
+    }
     break;
   case "iq":
     break;
   case "presence":
     if (xml.@res.length() && xml.@type == "unavailable") {
+      // User left the MUC Room.
+      bookmarkPresence(<presence from={q.barejid} to={p.fulljid} type="unavailable"/>, true);
     }
     break;
   }
