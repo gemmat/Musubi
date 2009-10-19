@@ -1,4 +1,4 @@
-const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccount", "DBFindAllAccount", "DBNewAccount", "DBDeleteAccount"];
+const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccount", "DBFindAllAccount", "DBNewAccount", "DBUpdateAccount", "DBDeleteAccount"];
 
 function MusubiDB() {
   this.db = null;
@@ -11,7 +11,13 @@ function MusubiDB() {
         resource        : "TEXT NOT NULL",
         connectionHost  : "TEXT NOT NULL",
         connectionPort  : "INTEGER NOT NULL",
-        connectionScrty : "INTEGER NOT NULL"
+        connectionScrty : "INTEGER NOT NULL",
+        bmAuth          : "INTEGER",
+        bmRemv          : "INTEGER",
+        bmNone          : "INTEGER",
+        bmTo            : "INTEGER",
+        bmFrom          : "INTEGER",
+        bmBoth          : "INTEGER"
       }
     });
 }
@@ -95,6 +101,12 @@ function DBNewAccount(aObj) {
       msbdb.account.insert(account);
     }
     return account;
+  });
+}
+
+function DBUpdateAccount(aModel) {
+  return callWithMusubiDB(function updateAccount(msbdb) {
+    msbdb.account.update(aModel);
   });
 }
 

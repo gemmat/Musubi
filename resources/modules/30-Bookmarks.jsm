@@ -20,6 +20,12 @@ function DBFindAccountMainWindow(aAuth) {
   return mw.Musubi.DBFindAccount(aAuth);
 }
 
+function DBUpdateAccountMainWindow(aModel) {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (!mw) return null;
+  return mw.Musubi.DBUpdateAccount(aModel);
+}
+
 function queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP) {
   var result;
   if (aFolder) {
@@ -58,19 +64,43 @@ function queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP) {
   return arr;
 }
 
-function createFolderIfNotExist(aCurrentFolderId, aName, aPosition) {
-  return BookmarksService.getChildFolder(aCurrentFolderId, aName) ||
-    BookmarksService.createFolder(aCurrentFolderId, aName, aPosition);
-}
-
 function createFolders(aAuth) {
+  function createFolderIfNotExist(aId, aCurrentFolderId, aName, aPosition) {
+    function isBookmarkFolder(aId) {
+      if (!aId) return false;
+      try {
+        if (BookmarksService.getItemType(aId) ==
+              Ci.nsINavBookmarksService.TYPE_FOLDER)
+          return aId;
+      } catch (e) {}
+      return false;
+    }
+    return isBookmarkFolder(aId) ||
+      BookmarksService.createFolder(aCurrentFolderId, aName, aPosition);
+  }
+  var account = DBFindAccountMainWindow(aAuth);
+  if (!account) return null;
   var folderIdMenu  = BookmarksService.bookmarksMenuFolder;
-  var folderIdAuth  = createFolderIfNotExist(folderIdMenu, aAuth.barejid, -1);
-  var folderIdRemv  = createFolderIfNotExist(folderIdAuth, "remove", -1);
-  var folderIdNone  = createFolderIfNotExist(folderIdAuth, "none", -1);
-  var folderIdTo    = createFolderIfNotExist(folderIdAuth, "following", -1);
-  var folderIdFrom  = createFolderIfNotExist(folderIdAuth, "followers", -1);
-  var folderIdBoth  = createFolderIfNotExist(folderIdAuth, "both", -1);
+  var folderIdAuth  = createFolderIfNotExist(account.bmAuth, folderIdMenu, aAuth.barejid, -1);
+  var folderIdRemv  = createFolderIfNotExist(account.bmRemv, folderIdAuth, "remove", -1);
+  var folderIdNone  = createFolderIfNotExist(account.bmNone, folderIdAuth, "none", -1);
+  var folderIdTo    = createFolderIfNotExist(account.bmTo,   folderIdAuth, "following", -1);
+  var folderIdFrom  = createFolderIfNotExist(account.bmFrom, folderIdAuth, "followers", -1);
+  var folderIdBoth  = createFolderIfNotExist(account.bmBoth, folderIdAuth, "both", -1);
+  if (account.bmAuth != folderIdAuth ||
+      account.bmRemv != folderIdRemv ||
+      account.bmNone != folderIdNone ||
+      account.bmTo   != folderIdTo   ||
+      account.bmFrom != folderIdFrom ||
+      account.bmBoth != folderIdBoth) {
+    account.bmAuth = folderIdAuth;
+    account.bmRemv = folderIdRemv;
+    account.bmNone = folderIdNone;
+    account.bmTo   = folderIdTo;
+    account.bmFrom = folderIdFrom;
+    account.bmBoth = folderIdBoth;
+    DBUpdateAccountMainWindow(account);
+  }
   return {
     auth: folderIdAuth,
     remv: folderIdRemv,
@@ -189,20 +219,19 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   }
 }
 
-// the Unix command "pwd" like
-
-function pwdBookmark(aItemId) {
-  var arr = [];
-  for (var id = aItemId; id; id = BookmarksService.getFolderIdForItem(id)) {
-    arr.push(id);
+function findPWDSubscription(aAuth, aItemId) {
+  // like the Unix command "pwd".
+  function pwdBookmark(aItemId) {
+    var arr = [];
+    for (var id = aItemId; id; id = BookmarksService.getFolderIdForItem(id)) {
+      arr.push(id);
+    }
+    return arr;
   }
-  return arr;
-}
-
-function findPWDSubscription(aAuth, aPWD) {
+  var arr = pwdBookmark(aItemId);
   var folders = createFolders(aAuth);
-  for (var i = 0; i < aPWD.length; i++) {
-    switch (aPWD[i]) {
+  for (var i = 0; i < arr.length; i++) {
+    switch (arr[i]) {
     case folders.remv: return "remove";
     case folders.none: return "none";
     case folders.to:   return "to";
@@ -213,7 +242,6 @@ function findPWDSubscription(aAuth, aPWD) {
   return null;
 }
 
-// TODO: How should we do when the user rename our bookmark folder("following" etc.)?
 function onItemAdded(aItemId, aFolder, aIndex) {
   if (inBatch) return;
   Application.console.log("added:" + aItemId);
@@ -230,6 +258,8 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   if (!p) return;
   var q = parseJID(o.path);
   if (!q) return;
+  var subs = findPWDSubscription(p, aItemId);
+  if (!subs || subs == "remove") return;
   xmppSendMainWindow(p, <iq type="set" id="roster_2">
                           <query xmlns="jabber:iq:roster">
                             <item jid={q.barejid} name={title}/>
@@ -242,7 +272,6 @@ function onItemAdded(aItemId, aFolder, aIndex) {
 // Instead of it, "onItemMoved to the 'remove' folder" do to "remove roster".
 function onItemRemoved(aItemId, aFolder, aIndex) {
   if (inBatch) return;
-  Application.console.log("removed:" + aItemId);
 }
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
@@ -269,11 +298,11 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
   if (inBatch) return;
-  Application.console.log("visit:" + aBookmarkId + ":" + BookmarksService.getItemTitle(aBookmarkId));
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
   if (inBatch) return;
+  Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
   function evalMove(aPath, aOldSubscription, aNewSubscription) {
     if (!aOldSubscription || !aNewSubscription) return null;
     if (aOldSubscription == aNewSubscription) return null;
@@ -320,7 +349,6 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
     }
     return null;
   }
-  Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
   var uri = BookmarksService.getBookmarkURI(aItemId);
   var o = parseURI(uri.spec);
   if (!o) return;
@@ -329,8 +357,8 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
   var q = parseJID(o.path);
   if (!q) return;
   var r = evalMove(q,
-                   findPWDSubscription(p, pwdBookmark(aOldParent)),
-                   findPWDSubscription(p, pwdBookmark(aNewParent)));
+                   findPWDSubscription(p, aOldParent),
+                   findPWDSubscription(p, aNewParent));
   if (!r) return;
   xmppSendMainWindow(p, r);
 }
@@ -341,12 +369,10 @@ function onBeforeItemRemoved(aItemId) {
 
 function onBeginUpdateBatch() {
   inBatch = true;
-  Application.console.log("beginBatch");
 }
 
 function onEndUpdateBatch() {
   inBatch = false;
-  Application.console.log("endBatch");
 }
 
 var observer = {
