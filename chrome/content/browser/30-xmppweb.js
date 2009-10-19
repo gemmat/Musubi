@@ -51,13 +51,17 @@ function appendStanzaToBrowsers(aBrowsers, aStanza) {
 
 function addTab(aAuth, aPath, aFrag, aStanza) {
   if (!gBrowser) return;
-  var newTab = gBrowser.getBrowserForTab(
-    gBrowser.addTab(makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aFrag)));
+  var url = makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aFrag);
+  // guard from duplicating tab during its loading.
+  if (Application.storage.get(url, false)) return;
+  var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
+  Application.storage.set(url, true);
   var appendOnload0 = function(e) {
     newTab.contentDocument.addEventListener("load", appendOnload1, true);
     newTab.removeEventListener("load", appendOnload0, true);
   };
   var appendOnload1 = function(e) {
+    Application.storage.set(url, false);
     appendE4XToXmppIn(newTab.contentDocument, aStanza);
     newTab.contentDocument.removeEventListener("load", appendOnload1, true);
   };
@@ -70,10 +74,11 @@ function onMessage(aObj) {
   //print("message:" + stanza.toXMLString());
   if (from && to) {
     var nsOob = new Namespace("jabber:x:oob");
-    var url  = stanza.nsOob::x.nsOob::url.toString();
+    var url  = stanza.nsOob::x.nsOob::url.toString() ||
+                 "file:///home/teruaki/App_Musubi/chat/chat.html";
     var r = filterBrowsers(from, account, url);
     appendStanzaToBrowsers(r.browsers, stanza);
-    if (url && r.addtabp) {
+    if (r.addtabp) {
       addTab(account, from, url, stanza);
     }
   }

@@ -1,4 +1,4 @@
-const EXPORTED_SYMBOLS = ["bookmarkRoster", "bookmarkPresence"];
+const EXPORTED_SYMBOLS = ["bookmarkRoster", "bookmarkPresence", "removePresences"];
 
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 Components.utils.import("resource://gre/modules/utils.js");
@@ -54,10 +54,14 @@ function queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP) {
     if (!o) continue;
     var q = parseJID(o.path);
     if (!q) continue;
-    if (aCompareBarejidP) {
-      if (q.barejid == aPath.barejid) arr.push(node.itemId);
+    if (aPath) {
+      if (aCompareBarejidP) {
+        if (q.barejid == aPath.barejid) arr.push(node.itemId);
+      } else {
+        if (q.fulljid == aPath.fulljid) arr.push(node.itemId);
+      }
     } else {
-      if (q.fulljid == aPath.fulljid) arr.push(node.itemId);
+      arr.push(node.itemId);
     }
   };
   result.containerOpen = false;
@@ -124,9 +128,8 @@ function parseJIDwithResource(aString) {
 
 // TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
 
-function insertRosterItem(aFolder, aAuth, aPath, aName, aGroup) {
+function insertRosterItem(aAuth, aPath, aFolder, aName, aGroup) {
   if (!aFolder) return;
-  aName = aName || aPath.barejid;
   var arr = queryXmppBookmark(aAuth, aPath);
   if (arr.length) {
     arr.forEach(function(id) {
@@ -158,18 +161,19 @@ function bookmarkRoster(aStanza) {
         var item = items[i];
         var q = parseJID(item.@jid.toString());
         if (!q) continue;
-        insertRosterItem(folders[item.@subscription.toString()],
-                         p,
+        insertRosterItem(p,
                          q,
-                         item.@name.length() && item.@name.toString(),
+                         folders[item.@subscription.toString()],
+                         item.@name.length() ?
+                           item.@name.toString() :
+                           q.barejid,
                          item.nsIQRoster::group.toString());
       }
     }
   }, null);
 }
 
-function insertPresenceItem(aFolder, aAuth, aPath, aName, aCompareBarejidP) {
-  aName = aName || aPath.fulljid;
+function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
@@ -179,13 +183,17 @@ function insertPresenceItem(aFolder, aAuth, aPath, aName, aCompareBarejidP) {
   }
 }
 
-function removePresenceItem(aFolder, aAuth, aPath, aCompareBarejidP) {
+function removePresenceItem(aAuth, aPath, aFolder, aCompareBarejidP) {
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   arr.forEach(function(id) {
     if (aFolder == BookmarksService.getFolderIdForItem(id)) {
       BookmarksService.removeItem(id);
     }
   });
+}
+
+function removePresences(aAuth) {
+  removePresenceItem(aAuth, null, createFolders(aAuth)["auth"]);
 }
 
 function bookmarkPresence(aStanza, aCompareBarejidP) {
@@ -198,7 +206,7 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   case "unavailable":
     BookmarksService.runInBatchMode({
       runBatched: function batch(aData) {
-        removePresenceItem(createFolders(p)["auth"], p, q, aCompareBarejidP);
+        removePresenceItem(p, q, createFolders(p)["auth"], aCompareBarejidP);
       }
     }, null);
     break;
@@ -213,7 +221,7 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   default:
     BookmarksService.runInBatchMode({
       runBatched: function batch(aData) {
-        insertPresenceItem(createFolders(p)["auth"], p, q, aCompareBarejidP);
+        insertPresenceItem(p, q, createFolders(p)["auth"], q.fulljid, aCompareBarejidP);
       }
     }, null);
   }
@@ -385,7 +393,6 @@ var observer = {
   onBeginUpdateBatch:  onBeginUpdateBatch,
   onEndUpdateBatch:    onEndUpdateBatch
 };
-
 BookmarksService.addObserver(observer, false);
 
 
