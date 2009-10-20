@@ -153,7 +153,6 @@ function bookmarkRoster(aStanza) {
 }
 
 function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
-  Application.console.log("insertPresenceItem:" + (aPath && aPath.fulljid));
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
@@ -164,7 +163,6 @@ function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
 }
 
 function removePresenceItem(aAuth, aPath, aFolder, aCompareBarejidP) {
-  Application.console.log("removePresenceItem:" + (aPath && aPath.fulljid));
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   arr.forEach(function(id) {
     if (aFolder == BookmarksService.getFolderIdForItem(id)) {
@@ -233,7 +231,6 @@ function inBatch() {
 
 function onItemAdded(aItemId, aFolder, aIndex) {
   if (inBatch()) return;
-  Application.console.log("added:" + aItemId);
   try {
     var title = BookmarksService.getItemTitle(aItemId);
     var uri   = BookmarksService.getBookmarkURI(aItemId);
@@ -265,7 +262,6 @@ function onItemRemoved(aItemId, aFolder, aIndex) {
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   if (inBatch()) return;
-  Application.console.log("changed:" + [aBookmarkId, aProperty, aIsAnnotationProperty, aValue].join(":"));
   if (aProperty != "title") return;
   try {
     var uri = BookmarksService.getBookmarkURI(aBookmarkId);
@@ -291,7 +287,6 @@ function onItemVisited(aBookmarkId, aVisitID, aTime) {
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
   if (inBatch()) return;
-  Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
   function evalMove(aPath, aOldSubscription, aNewSubscription) {
     if (!aOldSubscription || !aNewSubscription) return null;
     if (aOldSubscription == aNewSubscription) return null;
