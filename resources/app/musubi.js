@@ -2,7 +2,7 @@ var Musubi = {
   eltIn:  null,
   eltOut: null,
   info: null,
-  init: function MusubiInit() {
+  init: function MusubiInit(onRecv) {
     if ("createEvent" in document) {
       this.eltIn  = document.createElement("xmppin");
       this.eltOut = document.createElement("xmppout");
@@ -14,6 +14,8 @@ var Musubi = {
       this.eltOut.addEventListener("DOMNodeInserted", this.listnerOut, false);
     }
     this.info = this.parseURI(document.location.href);
+    Musubi.onRecv = onRecv;
+    Musubi.send(<musubi><init/></musubi>);
   },
   listnerIn:  function MusubiListenerIn(aEvt) {
     Musubi.onRecv(Musubi.DOMToE4X(aEvt.target));

@@ -1,4 +1,4 @@
-const EXPORT = ["filterBrowsers", "makeChannel"];
+const EXPORT = ["filterBrowsers", "makeChannel", "makeStorageKey"];
 
 // export filterBrowsers just for the debug.
 function filterBrowsers(aFrom, aAccount, aURL) {
@@ -49,6 +49,10 @@ function appendStanzaToBrowsers(aBrowsers, aStanza) {
   }
 }
 
+function makeStorageKey(aURL) {
+  return "init:" + aURL;
+}
+
 function addTab(aAuth, aPath, aFrag, aStanza) {
   if (!gBrowser) return;
   var url = makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aFrag);
@@ -56,21 +60,15 @@ function addTab(aAuth, aPath, aFrag, aStanza) {
   if (Application.storage.get(url, false)) return;
   var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
   Application.storage.set(url, true);
-  var onLoadNewTab0 = function(e) {
+  var unlock = function(e) {
     Application.storage.set(url, false);
-    newTab.removeEventListener("DOMContentLoaded", onLoadNewTab0, true);
-    newTab.contentDocument.addEventListener("DOMContentLoaded", onLoadNewTab1, true);
+    newTab.removeEventListener("load", unlock, true);
   };
-  var onLoadNewTab1 = function(e) {
-    newTab.contentDocument.removeEventListener("DOMContentLoaded", onLoadNewTab1, true);
-    // TODO: WTF, how do I listen a "load" event
-    // of the content document of the newTab opened.
-    // ugly walk around by 100 milisecond timer delay. Plz help.
-    setTimeout(function(e) {
-      appendE4XToXmppIn(newTab.contentDocument, aStanza);
-    }, 100);
-  };
-  newTab.addEventListener("DOMContentLoaded", onLoadNewTab0, true);
+  newTab.addEventListener("load", unlock, true);
+  // When the contents of the newTab called Musubi.init(...), we response with aStanza.
+  // Unfortunaly Firefox throw an error when Application.storage.set(aStanza), so set its DOM.
+  // See also onXmppEventAtDocument.
+  Application.storage.set(makeStorageKey(url), E4XToDOM(document, aStanza));
 }
 
 //We call onMessage many times so we need to be aware of the performance.

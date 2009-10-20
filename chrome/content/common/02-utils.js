@@ -54,6 +54,14 @@ function appendE4XToXmppIn(aDocument, aE4X) {
   }
 }
 
+function appendDOMToXmppIn(aDocument, aDOM) {
+  if (!aDOM) return;
+  var arr = deeplyGetElementsByTagName(aDocument, "xmppin");
+  for (var i = 0, len = arr.length; i < len; i++) {
+    arr[i].elt.appendChild(aDOM);
+  }
+}
+
 function updateXMPP4MOZAccount(aAccount, aDeleteP) {
   // The xmpp4moz's xmpp_impl.jsm says
   // "deprecation('2009-04-09 getAccountByJid() - use accounts.get({jid: <jid>}) instead');"

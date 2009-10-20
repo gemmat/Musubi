@@ -40,6 +40,15 @@ function onXmppEventAtDocument(aEvent) {
     xml.@to = q.barejid;
   }
   switch (xml.name().localName) {
+  case "musubi":
+    if (xml.init.length()) {
+      var initStanzaDOM = Application.storage.get(makeStorageKey(doc.location.href), null);
+      if (initStanzaDOM) {
+        appendDOMToXmppIn(doc, initStanzaDOM);
+        Application.storage.set(makeStorageKey(doc.location.href), null);
+      }
+    }
+    break;
   case "message":
     if (o.frag) {
       xml.* += <x xmlns="jabber:x:oob">
