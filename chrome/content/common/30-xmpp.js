@@ -33,7 +33,6 @@ function xmppConnect(aAuth, aCont) {
   account.channel  = getTopWin().Musubi.makeChannel();
   updateXMPP4MOZAccount(account);
   print("connect:" + aAuth.fulljid);
-  removePresences(aAuth);
   // TODO: move a following line to XMPP.up's continuation? How I guard from duplicated tries to connect?
   Application.storage.set(aAuth.fulljid, account);
   // XMPP.up(account, ...) shows a useless dialog, so we use XMPP.up("romeo@localhost/Home", ...);

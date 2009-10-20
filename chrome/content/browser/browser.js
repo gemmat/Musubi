@@ -48,7 +48,7 @@ function onXmppEventAtDocument(aEvent) {
         Application.storage.set(makeStorageKey(doc.location.href), null);
       }
     }
-    break;
+    return;
   case "message":
     if (o.frag) {
       xml.* += <x xmlns="jabber:x:oob">

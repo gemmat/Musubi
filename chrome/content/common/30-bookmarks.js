@@ -1,30 +1,9 @@
-const EXPORTED_SYMBOLS = ["bookmarkRoster", "bookmarkPresence", "removePresences"];
+const EXPORT = ["bookmarkRoster", "bookmarkPresence", "initializeBookmarks"];
 
-Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 Components.utils.import("resource://gre/modules/utils.js");
 
 const HistoryService   = PlacesUtils.history;
 const BookmarksService = PlacesUtils.bookmarks;
-
-var inBatch = false;
-
-function xmppSendMainWindow(aAuth, aXML) {
-  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return;
-  mw.Musubi.xmppSend(aAuth, aXML);
-}
-
-function DBFindAccountMainWindow(aAuth) {
-  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return null;
-  return mw.Musubi.DBFindAccount(aAuth);
-}
-
-function DBUpdateAccountMainWindow(aModel) {
-  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return null;
-  return mw.Musubi.DBUpdateAccount(aModel);
-}
 
 function queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP) {
   var result;
@@ -82,7 +61,7 @@ function createFolders(aAuth) {
     return isBookmarkFolder(aId) ||
       BookmarksService.createFolder(aCurrentFolderId, aName, aPosition);
   }
-  var account = DBFindAccountMainWindow(aAuth);
+  var account = DBFindAccount(aAuth);
   if (!account) return null;
   var folderIdMenu  = BookmarksService.bookmarksMenuFolder;
   var folderIdAuth  = createFolderIfNotExist(account.bmAuth, folderIdMenu, aAuth.barejid, -1);
@@ -103,7 +82,7 @@ function createFolders(aAuth) {
     account.bmTo   = folderIdTo;
     account.bmFrom = folderIdFrom;
     account.bmBoth = folderIdBoth;
-    DBUpdateAccountMainWindow(account);
+    DBUpdateAccount(account);
   }
   return {
     auth: folderIdAuth,
@@ -119,7 +98,7 @@ function createFolders(aAuth) {
 function parseJIDwithResource(aString) {
   var tmp = parseJID(aString);
   if (!tmp) return null;
-  var account = DBFindAccountMainWindow(tmp);
+  var account = DBFindAccount(tmp);
   if (!account) return null;
   var p = parseJID(account.barejid + "/" + account.resource);
   if (!p) return null;
@@ -174,6 +153,7 @@ function bookmarkRoster(aStanza) {
 }
 
 function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
+  Application.console.log("insertPresenceItem:" + (aPath && aPath.fulljid));
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
@@ -184,16 +164,13 @@ function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
 }
 
 function removePresenceItem(aAuth, aPath, aFolder, aCompareBarejidP) {
+  Application.console.log("removePresenceItem:" + (aPath && aPath.fulljid));
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   arr.forEach(function(id) {
     if (aFolder == BookmarksService.getFolderIdForItem(id)) {
       BookmarksService.removeItem(id);
     }
   });
-}
-
-function removePresences(aAuth) {
-  removePresenceItem(aAuth, null, createFolders(aAuth)["auth"]);
 }
 
 function bookmarkPresence(aStanza, aCompareBarejidP) {
@@ -250,8 +227,12 @@ function findPWDSubscription(aAuth, aItemId) {
   return null;
 }
 
+function inBatch() {
+  return Application.storage.get("bookmarkInBatch", false);
+}
+
 function onItemAdded(aItemId, aFolder, aIndex) {
-  if (inBatch) return;
+  if (inBatch()) return;
   Application.console.log("added:" + aItemId);
   try {
     var title = BookmarksService.getItemTitle(aItemId);
@@ -268,22 +249,22 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   if (!q) return;
   var subs = findPWDSubscription(p, aItemId);
   if (!subs || subs == "remove") return;
-  xmppSendMainWindow(p, <iq type="set" id="roster_2">
-                          <query xmlns="jabber:iq:roster">
-                            <item jid={q.barejid} name={title}/>
-                          </query>
-                        </iq>);
-  xmppSendMainWindow(p, <presence to={q.barejid} type="subscribe"/>);
+  xmppSend(p, <iq type="set" id="roster_2">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={q.barejid} name={title}/>
+                </query>
+              </iq>);
+  xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
 }
 
 // users often remove items easily, so we decided not to correspond "onItemRemoved" to "remove roster".
 // Instead of it, "onItemMoved to the 'remove' folder" do to "remove roster".
 function onItemRemoved(aItemId, aFolder, aIndex) {
-  if (inBatch) return;
+  if (inBatch()) return;
 }
 
 function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
-  if (inBatch) return;
+  if (inBatch()) return;
   Application.console.log("changed:" + [aBookmarkId, aProperty, aIsAnnotationProperty, aValue].join(":"));
   if (aProperty != "title") return;
   try {
@@ -297,19 +278,19 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   if (!p) return;
   var q = parseJID(o.path);
   if (!q) return;
-  xmppSendMainWindow(p, <iq type="set" id="roster_3">
-                          <query xmlns="jabber:iq:roster">
-                            <item jid={q.barejid} name={aValue}/>
-                          </query>
-                        </iq>);
+  xmppSend(p, <iq type="set" id="roster_3">
+                <query xmlns="jabber:iq:roster">
+                  <item jid={q.barejid} name={aValue}/>
+                </query>
+              </iq>);
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
-  if (inBatch) return;
+  if (inBatch()) return;
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
-  if (inBatch) return;
+  if (inBatch()) return;
   Application.console.log("moved:" + [aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex].join(":"));
   function evalMove(aPath, aOldSubscription, aNewSubscription) {
     if (!aOldSubscription || !aNewSubscription) return null;
@@ -368,31 +349,43 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
                    findPWDSubscription(p, aOldParent),
                    findPWDSubscription(p, aNewParent));
   if (!r) return;
-  xmppSendMainWindow(p, r);
+  xmppSend(p, r);
 }
 
 function onBeforeItemRemoved(aItemId) {
-  if (inBatch) return;
+  if (inBatch()) return;
 }
 
 function onBeginUpdateBatch() {
-  inBatch = true;
+  Application.storage.set("bookmarkInBatch", true);
 }
 
 function onEndUpdateBatch() {
-  inBatch = false;
+  Application.storage.set("bookmarkInBatch", false);
 }
 
-var observer = {
-  onItemAdded:         onItemAdded,
-  onItemRemoved:       onItemRemoved,
-  onItemChanged:       onItemChanged,
-  onItemVisited:       onItemVisited,
-  onItemMoved:         onItemMoved,
-  onBeforeItemRemoved: onBeforeItemRemoved,
-  onBeginUpdateBatch:  onBeginUpdateBatch,
-  onEndUpdateBatch:    onEndUpdateBatch
-};
-BookmarksService.addObserver(observer, false);
+function initializeBookmarks() {
+  // guard from dupulication.
+  if (!Application.storage.get("bookmarkObserving", false)) {
+    DBFindAllAccount().forEach(function(account) {
+      var p = parseJID(account.barejid);
+      if (!p) return;
+      removePresenceItem(p, null, createFolders(p)["auth"]);
+    });
+    var observer = {
+      onItemAdded:         onItemAdded,
+      onItemRemoved:       onItemRemoved,
+      onItemChanged:       onItemChanged,
+      onItemVisited:       onItemVisited,
+      onItemMoved:         onItemMoved,
+      onBeforeItemRemoved: onBeforeItemRemoved,
+      onBeginUpdateBatch:  onBeginUpdateBatch,
+      onEndUpdateBatch:    onEndUpdateBatch
+    };
+    BookmarksService.addObserver(observer, false);
+    Application.storage.set("bookmarkObserving", true);
+  }
+}
+
 
 
