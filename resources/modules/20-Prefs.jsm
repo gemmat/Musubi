@@ -1,5 +1,10 @@
-const EXPORTED_SYMBOLS = ["Prefs"];
+const EXPORTED_SYMBOLS = ["getPrefDefaultPage", "Prefs"];
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
+
+function getPrefDefaultPage() {
+  var pref = new Prefs("extensions.musubi.");
+  return pref.get("defaultpage", "resource://musubi/app/sio/sio.html");
+}
 
 /*
  * Codes in this file follow the licence of the Hatena Bookmark Extension.

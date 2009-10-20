@@ -6,9 +6,9 @@ function XMPProtocol() {}
 
 function getCurrentDocumentURISpec() {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return "about:blank";
+  if (!mw) return getPrefDefaultPage();
   var currentURI = mw.content.document.documentURI;
-  if (!currentURI) return "about:blank";
+  if (!currentURI) return getPrefDefaultPage();
   var o = parseURI(currentURI);
   if (!o) return currentURI;
   return o.frag;
