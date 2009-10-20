@@ -73,9 +73,11 @@ function decapitalize(aString) {
 }
 
 function makeXmppURI(aAuth, aPath, aQuery, aFrag) {
-  return "xmpp://" + aAuth + "/" + aPath +
-    (aQuery ? "?" + aQuery : "") +
-    (aFrag  ? "#" + aFrag  : "");
+  return "xmpp://" +
+         aAuth +
+         (aPath  ? "/" + aPath  : "") +
+         (aQuery ? "?" + aQuery : "") +
+         (aFrag  ? "#" + aFrag  : "");
 }
 
 // We'll reuse parseURI and parseJID functions at App_Musubi/musubi.js
@@ -143,6 +145,7 @@ function parseURI(aURISpec) {
 }
 
 function parseJID(aString) {
+  if (!aString) return null;
   var m = /^(.+?@)?(.+?)(?:\/|$)(.*$)/.exec(aString);
   if (!m) return null;
   if (m[1] == undefined) m[1] = "";
