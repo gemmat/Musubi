@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "getMusubiSidebar"];
+const EXPORT = ["onLoad", "onUnload"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
@@ -11,16 +11,6 @@ function onLoad(aEvent) {
 
 function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
-}
-
-function getMusubiSidebar() {
-  var sidebar = document.getElementById("sidebar");
-  if (!sidebar || !sidebar.contentWindow.Musubi) return null;
-  return {
-    win:       sidebar.contentWindow,
-    doc:       sidebar.contentDocument,
-    Musubi:    sidebar.contentWindow.Musubi
-  };
 }
 
 function onXmppEventAtDocument(aEvent) {

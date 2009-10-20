@@ -1,57 +1,12 @@
 <?xml version="1.0" ?>
 <?xml-stylesheet type="text/css" href="chrome://musubi/skin/toolbar.css"?>
-<!DOCTYPE overlay SYSTEM "chrome://musubi/locale/browser.dtd" [
-    <!ENTITY % toolbar SYSTEM "chrome://musubi/locale/toolbar.dtd">
-    %toolbar;
-]>
+<!DOCTYPE overlay SYSTEM "chrome://musubi/locale/browser.dtd">
 <overlay id="Musubi-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          xmlns:html="http://www.w3.org/1999/xhtml"
 >
     <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
-
-    <menupopup id="viewSidebarMenu">
-        <menuitem key="key_viewMusubiSidebar" observes="viewMusubiSidebar" />
-    </menupopup>
-    <keyset id="mainKeyset">
-      <key id="key_viewMusubiSidebar" command="viewMusubiSidebar" key="&Musubi.sidebar.key;" modifiers="&Musubi.sidebar.modifiers;"/>
-    </keyset>
-
-    <toolbarpalette id="BrowserToolbarPalette">
-        <!--  Watch out the "defaultset" property to reflect your addition of toolbar[button|item] -->
-        <toolbarbutton id="Musubi-toolbar-sidebar-button"
-                       class="chromeclass-toolbar-additional"
-                       tooltiptext="&Musubi.toolbar.toggleSidebarLabel;"
-                       observes="viewMusubiSidebar"/>
-    </toolbarpalette>
-
-    <toolbox id="navigator-toolbox">
-        <toolbar id="Musubi-toolbar"
-                 class="chromeclass-toolbar-additional"
-                 mode="icons"
-                 defaultmode="icons"
-                 iconsize="small"
-                 defaulticonsize="small"
-                 customizable="true"
-                 defaultset="Musubi-toolbar-sidebar-button"
-                 context="toolbar-context-menu"
-                 toolbarname="&Musubi.toolbar.title;"
-                 accesskey="&Musubi.toolbar.titleKey;">
-        </toolbar>
-    </toolbox>
-
-    <broadcasterset id="mainBroadcasterSet">
-        <broadcaster id="viewMusubiSidebar"
-                     label="&Musubi.sidebar.label;"
-                     autoCheck="false"
-                     type="checkbox"
-                     group="sidebar"
-                     sidebarurl="chrome://musubi/content/sidebar.xul"
-                     sidebartitle="&Musubi.sidebar.label;"
-                     key="Musubi-key-sidebar"
-                     oncommand="toggleSidebar('viewMusubiSidebar');"/>
-    </broadcasterset>
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
     (function() {
@@ -62,5 +17,3 @@
     // ]]>
     </script>
 </overlay>
-
-
