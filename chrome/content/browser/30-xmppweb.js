@@ -56,16 +56,16 @@ function addTab(aAuth, aPath, aFrag, aStanza) {
   if (Application.storage.get(url, false)) return;
   var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
   Application.storage.set(url, true);
-  var appendOnload0 = function(e) {
-    newTab.removeEventListener("load", appendOnload0, true);
-    newTab.contentDocument.addEventListener("load", appendOnload1, true);
-  };
-  var appendOnload1 = function(e) {
+  var onLoadNewTab = function(e) {
     Application.storage.set(url, false);
-    newTab.contentDocument.removeEventListener("load", appendOnload1, true);
-    appendE4XToXmppIn(newTab.contentDocument, aStanza);
+    newTab.removeEventListener("load", onLoadNewTab, true);
+    // TODO: WTF, how do I listen a "load" event of the content of the newTab.
+    // ugly walk around by 100 milisecond timer delay. Plz help.
+    setTimeout(function(e) {
+      appendE4XToXmppIn(newTab.contentDocument, aStanza);
+    }, 100);
   };
-  newTab.addEventListener("load", appendOnload0, true);
+  newTab.addEventListener("load", onLoadNewTab, true);
 }
 
 //We call onMessage many times so we need to be aware of the performance.
