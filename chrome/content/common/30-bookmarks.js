@@ -157,7 +157,7 @@ function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(aAuth.fulljid, aPath.fulljid, "share");
+    uri.spec = makeXmppURI(aAuth.fulljid, aPath ? aPath.fulljid : "", "share");
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
@@ -177,6 +177,8 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   if (!p) return;
   var q = parseJID(aStanza.@from.toString());
   if (!q) return;
+  // TODO: This is just an adhoc hack to prevent the user's own self presence.
+  if (p.barejid == q.barejid) return;
   switch (aStanza.@type.toString()) {
   case "unavailable":
     BookmarksService.runInBatchMode({
@@ -363,9 +365,11 @@ function initializeBookmarks() {
   // guard from dupulication.
   if (!Application.storage.get("bookmarkObserving", false)) {
     DBFindAllAccount().forEach(function(account) {
-      var p = parseJID(account.barejid);
+      var p = parseJIDwithResource(account.barejid);
       if (!p) return;
-      removePresenceItem(p, null, createFolders(p)["auth"]);
+      var folderIdAuth = createFolders(p)["auth"];
+      removePresenceItem(p, null, folderIdAuth);
+      insertPresenceItem(p, null, folderIdAuth, "start", true);
     });
     var observer = {
       onItemAdded:         onItemAdded,
