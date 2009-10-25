@@ -9,6 +9,8 @@ const Application      = Cc["@mozilla.org/fuel/application;1"].
                            getService(Ci.fuelIApplication);
 const IOService        = Cc["@mozilla.org/network/io-service;1"].
                            getService(Ci.nsIIOService);
+const URLParser        = Cc["@mozilla.org/network/url-parser;1?auth=no"]
+                           .getService(Ci.nsIURLParser);
 const WindowMediator   = Cc["@mozilla.org/appshell/window-mediator;1"].
                            getService(Ci.nsIWindowMediator);
 const PrefService      = Cc["@mozilla.org/preferences-service;1"].
@@ -70,6 +72,25 @@ function filterMap(aArray, aProc) {
 
 function decapitalize(aString) {
   return aString.substr(0, 1).toLowerCase() + aString.substr(1);
+}
+
+function ajaxRequest(aMethod, aURL, aQuery, aOnComplete) {
+  function queryToString(aObject) {
+    var results = [];
+    for (var p in aObject) {
+      var key = encodeURIComponent(p), values = aObject[p];
+      results.push(key + "=" + values);
+    }
+    return results.join("&");
+  }
+  var req = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+              .createInstance(Ci.nsIXMLHttpRequest);
+  req.open(aMethod, aURL, true);
+  req.onreadystatechange = function(aEvt) {
+    if (req.readyState == 4 && req.status == 200)
+      aOnComplete(req);
+  };
+  req.send(queryToString(aQuery));
 }
 
 function makeXmppURI(aAuth, aPath, aQuery, aFrag) {
