@@ -18,6 +18,7 @@
   </preferences>
   <vbox>
     <iframe type="content"
+            id="prefpane-account-add-iframe"
             src="resource://musubi/app/account/new.html"
             flex="1"/>
   </vbox>
@@ -29,6 +30,7 @@
     </preferences>
     <vbox>
       <iframe type="content"
+              id="prefpane-account-edit-iframe"
               src="resource://musubi/app/account/edit.html"
               flex="1"/>
     </vbox>
@@ -40,6 +42,7 @@
     </preferences>
     <vbox>
       <iframe type="content"
+              id="prefpane-account-delete-iframe"
               src="resource://musubi/app/account/delete.html"
               flex="1"/>
     </vbox>
@@ -48,6 +51,10 @@
 <prefpane
     id="prefpane-defaults" label="&Musubi.config.defaults;" flex="1">
     <preferences>
+      <preference
+         id="extensions.musubi.defaultauth"
+         name="extensions.musubi.defaultauth"
+         type="string"/>
       <preference
          id="extensions.musubi.defaultpage"
          name="extensions.musubi.defaultpage"
@@ -66,6 +73,10 @@
             <column flex="1"/>
           </columns>
           <rows>
+            <row>
+              <label value="&Musubi.config.defaultauth.label;" control="defaultauth"/>
+              <textbox id="defaultauth" preference="extensions.musubi.defaultauth"/>
+            </row>
             <row>
               <label value="&Musubi.config.defaultpage.label;" control="defaultpage"/>
               <textbox id="defaultpage" preference="extensions.musubi.defaultpage"/>

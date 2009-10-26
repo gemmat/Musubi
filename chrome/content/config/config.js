@@ -51,6 +51,11 @@ function setDefaultAuth(aE4X) {
 }
 
 function onXmppEventAtIframe(aEvent) {
+  function reloadIframe(aId) {
+    var elt = document.getElementById(aId);
+    if (!elt) return;
+    elt.contentWindow.location.reload();
+  }
   function evalRequest(aType, aXML) {
     switch (aType) {
     case "get":
@@ -60,8 +65,15 @@ function onXmppEventAtIframe(aEvent) {
       break;
     case "set":
       if (xml.account.length()) {
-        if (xml.account.@del.length()) return deleteAccount(xml);
-        return createupdateAccount(xml);
+        if (xml.account.@del.length()) {
+          reloadIframe("prefpane-account-edit-iframe");
+          reloadIframe("prefpane-account-delete-iframe");
+          return deleteAccount(xml);
+        } else {
+          reloadIframe("prefpane-account-edit-iframe");
+          reloadIframe("prefpane-account-delete-iframe");
+          return createupdateAccount(xml);
+        }
       }
       if (xml.defaultauth.length()) return setDefaultAuth(xml);
       break;
