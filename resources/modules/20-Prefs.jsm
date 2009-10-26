@@ -2,8 +2,8 @@ const EXPORTED_SYMBOLS = ["getPrefDefaultPage", "Prefs"];
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 
 function getPrefDefaultPage() {
-  var pref = new Prefs("extensions.musubi.");
-  return pref.get("defaultpage", "resource://musubi/app/sio/sio.html");
+  var prefs = new Prefs("extensions.musubi.");
+  return prefs.get("defaultpage", "resource://musubi/app/sio/sio.html");
 }
 
 /*

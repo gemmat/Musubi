@@ -13,6 +13,8 @@ const URLParser        = Cc["@mozilla.org/network/url-parser;1?auth=no"]
                            .getService(Ci.nsIURLParser);
 const WindowMediator   = Cc["@mozilla.org/appshell/window-mediator;1"].
                            getService(Ci.nsIWindowMediator);
+const StringBundleService =  Cc["@mozilla.org/intl/stringbundle;1"]
+                               .getService(Ci.nsIStringBundleService);
 const PrefService      = Cc["@mozilla.org/preferences-service;1"].
                            getService(Ci.nsIPrefService).
                            QueryInterface(Ci.nsIPrefBranch).

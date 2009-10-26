@@ -14,7 +14,7 @@ function ftpQueuedUpload(aFtpURI, aQueue, aCont) {
       return;
     }
     var item = aQueue.pop();
-    uploadedItem = item.basename;
+    uploadedItem = item;
     ftpUpload(aFtpURI, item.basename, item.istream, f);
   }
   f(false);

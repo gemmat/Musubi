@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload"];
+const EXPORT = ["onLoad", "onUnload", "addMusubiButtonToToolbar", "onCommandToolbarButton"];
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
@@ -58,4 +58,42 @@ function onXmppEventAtDocument(aEvent) {
   }
   delete xml.@res;
   xmppSend(p, xml);
+}
+
+function addMusubiButtonToToolbar(aButtonId) {
+  var toolbar = document.getElementById("nav-bar");
+  if (toolbar.getAttribute("customizable") != "true") return;
+  var set = toolbar.currentSet;
+  if (set.indexOf(aButtonId) != -1) return;
+  toolbar.currentSet = set.replace(/(urlbar-container|separator)/, aButtonId + ',$1');
+  toolbar.setAttribute("currentset", toolbar.currentSet);
+  document.persist(toolbar.id, "currentset");
+  try {
+    BrowserToolboxCustomizeDone(true);
+  } catch (e) {};
+}
+
+function onCommandToolbarButton() {
+  function makeMessage(aTo, aURLValue, aDesc) {
+    return <message to={aTo}>
+             <body>{aURLValue}</body>
+             <x xmlns="jabber:x:oob">
+               <url>{aURLValue}</url>
+               <desc>{aDesc}</desc>
+             </x>
+           </message>;
+  }
+  var o = parseURI(content.document.documentURI);
+  if (!o || !o.path || !o.frag) return;
+  var p = parseJID(o.auth);
+  if (!p) return;
+  var uri = IOService.newURI(o.frag, null, null);
+  if (uri.schemeIs("file")) {
+    karaage(p, content.document, function(aHttpValue) {
+      openUILink(makeXmppURI(o.auth, o.path, "", aHttpValue));
+      xmppSend(p, makeMessage(o.path, aHttpValue, content.document.title));
+    });
+  } else {
+    xmppSend(p, makeMessage(o.path, o.frag, content.document.title));
+  }
 }

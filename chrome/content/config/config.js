@@ -34,19 +34,19 @@ function deleteAccount(aE4X) {
 }
 
 function getDefaultAuth() {
-  var pref = new Prefs("extensions.musubi.");
-  if (!pref) return null;
-  var d = pref.get("defaultauth", "default@localhost/Default");
+  var prefs = new Prefs("extensions.musubi.");
+  if (!prefs) return null;
+  var d = prefs.get("defaultauth", "default@localhost/Default");
   if (!d) return null;
   return <musubi type="result"><defaultauth>{d}</defaultauth></musubi>;
 }
 
 function setDefaultAuth(aE4X) {
-  var pref = new Prefs("extensions.musubi.");
-  if (!pref) return null;
+  var prefs = new Prefs("extensions.musubi.");
+  if (!prefs) return null;
   var p = parseJID(aE4X.defaultauth.toString());
   if (!p) return null;
-  pref.set("defaultauth", p.fulljid);
+  prefs.set("defaultauth", p.fulljid);
   return getDefaultAuth();
 }
 

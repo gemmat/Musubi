@@ -31,9 +31,9 @@ function queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP) {
     if (!PlacesUtils.nodeIsBookmark(node)) continue;
     var o = parseURI(node.uri);
     if (!o) continue;
-    var q = parseJID(o.path);
-    if (!q) continue;
     if (aPath) {
+      var q = parseJID(o.path);
+      if (!q) continue;
       if (aCompareBarejidP) {
         if (q.barejid == aPath.barejid) arr.push(node.itemId);
       } else {
@@ -63,13 +63,14 @@ function createFolders(aAuth) {
   }
   var account = DBFindAccount(aAuth);
   if (!account) return null;
+  var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
   var folderIdMenu  = BookmarksService.bookmarksMenuFolder;
   var folderIdAuth  = createFolderIfNotExist(account.bmAuth, folderIdMenu, aAuth.barejid, -1);
-  var folderIdRemv  = createFolderIfNotExist(account.bmRemv, folderIdAuth, "remove", -1);
-  var folderIdNone  = createFolderIfNotExist(account.bmNone, folderIdAuth, "none", -1);
-  var folderIdTo    = createFolderIfNotExist(account.bmTo,   folderIdAuth, "following", -1);
-  var folderIdFrom  = createFolderIfNotExist(account.bmFrom, folderIdAuth, "followers", -1);
-  var folderIdBoth  = createFolderIfNotExist(account.bmBoth, folderIdAuth, "both", -1);
+  var folderIdRemv  = createFolderIfNotExist(account.bmRemv, folderIdAuth, strings.get("remove"), -1);
+  var folderIdNone  = createFolderIfNotExist(account.bmNone, folderIdAuth, strings.get("none"), -1);
+  var folderIdTo    = createFolderIfNotExist(account.bmTo,   folderIdAuth, strings.get("to"), -1);
+  var folderIdFrom  = createFolderIfNotExist(account.bmFrom, folderIdAuth, strings.get("from"), -1);
+  var folderIdBoth  = createFolderIfNotExist(account.bmBoth, folderIdAuth, strings.get("both"), -1);
   if (account.bmAuth != folderIdAuth ||
       account.bmRemv != folderIdRemv ||
       account.bmNone != folderIdNone ||

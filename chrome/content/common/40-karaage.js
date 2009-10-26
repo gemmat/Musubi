@@ -1,4 +1,5 @@
-const EXPORT = ["karaage"];
+const EXPORT = ["karaage", "ftpQueueWebBrowserPersist", "filterLocalFileElements"];
+//TODO: don't export "ftpQueueWebBrowserPersist", "filterLocalFileElements"
 
 function decomposeFilePath(aPath) {
   var directoryPos = {}, directoryLen = {},
@@ -92,21 +93,23 @@ function filterLocalFileElements(aDocument, aBaseURISpec) {
     if (aElement.tagName == "IMG"  || aElement.tagName == "SCRIPT")
       source = aElement.src;
     if (!source) return null;
+    var o = parseURI(source);
+    if (o && o.frag) source = o.frag;
     var base = IOService.newURI(aBaseURISpec, null, null);
     var uri  = IOService.newURI(source, null, base);
-    return {element: aElement, uri: uri};
+    return uri;
   }
   return filterMap([].concat($A(aDocument.getElementsByTagName("a")),
                              $A(aDocument.getElementsByTagName("img")),
                              $A(aDocument.getElementsByTagName("script")),
                              $A(aDocument.getElementsByTagName("link"))),
                    function(element) {
-                     var obj = getSource(element);
-                     return (obj && obj.uri.schemeIs("file")) ? obj : false;
+                     var uri = getSource(element);
+                     return (uri && uri.schemeIs("file")) ? {element: element, uri: uri} : false;
                    });
 }
 
-function ftpQueueWebBrowserPersist(aDocument) {
+function ftpQueueWebBrowserPersist(aDocument, aBaseURISpec) {
   function setSource(aElement, aValue) {
     if (aElement.tagName == "LINK" || aElement.tagName == "A") {
       aElement.href = aValue;
@@ -119,7 +122,7 @@ function ftpQueueWebBrowserPersist(aDocument) {
   var uploadQueue = [];
   makeBasenamesUnique(
     mergeSameFile(
-      filterLocalFileElements(doc, aDocument.location.href)))
+      filterLocalFileElements(doc, aBaseURISpec)))
         .forEach(function(x, i) {
           uploadQueue.push({basename: x.basename, istream: openInputFile(x.uri)});
           x.elements.forEach(function(element) {
@@ -163,16 +166,25 @@ function ajaxRequestKaraageInfo(aCGIURI, aJID, aProc) {
   });
 }
 
-function karaage(aAuth, aDocument) {
-  var pref = new Prefs("extensions.musubi.");
+function karaage(aAuth, aDocument, aCont) {
+  var baseURISpec = aDocument.documentURI;
+  var o = parseURI(baseURISpec);
+  if (o && o.frag) baseURISpec = o.frag;
+  if (!baseURISpec) return;
+  var prefs = new Prefs("extensions.musubi.");
   ajaxRequestKaraageInfo(
-    pref.get("defaultkaraage", "http://localhost/cgi-bin/echo.cgi"),
+    prefs.get("defaultkaraage", "http://localhost/cgi-bin/echo.cgi"),
     aAuth.barejid,
     function (aFtpValue, aHttpValue) {
       var ftpURI = IOService.newURI(aFtpValue + "/", null, null);
-      ftpQueuedUpload(ftpURI, ftpQueueWebBrowserPersist(aDocument), function () {
-        var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-        mw.openUILink(aHttpValue);
+      ftpQueuedUpload(ftpURI, ftpQueueWebBrowserPersist(aDocument, baseURISpec), function (success, failure) {
+        success.forEach(function(x) {
+                           Application.console.log("success:" + x.basename);
+                         });
+        failure.forEach(function(x) {
+                           Application.console.log("failure:" + x.basename);
+                         });
+        aCont(aHttpValue);
       });
     });
 }

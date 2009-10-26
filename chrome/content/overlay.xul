@@ -7,6 +7,15 @@
 >
     <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
+    <toolbox id="navigator-toolbox"/>
+    <toolbarpalette id="BrowserToolbarPalette">
+      <toolbarbutton id="musubi-button"
+                     class="toolbarbutton-1 chromeclass-toolbar-additional"
+                     image="chrome://musubi/skin/images/musubi16.png"
+                     tooltiptext="&Musubi.toolbarbutton.tooltiptext;"
+                     label="&Musubi.toolbarbutton.label;"
+                     oncommand="Musubi.onCommandToolbarButton()"/>
+    </toolbarpalette>
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
     (function() {

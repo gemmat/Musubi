@@ -55,8 +55,8 @@ XMPProtocol.prototype = {
       o.auth = o1.auth;
     }
     if (!o.auth) {
-      var pref = new Prefs("extensions.musubi.");
-      o.auth = pref.get("defaultauth", "default@localhost/Default");
+      var prefs = new Prefs("extensions.musubi.");
+      o.auth = prefs.get("defaultauth", "default@localhost/Default");
     }
     if (/^share/.test(o.query)) {
       o.frag = getCurrentDocumentURISpec();
