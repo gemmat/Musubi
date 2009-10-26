@@ -3,3 +3,6 @@
 <!ENTITY Musubi.config.new       "Create a account">
 <!ENTITY Musubi.config.edit      "Edit">
 <!ENTITY Musubi.config.delete    "Delete">
+<!ENTITY Musubi.config.defaults  "Misc">
+<!ENTITY Musubi.config.defaultpage.label     "A default page">
+<!ENTITY Musubi.config.defaultkaraage.label  "A default uploader">

@@ -368,9 +368,10 @@ function initializeBookmarks() {
     DBFindAllAccount().forEach(function(account) {
       var p = parseJIDwithResource(account.barejid);
       if (!p) return;
+      var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
       var folderIdAuth = createFolders(p)["auth"];
       removePresenceItem(p, null, folderIdAuth);
-      insertPresenceItem(p, null, folderIdAuth, "start", true);
+      insertPresenceItem(p, null, folderIdAuth, strings.get("start"), true);
     });
     var observer = {
       onItemAdded:         onItemAdded,

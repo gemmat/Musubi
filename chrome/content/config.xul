@@ -12,18 +12,18 @@
     title="&Musubi.config.title;"
     >
 
-<prefpane 
-    id="prefpane-account-add" label="&Musubi.config.new;" flex="1">
-    <preferences>
-    </preferences>
-    <vbox>
-      <iframe type="content"
-              src="resource://musubi/app/account/new.html"
-              flex="1"/>
-    </vbox>
+<prefpane
+   id="prefpane-account-add" label="&Musubi.config.new;" flex="1">
+  <preferences>
+  </preferences>
+  <vbox>
+    <iframe type="content"
+            src="resource://musubi/app/account/new.html"
+            flex="1"/>
+  </vbox>
 </prefpane>
 
-<prefpane 
+<prefpane
     id="prefpane-account-edit" label="&Musubi.config.edit;" flex="1">
     <preferences>
     </preferences>
@@ -34,7 +34,7 @@
     </vbox>
 </prefpane>
 
-<prefpane 
+<prefpane
     id="prefpane-account-delete" label="&Musubi.config.delete;" flex="1">
     <preferences>
     </preferences>
@@ -42,6 +42,41 @@
       <iframe type="content"
               src="resource://musubi/app/account/delete.html"
               flex="1"/>
+    </vbox>
+</prefpane>
+
+<prefpane
+    id="prefpane-defaults" label="&Musubi.config.defaults;" flex="1">
+    <preferences>
+      <preference
+         id="extensions.musubi.defaultpage"
+         name="extensions.musubi.defaultpage"
+         type="string"/>
+      <preference
+         id="extensions.musubi.defaultkaraage"
+         name="extensions.musubi.defaultkaraage"
+         type="string"/>
+    </preferences>
+    <vbox>
+      <groupbox orient="vertical">
+        <caption label="&Musubi.config.defaults;" />
+        <grid>
+          <columns>
+            <column/>
+            <column flex="1"/>
+          </columns>
+          <rows>
+            <row>
+              <label value="&Musubi.config.defaultpage.label;" control="defaultpage"/>
+              <textbox id="defaultpage" preference="extensions.musubi.defaultpage"/>
+            </row>
+            <row>
+              <label value="&Musubi.config.defaultkaraage.label;" control="defaultkaraage"/>
+              <textbox id="defaultkaraage" preference="extensions.musubi.defaultkaraage"/>
+            </row>
+          </rows>
+        </grid>
+      </groupbox>
     </vbox>
 </prefpane>
 
