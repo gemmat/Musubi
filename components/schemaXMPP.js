@@ -4,13 +4,14 @@ Components.utils.import("resource://musubi/modules/20-Prefs.jsm");
 
 function XMPProtocol() {}
 
-function getCurrentDocumentURISpec() {
+function getContentDocumentURISpec() {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return getPrefDefaultPage();
-  var currentURI = mw.content.document.documentURI;
-  if (!currentURI) return getPrefDefaultPage();
-  var o = parseURI(currentURI);
-  if (!o) return currentURI;
+  var currentURISpec = mw.content.document.documentURI;
+  if (!currentURISpec || currentURISpec == "about:blank")
+    return getPrefDefaultPage();
+  var o = parseURI(currentURISpec);
+  if (!o) return currentURISpec;
   return o.frag;
 }
 
@@ -59,7 +60,7 @@ XMPProtocol.prototype = {
       o.auth = prefs.get("defaultauth", "default@localhost/Default");
     }
     if (/^share/.test(o.query)) {
-      o.frag = getCurrentDocumentURISpec();
+      o.frag = getContentDocumentURISpec();
       o.query = null;
     } else {
     // handle the frag.

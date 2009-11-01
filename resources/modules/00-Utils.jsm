@@ -76,6 +76,17 @@ function decapitalize(aString) {
   return aString.substr(0, 1).toLowerCase() + aString.substr(1);
 }
 
+function makeURIFromSpec(aURISpec) {
+  if (!aURISpec) return null;
+  if (/^file:/.test(aURISpec)) {
+    var fileHandler = IOService.getProtocolHandler("file")
+                        .QueryInterface(Ci.nsIFileProtocolHandler);
+    var tempLocalFile = fileHandler.getFileFromURLSpec(aURISpec);
+    return IOService.newFileURI(tempLocalFile);
+  }
+  return IOService.newURI(aURISpec, null, null); // a regular URI
+}
+
 function ajaxRequest(aMethod, aURL, aQuery, aOnComplete) {
   function queryToString(aObject) {
     var results = [];

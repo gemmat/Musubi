@@ -106,7 +106,7 @@ function parseJIDwithResource(aString) {
   return p;
 }
 
-// TODO: represent aGroup as a Bookmark tag(taggingService.tagURI).
+// TODO: represent the roster group with Bookmark tags(taggingService.tagURI).
 
 function insertRosterItem(aAuth, aPath, aFolder, aName, aGroup) {
   if (!aFolder) return;
@@ -153,12 +153,12 @@ function bookmarkRoster(aStanza) {
   }, null);
 }
 
-function insertPresenceItem(aAuth, aPath, aFolder, aName, aCompareBarejidP) {
+function insertPresenceItem(aAuth, aPath, aFolder, aName, aQuery, aFrag, aCompareBarejidP) {
   var arr = queryXmppBookmark(aAuth, aPath, aFolder, aCompareBarejidP);
   if (!arr.length) {
     var uri = Cc["@mozilla.org/network/simple-uri;1"].
                 createInstance(Ci.nsIURI);
-    uri.spec = makeXmppURI(aAuth.fulljid, aPath ? aPath.fulljid : "", "share");
+    uri.spec = makeXmppURI(aAuth.fulljid, aPath ? aPath.fulljid : "", aQuery, aFrag);
     BookmarksService.insertBookmark(aFolder, uri, -1, aName);
   }
 }
@@ -178,8 +178,6 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   if (!p) return;
   var q = parseJID(aStanza.@from.toString());
   if (!q) return;
-  // TODO: This is just an adhoc hack to prevent the user's own self presence.
-  if (p.barejid == q.barejid) return;
   switch (aStanza.@type.toString()) {
   case "unavailable":
     BookmarksService.runInBatchMode({
@@ -199,7 +197,7 @@ function bookmarkPresence(aStanza, aCompareBarejidP) {
   default:
     BookmarksService.runInBatchMode({
       runBatched: function batch(aData) {
-        insertPresenceItem(p, q, createFolders(p)["auth"], q.fulljid, aCompareBarejidP);
+        insertPresenceItem(p, q, createFolders(p)["auth"], q.fulljid, "share", "", aCompareBarejidP);
       }
     }, null);
   }
@@ -285,7 +283,25 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
+  Application.console.log("onItemVisited");
   if (inBatch()) return;
+  Application.console.log("onItemVisited1");
+  try {
+    var uri = BookmarksService.getBookmarkURI(aBookmarkId);
+    Application.console.log(uri.spec);
+    var o = parseURI(uri.spec);
+    if (!o || !o.auth || !o.path || !o.frag) return;
+    Application.console.log(o.auth);
+    var p = parseJID(o.auth);
+    if (!p) return;
+    Application.console.log(p.fulljid);
+    xmppSend(p, <message to={o.path}>
+                  <body>{o.frag}</body>
+                    <x xmlns="jabber:x:oob">
+                      <url>{o.frag}</url>
+                    </x>;
+                  </message>);
+  } catch (e) {};
 }
 
 function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
@@ -371,7 +387,7 @@ function initializeBookmarks() {
       var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
       var folderIdAuth = createFolders(p)["auth"];
       removePresenceItem(p, null, folderIdAuth);
-      insertPresenceItem(p, null, folderIdAuth, strings.get("start"), true);
+      insertPresenceItem(p, null, folderIdAuth, strings.get("start"), "", "resource://musubi/app/help/start.html", true);
     });
     var observer = {
       onItemAdded:         onItemAdded,

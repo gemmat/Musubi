@@ -1,30 +1,37 @@
 const EXPORT = ["filterBrowsers", "makeChannel", "makeStorageKey"];
-
 // export filterBrowsers just for the debug.
-function filterBrowsers(aFrom, aAccount, aURL) {
-  var res = [];
+
+const nsOob = new Namespace("jabber:x:oob");
+
+function filterBrowsers(aAccount, aFrom, aURL) {
+  var bs = [];
   var addtabp = true;
-  if (!gBrowser) return res;
+  if (!gBrowser) return bs;
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = parseURI(b.currentURI.spec);
     if (!o) continue;
     var p = parseJID(o.auth);
     if (!p) continue;
-    var q = parseJID(o.path);
-    if (!q) continue;
     if (( aAccount.resource && p.fulljid == aAccount.fulljid) ||
         (!aAccount.resource && p.barejid == aAccount.barejid)) {
-      if (q.barejid == aFrom.barejid) {
-      // TODO: consider wheather to uncomment the following conditionals or not...
-      //if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
-      //    (!aFrom.resource && q.barejid == aFrom.barejid)) {
-        res.push(b);
-        if (o.frag == aURL) addtabp = false;
+      if (aFrom) {
+        var q = parseJID(o.path);
+        if (!q) continue;
+        if (q.barejid == aFrom.barejid) {
+          // TODO: consider wheather to uncomment the following conditionals or not...
+          //if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
+          //    (!aFrom.resource && q.barejid == aFrom.barejid)) {
+          bs.push(b);
+          if (o.frag == aURL) addtabp = false;
+        }
+      } else {
+        bs.push(b);
+        addtabp = false;
       }
     }
   }
-  return {browsers: res, addtabp: addtabp};
+  return {browsers: bs, addtabp: addtabp};
 }
 
 function makeChannel() {
@@ -39,7 +46,7 @@ function parseXMPP4MOZEvent(aObject) {
   var stanza  = aObject.stanza;
   var account = parseJID(aObject.account);
   var from    = parseJID(stanza.@from.toString());
-  var to      = parseJID(stanza.@to.length() ? stanza.@to.toString() : aObject.account);
+  var to      = parseJID(stanza.@to.toString());
   return [stanza, account, from, to];
 }
 
@@ -49,6 +56,7 @@ function appendStanzaToBrowsers(aBrowsers, aStanza) {
   }
 }
 
+// Make a consistent key for addTab and onXmppEventAtDocument.
 function makeStorageKey(aURL) {
   return "init:" + aURL;
 }
@@ -66,7 +74,7 @@ function addTab(aAuth, aPath, aFrag, aStanza) {
   };
   newTab.addEventListener("load", unlock, true);
   // When the contents of the newTab called Musubi.init(...), we response with aStanza.
-  // Unfortunaly Firefox throw an error when Application.storage.set(aStanza), so set its DOM.
+  // Unfortunaly Firefox throw an error when Application.storage.set(key, aStanza), so set its DOM representation.
   // See also onXmppEventAtDocument.
   Application.storage.set(makeStorageKey(url), E4XToDOM(document, aStanza));
 }
@@ -76,9 +84,8 @@ function onMessage(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
   //print("message:" + stanza.toXMLString());
   if (from && to) {
-    var nsOob = new Namespace("jabber:x:oob");
     var url  = stanza.nsOob::x.nsOob::url.toString() || getPrefDefaultPage();
-    var r = filterBrowsers(from, account, url);
+    var r = filterBrowsers(account, from, url);
     appendStanzaToBrowsers(r.browsers, stanza);
     if (r.addtabp) {
       addTab(account, from, url, stanza);
@@ -90,7 +97,7 @@ function onPresence(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
   print("presence:" + stanza.toXMLString());
   if (from && to) {
-    appendStanzaToBrowsers(filterBrowsers(from, account).browsers, stanza);
+    appendStanzaToBrowsers(filterBrowsers(account, from).browsers, stanza);
     bookmarkPresence(stanza);
     // TODO: OK, this is the Twitter style. We have to implement the "private mode".
     if (stanza.@type.toString() == "subscribe") {
@@ -103,7 +110,7 @@ function onIQ(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
   print("iq:" + stanza.toXMLString());
   if (from && to) {
-    appendStanzaToBrowsers(filterBrowsers(from, account).browsers, stanza);
+    appendStanzaToBrowsers(filterBrowsers(account, from).browsers, stanza);
   }
   bookmarkRoster(stanza);
 }

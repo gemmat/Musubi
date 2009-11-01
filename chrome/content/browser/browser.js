@@ -74,6 +74,13 @@ function addMusubiButtonToToolbar(aButtonId) {
 }
 
 function onCommandToolbarButton() {
+  var uri = IOService.newURI(content.document.documentURI, null, null);
+  if (uri.schemeIs("file")) {
+    karaage("teruaki", content.document, function(aHttpValue) {
+      openUILink(aHttpValue);
+    });
+  }
+  return;
   function makeMessage(aTo, aURLValue, aDesc) {
     return <message to={aTo}>
              <body>{aURLValue}</body>
@@ -89,7 +96,7 @@ function onCommandToolbarButton() {
   if (!p) return;
   var uri = IOService.newURI(o.frag, null, null);
   if (uri.schemeIs("file")) {
-    karaage(p, content.document, function(aHttpValue) {
+    karaage(p.barejid, content.document, function(aHttpValue) {
       openUILink(makeXmppURI(o.auth, o.path, "", aHttpValue));
       xmppSend(p, makeMessage(o.path, aHttpValue, content.document.title));
     });
