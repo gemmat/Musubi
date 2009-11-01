@@ -59,10 +59,6 @@ XMPProtocol.prototype = {
       var prefs = new Prefs("extensions.musubi.");
       o.auth = prefs.get("defaultauth", "default@localhost/Default");
     }
-    if (/^share/.test(o.query)) {
-      o.frag = getContentDocumentURISpec();
-      o.query = null;
-    } else {
     // handle the frag.
     // aSpec         : "page0.html"
     // aBaseURI      : "xmpp...#http://www.acme.com/index.html"
@@ -75,15 +71,16 @@ XMPProtocol.prototype = {
     // aSpec         : "xmpp...#page0.html"
     // aBaseURI      : "http://www.acme.com/index.html"
     // Result        : "xmpp...#http://www.acme.com/page0.html"
-      if (aBaseURI) {
-        var spec = o0 ? o0.frag : aSpec;
-        var base = IOService.newURI(o1 && o1.frag ? o1.frag : aBaseURI.spec, null, null);
-        var standardURL = Cc["@mozilla.org/network/standard-url;1"]
+    if (aBaseURI) {
+      var spec = o0 ? o0.frag : aSpec;
+      var base = IOService.newURI(o1 && o1.frag ? o1.frag : aBaseURI.spec, null, null);
+      var standardURL = Cc["@mozilla.org/network/standard-url;1"]
                           .createInstance(Ci.nsIStandardURL);
-        standardURL.init(1, -1, spec, aCharset, base);
-        standardURL.QueryInterface(Ci.nsIURI);
-        o.frag = standardURL.spec;
-      }
+      standardURL.init(1, -1, spec, aCharset, base);
+      standardURL.QueryInterface(Ci.nsIURI);
+      o.frag = standardURL.spec;
+    } else {
+      o.frag = o0 && o0.frag ? o0.frag : getContentDocumentURISpec();
     }
     uri.spec = makeXmppURI(o.auth, o.path, o.query, o.frag);
     return uri;

@@ -2,15 +2,31 @@ const EXPORT = ["onLoad", "onUnload", "addMusubiButtonToToolbar", "onCommandTool
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
-  var o = parseURI(window.content.document.location.href);
-  if (!o) return;
-  var p = parseJID(o.auth);
-  if (!p) return;
-  xmppConnect(p);
+  var appcontent = document.getElementById("appcontent");
+  if (appcontent)
+    appcontent.addEventListener("DOMContentLoaded", onPageLoad, true);
 }
 
 function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
+}
+
+function onPageLoad(aEvent) {
+  var doc = aEvent.originalTarget;
+  var o = parseURI(doc.location.href);
+  if (!o || !o.auth) return;
+  var p = parseJID(o.auth);
+  if (!p) return;
+  xmppConnect(p, function(account) {
+    if (!o.path || !o.frag) return;
+    // Don't use the body, user may hate to send
+    // a message when just loaded a page.
+    xmppSend(p, <message to={o.path}>
+                  <x xmlns="jabber:x:oob">
+                    <url>{o.frag}</url>
+                  </x>;
+                 </message>);
+    });
 }
 
 function onXmppEventAtDocument(aEvent) {
