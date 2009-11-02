@@ -38,14 +38,17 @@ function onXmppEventAtDocument(aEvent) {
   var p = parseJID(o.auth);
   if (!p) return;
   var q = parseJID(o.path);
-  if (!q) return;
   var xml = DOMToE4X(aEvent.target);
-  if (q.resource) {
-    xml.@to = q.fulljid;
-  } else if (xml.@res.length()) {
-    xml.@to = q.barejid + "/" + xml.@res;
+  if (q) {
+    if (q.resource) {
+      xml.@to = q.fulljid;
+    } else if (xml.@res.length()) {
+      xml.@to = q.barejid + "/" + xml.@res;
+    } else {
+      xml.@to = q.barejid;
+    }
   } else {
-    xml.@to = q.barejid;
+    delete xml.@to;
   }
   switch (xml.name().localName) {
   case "musubi":
@@ -69,57 +72,14 @@ function onXmppEventAtDocument(aEvent) {
   case "iq":
     break;
   case "presence":
-    if (xml.@res.length() && xml.@type == "unavailable") {
-      // User left the MUC Room.
-      bookmarkPresence(<presence from={q.barejid} to={p.fulljid} type="unavailable"/>, true);
+    if (q) {
+      if (xml.@res.length() && xml.@type == "unavailable") {
+        // User left the MUC Room.
+        bookmarkPresence(<presence from={q.barejid} to={p.fulljid} type="unavailable"/>, true);
+      }
     }
     break;
   }
   delete xml.@res;
   xmppSend(p, xml);
-}
-
-function addMusubiButtonToToolbar(aButtonId) {
-  var toolbar = document.getElementById("nav-bar");
-  if (toolbar.getAttribute("customizable") != "true") return;
-  var set = toolbar.currentSet;
-  if (set.indexOf(aButtonId) != -1) return;
-  toolbar.currentSet = set.replace(/(urlbar-container|separator)/, aButtonId + ',$1');
-  toolbar.setAttribute("currentset", toolbar.currentSet);
-  document.persist(toolbar.id, "currentset");
-  try {
-    BrowserToolboxCustomizeDone(true);
-  } catch (e) {};
-}
-
-function onCommandToolbarButton() {
-  var uri = IOService.newURI(content.document.documentURI, null, null);
-  if (uri.schemeIs("file")) {
-    karaage("teruaki", content.document, function(aHttpValue) {
-      openUILink(aHttpValue);
-    });
-  }
-  return;
-  function makeMessage(aTo, aURLValue, aDesc) {
-    return <message to={aTo}>
-             <body>{aURLValue}</body>
-             <x xmlns="jabber:x:oob">
-               <url>{aURLValue}</url>
-               <desc>{aDesc}</desc>
-             </x>
-           </message>;
-  }
-  var o = parseURI(content.document.documentURI);
-  if (!o || !o.path || !o.frag) return;
-  var p = parseJID(o.auth);
-  if (!p) return;
-  var uri = IOService.newURI(o.frag, null, null);
-  if (uri.schemeIs("file")) {
-    karaage(p.barejid, content.document, function(aHttpValue) {
-      openUILink(makeXmppURI(o.auth, o.path, "", aHttpValue));
-      xmppSend(p, makeMessage(o.path, aHttpValue, content.document.title));
-    });
-  } else {
-    xmppSend(p, makeMessage(o.path, o.frag, content.document.title));
-  }
 }

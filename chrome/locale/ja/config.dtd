@@ -7,4 +7,4 @@
 <!ENTITY Musubi.config.privatemode.label     "プライベートモード">
 <!ENTITY Musubi.config.defaultauth.label     "デフォルトのアカウント">
 <!ENTITY Musubi.config.defaultpage.label     "デフォルトのページ">
-<!ENTITY Musubi.config.defaultkaraage.label  "デフォルトのカラアゲアップローダ">
+<!ENTITY Musubi.config.karaage.label         "カラアゲアップローダ">

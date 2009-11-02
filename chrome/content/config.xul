@@ -64,8 +64,8 @@
          name="extensions.musubi.defaultpage"
          type="string"/>
       <preference
-         id="extensions.musubi.defaultkaraage"
-         name="extensions.musubi.defaultkaraage"
+         id="extensions.musubi.karaage"
+         name="extensions.musubi.karaage"
          type="string"/>
     </preferences>
     <vbox>
@@ -90,8 +90,8 @@
               <textbox id="defaultpage" preference="extensions.musubi.defaultpage"/>
             </row>
             <row>
-              <label value="&Musubi.config.defaultkaraage.label;" control="defaultkaraage"/>
-              <textbox id="defaultkaraage" preference="extensions.musubi.defaultkaraage"/>
+              <label value="&Musubi.config.karaage.label;" control="karaage"/>
+              <textbox id="karaage" preference="extensions.musubi.karaage"/>
             </row>
           </rows>
         </grid>
