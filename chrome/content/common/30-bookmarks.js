@@ -1,4 +1,4 @@
-const EXPORT = ["bookmarkRoster", "bookmarkPresence", "initializeBookmarks"];
+const EXPORT = ["bookmarkRoster", "bookmarkPresence", "initializeBookmark", "observeBookmarks"];
 
 Components.utils.import("resource://gre/modules/utils.js");
 
@@ -361,18 +361,19 @@ function onEndUpdateBatch() {
   Application.storage.set("bookmarkInBatch", false);
 }
 
-function initializeBookmarks() {
-  DBFindAllAccount().forEach(function(account) {
-    var p = parseJIDwithResource(account.barejid);
-    if (!p) return;
-    var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
-    var folderIdAuth = createFolders(p)["auth"];
-    removePresenceItem(p, null, folderIdAuth);
-    insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
-                       makeXmppURI(p.fulljid, "", "", "resource://musubi/app/help/start.html"), true);
-    });
+function initializeBookmark(aAccount) {
+  var p = parseJIDwithResource(aAccount.barejid);
+  if (!p) return;
+  var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
+  var folderIdAuth = createFolders(p)["auth"];
+  removePresenceItem(p, null, folderIdAuth);
+  insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
+                     makeXmppURI(p.fulljid, "", "", "resource://musubi/app/help/start.html"), true);
+}
+
+function observeBookmarks() {
   // guard from dupulication.
-  if (!Application.storage.get("bookmarkObserving", false)) {
+  if (!Application.storage.get("ObservingBookmarks", false)) {
     var observer = {
       onItemAdded:         onItemAdded,
       onItemRemoved:       onItemRemoved,
@@ -384,7 +385,7 @@ function initializeBookmarks() {
       onEndUpdateBatch:    onEndUpdateBatch
     };
     BookmarksService.addObserver(observer, false);
-    Application.storage.set("bookmarkObserving", true);
+    Application.storage.set("ObservingBookmarks", true);
   }
 }
 

@@ -21,7 +21,8 @@
     (function() {
        getBrowser().addEventListener("load",   Musubi.onLoad,   true);
        getBrowser().addEventListener("unload", Musubi.onUnload, true);
-       Musubi.initializeBookmarks();
+       Musubi.DBFindAllAccount().forEach(Musubi.initializeBookmark);
+       Musubi.observeBookmarks();
     })();
     // ]]>
     </script>
