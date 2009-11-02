@@ -4,6 +4,7 @@
 <!ENTITY Musubi.config.edit      "いじる">
 <!ENTITY Musubi.config.delete    "けす">
 <!ENTITY Musubi.config.defaults  "その他">
+<!ENTITY Musubi.config.privatemode.label     "プライベートモード">
 <!ENTITY Musubi.config.defaultauth.label     "デフォルトのアカウント">
 <!ENTITY Musubi.config.defaultpage.label     "デフォルトのページ">
 <!ENTITY Musubi.config.defaultkaraage.label  "デフォルトのカラアゲアップローダ">

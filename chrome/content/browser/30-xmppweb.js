@@ -19,11 +19,13 @@ function filterBrowsers(aAccount, aFrom, aURL) {
         var q = parseJID(o.path);
         if (!q) continue;
         if (q.barejid == aFrom.barejid) {
-          // TODO: consider wheather to uncomment the following conditionals or not...
-          //if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
-          //    (!aFrom.resource && q.barejid == aFrom.barejid)) {
-          bs.push(b);
-          if (o.frag == aURL) addtabp = false;
+          // TODO: consider wheather to use the following conditionals or not...
+          if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
+              (!aFrom.resource && q.barejid == aFrom.barejid) ||
+              ( aFrom.resource && q.barejid == aFrom.barejid && q.fulljid != aFrom.fulljid)) {
+            bs.push(b);
+            if (o.frag == aURL) addtabp = false;
+          }
         }
       } else {
         bs.push(b);
@@ -99,9 +101,12 @@ function onPresence(aObj) {
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(account, from).browsers, stanza);
     bookmarkPresence(stanza);
-    // TODO: OK, this is the Twitter style. We have to implement the "private mode".
     if (stanza.@type.toString() == "subscribe") {
-      xmppSend(account, <presence to={from.barejid} type="subscribed"/>);
+      // This is the Twitter style.
+      var prefs = new Prefs("extensions.musubi.");
+      if (!prefs.get("privatemode", false)) {
+        xmppSend(account, <presence to={from.barejid} type="subscribed"/>);
+      }
     }
   }
 }

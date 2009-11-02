@@ -52,6 +52,10 @@
     id="prefpane-defaults" label="&Musubi.config.defaults;" flex="1">
     <preferences>
       <preference
+         id="extensions.musubi.privatemode"
+         name="extensions.musubi.privatemode"
+         type="bool"/>
+      <preference
          id="extensions.musubi.defaultauth"
          name="extensions.musubi.defaultauth"
          type="string"/>
@@ -73,6 +77,10 @@
             <column flex="1"/>
           </columns>
           <rows>
+            <row>
+              <label value="&Musubi.config.privatemode.label;" control="privatemode"/>
+              <checkbox id="privatemode" preference="extensions.musubi.privatemode"/>
+            </row>
             <row>
               <label value="&Musubi.config.defaultauth.label;" control="defaultauth"/>
               <textbox id="defaultauth" preference="extensions.musubi.defaultauth"/>

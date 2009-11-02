@@ -19,14 +19,16 @@ function onPageLoad(aEvent) {
   if (!p) return;
   xmppConnect(p, function(account) {
     if (!o.path || !o.frag) return;
-    // Don't use the body, user may hate to send
-    // a message when just loaded a page.
-    xmppSend(p, <message to={o.path}>
-                  <x xmlns="jabber:x:oob">
-                    <url>{o.frag}</url>
-                  </x>;
-                 </message>);
-    });
+    if (/^http:/.test(o.frag)) {
+      // Don't use the body, user may hate to send
+      // a message when just loaded a page.
+      xmppSend(p, <message to={o.path}>
+                    <x xmlns="jabber:x:oob">
+                      <url>{o.frag}</url>
+                    </x>;
+                   </message>);
+    }
+  });
 }
 
 function onXmppEventAtDocument(aEvent) {
@@ -56,12 +58,13 @@ function onXmppEventAtDocument(aEvent) {
     }
     return;
   case "message":
-    if (o.frag) {
-      xml.* += <x xmlns="jabber:x:oob">
-                 <url>{o.frag}</url>
-                 <desc>{doc.title}</desc>
-               </x>;
-    }
+    // we need to keep a small message for the latency.
+//     if (o.frag) {
+//       xml.* += <x xmlns="jabber:x:oob">
+//                  <url>{o.frag}</url>
+//                  <desc>{doc.title}</desc>
+//                </x>;
+//     }
     break;
   case "iq":
     break;

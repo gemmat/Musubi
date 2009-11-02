@@ -4,6 +4,7 @@
 <!ENTITY Musubi.config.edit      "Edit">
 <!ENTITY Musubi.config.delete    "Delete">
 <!ENTITY Musubi.config.defaults  "Misc">
+<!ENTITY Musubi.config.privatemode.label     "Private mode">
 <!ENTITY Musubi.config.defaultauth.label     "A default auth">
 <!ENTITY Musubi.config.defaultpage.label     "A default page">
 <!ENTITY Musubi.config.defaultkaraage.label  "A default karaage uploader">
