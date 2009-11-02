@@ -362,17 +362,17 @@ function onEndUpdateBatch() {
 }
 
 function initializeBookmarks() {
+  DBFindAllAccount().forEach(function(account) {
+    var p = parseJIDwithResource(account.barejid);
+    if (!p) return;
+    var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
+    var folderIdAuth = createFolders(p)["auth"];
+    removePresenceItem(p, null, folderIdAuth);
+    insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
+                       makeXmppURI(p.fulljid, "", "", "resource://musubi/app/help/start.html"), true);
+    });
   // guard from dupulication.
   if (!Application.storage.get("bookmarkObserving", false)) {
-    DBFindAllAccount().forEach(function(account) {
-      var p = parseJIDwithResource(account.barejid);
-      if (!p) return;
-      var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
-      var folderIdAuth = createFolders(p)["auth"];
-      removePresenceItem(p, null, folderIdAuth);
-      insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
-                         makeXmppURI(p.fulljid, "", "", "resource://musubi/app/help/start.html"), true);
-    });
     var observer = {
       onItemAdded:         onItemAdded,
       onItemRemoved:       onItemRemoved,

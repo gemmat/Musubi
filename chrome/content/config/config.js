@@ -22,6 +22,8 @@ function createupdateAccount(aE4X) {
   var account = DBNewAccount(accountE4XToObj(aE4X.account));
   updateXMPP4MOZAccount(account);
   XMPP.setPassword(account.barejid, aE4X.account.password.toString());
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (mw) mw.Musubi.initializeBookmarks();
   return <musubi type="result"><account/></musubi>;
 }
 

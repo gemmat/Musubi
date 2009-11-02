@@ -45,6 +45,8 @@ function toJSON(aObject) {
 }
 
 function print(x) {
+  // Debug Printer
+  return;
   Application.console.log(x ? x : "**");
 }
 
