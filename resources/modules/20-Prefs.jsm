@@ -3,7 +3,7 @@ Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 
 function getPrefDefaultPage() {
   var prefs = new Prefs("extensions.musubi.");
-  return prefs.get("defaultpage", "resource://musubi/app/sio/sio.html");
+  return prefs.get("defaultpage", "resource://musubi/app/chat/chat.html");
 }
 
 /*
@@ -40,7 +40,8 @@ Prefs.prototype = {
     try {
       switch (aType) {
       case PrefService.PREF_INT:      //FALLTHROUGH
-      case "number":
+      case "number":                  //FALLTHROUGH
+      case "integer":
         return prefs.getIntPref(aPrefName);
       case PrefService.PREF_BOOL:
       case "boolean":                 //FALLTHROUGH
@@ -74,7 +75,8 @@ Prefs.prototype = {
     aRelFilePrefRelToKey = aRelFilePrefRelToKey || "ProfD";
     switch (aType) {
     case PrefService.PREF_INT:      //FALLTHROUGH
-    case "number":
+    case "number":                  //FALLTHROUGH
+    case "integer":
       return prefs.setIntPref(aPrefName, +aValue);
     case PrefService.PREF_BOOL:     //FALLTHROUGH
     case "boolean":

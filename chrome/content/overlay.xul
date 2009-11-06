@@ -1,5 +1,4 @@
 <?xml version="1.0" ?>
-<?xml-stylesheet type="text/css" href="chrome://musubi/skin/toolbar.css"?>
 <!DOCTYPE overlay SYSTEM "chrome://musubi/locale/browser.dtd">
 <overlay id="Musubi-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -7,15 +6,23 @@
 >
     <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
-    <toolbox id="navigator-toolbox"/>
-    <toolbarpalette id="BrowserToolbarPalette">
-      <toolbarbutton id="musubi-button"
-                     class="toolbarbutton-1 chromeclass-toolbar-additional"
-                     image="chrome://musubi/skin/images/musubi16.png"
-                     tooltiptext="&Musubi.toolbarbutton.tooltiptext;"
-                     label="&Musubi.toolbarbutton.label;"
-                     oncommand="Musubi.onCommandToolbarButton()"/>
-    </toolbarpalette>
+    <menupopup id="viewSidebarMenu">
+      <menuitem key="key_viewMusubiSidebar" observes="viewMusubiSidebar" />
+    </menupopup>
+    <keyset id="mainKeyset">
+      <key id="key_viewMusubiSidebar" command="viewMusubiSidebar" key="&Musubi.sidebar.key;" modifiers="&Musubi.sidebar.modifiers;" />
+    </keyset>
+    <broadcasterset id="mainBroadcasterSet">
+      <broadcaster id="viewMusubiSidebar"
+                   label="&Musubi.sidebar.label;"
+                   autoCheck="false"
+                   type="checkbox"
+                   group="sidebar"
+                   sidebarurl="chrome://musubi/content/sidebar.xul"
+                   sidebartitle="&Musubi.sidebar.label;"
+                   key="Musubi-key-sidebar"
+                   oncommand="toggleSidebar('viewMusubiSidebar');"/>
+    </broadcasterset>
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
     (function() {

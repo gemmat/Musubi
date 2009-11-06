@@ -63,10 +63,6 @@
          id="extensions.musubi.defaultpage"
          name="extensions.musubi.defaultpage"
          type="string"/>
-      <preference
-         id="extensions.musubi.karaage"
-         name="extensions.musubi.karaage"
-         type="string"/>
     </preferences>
     <vbox>
       <groupbox orient="vertical">
@@ -89,19 +85,13 @@
               <label value="&Musubi.config.defaultpage.label;" control="defaultpage"/>
               <textbox id="defaultpage" preference="extensions.musubi.defaultpage"/>
             </row>
-            <row>
-              <label value="&Musubi.config.karaage.label;" control="karaage"/>
-              <textbox id="karaage" preference="extensions.musubi.karaage"/>
-            </row>
           </rows>
         </grid>
       </groupbox>
     </vbox>
 </prefpane>
 
-<script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
-<script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
-<script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" /> 
+<script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" />
 <script type="text/javascript; version=1.8" charset="utf-8">
 // <![CDATA[
 (function() {

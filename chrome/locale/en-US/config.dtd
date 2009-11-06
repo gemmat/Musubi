@@ -7,4 +7,3 @@
 <!ENTITY Musubi.config.privatemode.label     "Private mode">
 <!ENTITY Musubi.config.defaultauth.label     "A default auth">
 <!ENTITY Musubi.config.defaultpage.label     "A default page">
-<!ENTITY Musubi.config.karaage.label         "A karaage uploader">

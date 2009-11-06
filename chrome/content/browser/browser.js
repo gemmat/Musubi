@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "filterBrowsers", "makeChannel", "makeStorageKey"];
+const EXPORT = ["onLoad", "onUnload", "filterBrowsers", "makeChannel", "getMusubiSidebar"];
 // export filterBrowsers just for the debug.
 
 const nsOob = new Namespace("jabber:x:oob");
@@ -87,10 +87,10 @@ function onXmppEventAtDocument(aEvent) {
   xmppSend(p, xml);
 }
 
-function filterBrowsers(aAccount, aFrom, aURL) {
+function filterBrowsers(aAccount, aFrom, aURL, aMessageType) {
+  if (!gBrowser) return [];
   var bs = [];
   var addtabp = true;
-  if (!gBrowser) return bs;
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = parseURI(b.currentURI.spec);
@@ -106,9 +106,10 @@ function filterBrowsers(aAccount, aFrom, aURL) {
           // TODO: consider wheather to use the following conditionals or not...
           if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
               (!aFrom.resource && q.barejid == aFrom.barejid) ||
-              ( aFrom.resource && q.barejid == aFrom.barejid && q.fulljid != aFrom.fulljid)) {
+              ( aMessageType == "groupchat" &&
+                aFrom.resource && q.barejid == aFrom.barejid)) {
             bs.push(b);
-            if (o.frag == aURL) addtabp = false;
+            if (o.frag == aURL || aMessageType == "groupchat") addtabp = false;
           }
         }
       } else {
@@ -142,6 +143,26 @@ function appendStanzaToBrowsers(aBrowsers, aStanza) {
   }
 }
 
+function filterSidebarIframe(aAccount, aFrom) {
+  var sidebar = getMusubiSidebar();
+  if (!sidebar) return null;
+  var sidebarIframe = sidebar.doc.getElementById("sidebar-iframe");
+  var o = parseURI(sidebarIframe.contentDocument.location.href);
+  if (!o) return null;
+  var p = parseJID(o.auth);
+  if (!p) return null;
+  if (( aAccount.resource && p.fulljid == aAccount.fulljid) ||
+      (!aAccount.resource && p.barejid == aAccount.barejid)) {
+    return sidebarIframe;
+  }
+  return null;
+}
+
+function appendStanzaToSidebarIframe(aSidebarIframe, aStanza) {
+  if (!aSidebarIframe) return;
+  appendE4XToXmppIn(aSidebarIframe.contentDocument, aStanza);
+}
+
 // Make a consistent key for addTab and onXmppEventAtDocument.
 function makeStorageKey(aURL) {
   return "init:" + aURL;
@@ -168,10 +189,10 @@ function addTab(aAuth, aPath, aFrag, aStanza) {
 //We call onMessage many times so we need to be aware of the performance.
 function onMessage(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
-  //print("message:" + stanza.toXMLString());
+  print("message:" + stanza.toXMLString());
   if (from && to) {
     var url  = stanza.nsOob::x.nsOob::url.toString() || getPrefDefaultPage();
-    var r = filterBrowsers(account, from, url);
+    var r = filterBrowsers(account, from, url, stanza.@type.toString());
     appendStanzaToBrowsers(r.browsers, stanza);
     if (r.addtabp) {
       addTab(account, from, url, stanza);
@@ -184,6 +205,7 @@ function onPresence(aObj) {
   print("presence:" + stanza.toXMLString());
   if (from && to) {
     appendStanzaToBrowsers(filterBrowsers(account, from).browsers, stanza);
+    appendStanzaToSidebarIframe(filterSidebarIframe(account, from), stanza);
     bookmarkPresence(stanza);
     if (stanza.@type.toString() == "subscribe") {
       // This is the Twitter style.
@@ -202,4 +224,14 @@ function onIQ(aObj) {
     appendStanzaToBrowsers(filterBrowsers(account, from).browsers, stanza);
   }
   bookmarkRoster(stanza);
+}
+
+function getMusubiSidebar() {
+  var sidebar = document.getElementById("sidebar");
+  if (!sidebar || !sidebar.contentWindow.Musubi) return null;
+  return {
+    win:       sidebar.contentWindow,
+    doc:       sidebar.contentDocument,
+    Musubi:    sidebar.contentWindow.Musubi
+  };
 }

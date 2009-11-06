@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://browser/skin/browser.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://browser/skin/places/places.css" type="text/css" ?>
+<!DOCTYPE page SYSTEM "chrome://musubi/locale/sidebar.dtd">
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      xmlns:html="http://www.w3.org/1999/xhtml"
+      id="Musubi-sidebar"
+      title="&Musubi.sidebar.title;"
+>
+    <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
+    <description></description>
+    <menulist id="account-menulist" label="&Musubi.sidebar.button.account;" oncommand="Musubi.onSelectedAccount(this);">
+      <menupopup id="account-menupopup"></menupopup>
+    </menulist>
+    <vbox flex="1" style="overflow: auto" >
+      <iframe id="sidebar-iframe"
+              flex="1"
+              src="about:blank"
+              type="content"/>
+    </vbox>
+    <script type="text/javascript; version=1.8" charset="utf-8">
+    // <![CDATA[
+    (function() {
+       document.addEventListener("load",   Musubi.onLoad,   true);
+       document.addEventListener("unload", Musubi.onUnload, true);
+    })();
+    // ]]>
+    </script>
+</page>

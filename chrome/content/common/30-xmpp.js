@@ -6,9 +6,9 @@ function xmppSend(aAuth, aXML) {
   });
 }
 
-function xmppCachedPresences() {
+function xmppCachedPresences(aAuth) {
   //TODO check aE4X.@from with presence.@from.
-  return XMPP.cache.all(XMPP.q().event("presence"));
+  return XMPP.cache.all(XMPP.q().event("presence").direction("in").account(aAuth.fulljid));
 }
 
 function xmppConnect(aAuth, aCont) {
@@ -23,8 +23,10 @@ function xmppConnect(aAuth, aCont) {
     print(aAuth.fulljid);
     return;
   }
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (!mw) return;
   account.resource = aAuth.resource;
-  account.channel  = getTopWin().Musubi.makeChannel();
+  account.channel  = mw.Musubi.makeChannel();
   updateXMPP4MOZAccount(account);
   print("connect:" + aAuth.fulljid);
   // TODO: move a following line to XMPP.up's continuation? How I guard from duplicated tries to connect?
