@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "filterBrowsers", "makeChannel", "getMusubiSidebar"];
+const EXPORT = ["onLoad", "onUnload", "processStanzaWithURI", "filterBrowsers", "makeChannel", "getMusubiSidebar"];
 // export filterBrowsers just for the debug.
 
 const nsOob = new Namespace("jabber:x:oob");
@@ -34,28 +34,32 @@ function onPageLoad(aEvent) {
   });
 }
 
+function processStanzaWithURI(aAuth, aPath, aStanza) {
+  if (aPath) {
+    if (aPath.resource) {
+      aStanza.@to = aPath.fulljid;
+    } else if (aStanza.@res.length()) {
+      aStanza.@to = aPath.barejid + "/" + aStanza.@res;
+    } else {
+      aStanza.@to = aPath.barejid;
+    }
+  } else {
+    delete aStanza.@to;
+  }
+  delete aStanza.@res;
+}
+
 function onXmppEventAtDocument(aEvent) {
   var doc = getDocumentFromEvent(aEvent);
+  var stanza = DOMToE4X(aEvent.target);
   var o = parseURI(doc.location.href);
   if (!o) return;
   var p = parseJID(o.auth);
   if (!p) return;
   var q = parseJID(o.path);
-  var xml = DOMToE4X(aEvent.target);
-  if (q) {
-    if (q.resource) {
-      xml.@to = q.fulljid;
-    } else if (xml.@res.length()) {
-      xml.@to = q.barejid + "/" + xml.@res;
-    } else {
-      xml.@to = q.barejid;
-    }
-  } else {
-    delete xml.@to;
-  }
-  switch (xml.name().localName) {
+  switch (stanza.name().localName) {
   case "musubi":
-    if (xml.init.length()) {
+    if (stanza.init.length()) {
       var initStanzaDOM = Application.storage.get(makeStorageKey(doc.location.href), null);
       if (initStanzaDOM) {
         appendDOMToXmppIn(doc, initStanzaDOM);
@@ -63,59 +67,59 @@ function onXmppEventAtDocument(aEvent) {
       }
     }
     return;
-  case "message":
-    // we need to keep a small message for the latency.
-//     if (o.frag) {
-//       xml.* += <x xmlns="jabber:x:oob">
-//                  <url>{o.frag}</url>
-//                  <desc>{doc.title}</desc>
-//                </x>;
-//     }
-    break;
-  case "iq":
     break;
   case "presence":
     if (q) {
-      if (xml.@res.length() && xml.@type == "unavailable") {
+      if (stanza.@res.length() && stanza.@type == "unavailable") {
         // User left the MUC Room.
         bookmarkPresence(<presence from={q.barejid} to={p.fulljid} type="unavailable"/>, true);
       }
     }
     break;
   }
-  delete xml.@res;
-  xmppSend(p, xml);
+  processStanzaWithURI(p, q, stanza);
+  xmppSend(p, stanza);
+}
+
+function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOpt) {
+  aOpt = aOpt || {};
+  if (( aAccount.resource && aAuth.fulljid == aAccount.fulljid) ||
+      (!aAccount.resource && aAuth.barejid == aAccount.barejid)) {
+    if (aFrom) {
+      if (aPath) {
+        if (aPath.barejid == aFrom.barejid) {
+          // TODO: consider wheather to use the following conditionals or not...
+          if (( aFrom.resource && aPath.fulljid == aFrom.fulljid) ||
+              (!aFrom.resource && aPath.barejid == aFrom.barejid) ||
+              ( aOpt.messageType == "groupchat" &&
+                aFrom.resource && aPath.barejid == aFrom.barejid)) {
+            return {result: true,
+                    addtabp: (aFrag == aOpt.frag || aOpt.messageType == "groupchat")};
+          }
+        }
+      }
+      return {result: true, addtabp: false};
+    }
+  }
+  return null;
 }
 
 function filterBrowsers(aAccount, aFrom, aURL, aMessageType) {
   if (!gBrowser) return [];
   var bs = [];
   var addtabp = true;
+  var option = {frag: aURL, messageType: aMessageType};
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = parseURI(b.currentURI.spec);
     if (!o) continue;
     var p = parseJID(o.auth);
     if (!p) continue;
-    if (( aAccount.resource && p.fulljid == aAccount.fulljid) ||
-        (!aAccount.resource && p.barejid == aAccount.barejid)) {
-      if (aFrom) {
-        var q = parseJID(o.path);
-        if (!q) continue;
-        if (q.barejid == aFrom.barejid) {
-          // TODO: consider wheather to use the following conditionals or not...
-          if (( aFrom.resource && q.fulljid == aFrom.fulljid) ||
-              (!aFrom.resource && q.barejid == aFrom.barejid) ||
-              ( aMessageType == "groupchat" &&
-                aFrom.resource && q.barejid == aFrom.barejid)) {
-            bs.push(b);
-            if (o.frag == aURL || aMessageType == "groupchat") addtabp = false;
-          }
-        }
-      } else {
-        bs.push(b);
-        addtabp = false;
-      }
+    var q = parseJID(o.path);
+    var obj = filterWithURI(aAccount, aFrom, p, q, o.query, o.frag, option);
+    if (obj) {
+      if (obj.result) bs.push(b);
+      if (obj.addtab) addtabp = true;
     }
   }
   return {browsers: bs, addtabp: addtabp};
@@ -151,10 +155,9 @@ function filterSidebarIframe(aAccount, aFrom) {
   if (!o) return null;
   var p = parseJID(o.auth);
   if (!p) return null;
-  if (( aAccount.resource && p.fulljid == aAccount.fulljid) ||
-      (!aAccount.resource && p.barejid == aAccount.barejid)) {
-    return sidebarIframe;
-  }
+  var q = parseJID(o.path);
+  var obj = filterWithURI(aAccount, aFrom, p, q, o.query, o.frag);
+  if (obj && obj.result) return sidebarIframe;
   return null;
 }
 

@@ -1,5 +1,22 @@
 const EXPORT = ["onLoadAtIframe", "connect", "onUnloadAtIframe", "byeContacts"];
 
+function updateMainWindowBookmark() {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (mw) {
+    mw.Musubi.initializeBookmark(account);
+  }
+}
+
+function updateSidebarAccountMenu() {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (mw) {
+    var sidebar = mw.Musubi.getMusubiSidebar();
+    if (sidebar) {
+      sidebar.Musubi.updateAccountMenu();
+    }
+  }
+}
+
 function readAllAccount() {
   var accounts = DBFindAllAccount();
   if (!accounts) return null;
@@ -22,8 +39,8 @@ function createupdateAccount(aE4X) {
   var account = DBNewAccount(accountE4XToObj(aE4X.account));
   updateXMPP4MOZAccount(account);
   XMPP.setPassword(account.barejid, aE4X.account.password.toString());
-  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (mw) mw.Musubi.initializeBookmark(account);
+  updateMainWindowBookmark();
+  updateSidebarAccountMenu();
   return <musubi type="result"><account/></musubi>;
 }
 
@@ -32,6 +49,7 @@ function deleteAccount(aE4X) {
   if (!p) return null;
   var account = DBDeleteAccount(p);
   updateXMPP4MOZAccount(account, true);
+  updateSidebarAccountMenu();
   return <musubi type="result"><account del="del"/></musubi>;
 }
 

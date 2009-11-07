@@ -1,4 +1,4 @@
-const EXPORT = ["onSelectedAccount", "onLoad", "onUnload"];
+const EXPORT = ["onSelectedAccount", "updateAccountMenu", "onLoad", "onUnload"];
 
 function getCachedPresences(aAuth) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
@@ -15,24 +15,18 @@ function onXmppEventAtIframe(aEvent) {
   if (!o) return;
   var p = parseJID(o.auth);
   if (!p) return;
-  var xml = DOMToE4X(aEvent.target);
-  switch (xml.name().localName) {
-  case "message":  //FALLTHROUGH
-  case "presence": //FALLTHROUGH
-  case "iq":
-    var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-    if (!mw) return;
-    mw.Musubi.xmppSend(p, xml);
-    break;
-  case "musubi":
-    if (xml.init.length()) {
+  var q = parseJID(o.path);
+  var stanza = DOMToE4X(aEvent.target);
+  if (stanza.name().localName == "musubi") {
+    if (stanza.init.length()) {
       getCachedPresences(p);
     }
-    break;
-  default:
-    print("oops At MusubiSidebarOnXmppEventAtIframe" + xml.toXMLString());
-    break;
+    return;
   }
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (!mw) return;
+  mw.Musubi.processStanzaWithURI(p, q, stanza);
+  mw.Musubi.xmppSend(p, stanza);
 }
 
 function onSelectedAccount(aXULElement) {
@@ -51,15 +45,19 @@ function onSelectedAccount(aXULElement) {
   });
 }
 
+function updateAccountMenu() {
+  var menupopup = document.getElementById("account-menupopup");
+  while (menupopup.firstChild) menupopup.removeChild(menupopup.firstChild);
+  DBFindAllAccount().forEach(function(account) {
+    var elt = document.createElement("menuitem");
+    elt.setAttribute("label", account.barejid + "/" + account.resource);
+    menupopup.appendChild(elt);
+  });
+}
+
 function onLoad(aEvent) {
   if (aEvent.originalTarget instanceof HTMLDocument) {
-    var menupopup = document.getElementById("account-menupopup");
-    while (menupopup.firstChild) menupopup.removeChild(menupopup.firstChild);
-    DBFindAllAccount().forEach(function(account) {
-      var elt = document.createElement("menuitem");
-      elt.setAttribute("label", account.barejid + "/" + account.resource);
-      menupopup.appendChild(elt);
-    });
+    updateAccountMenu();
     var iframe = document.getElementById("sidebar-iframe");
     if (!iframe) return;
     iframe.addEventListener("XmppEvent", onXmppEventAtIframe, false, true);

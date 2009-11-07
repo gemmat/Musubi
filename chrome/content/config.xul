@@ -91,6 +91,7 @@
     </vbox>
 </prefpane>
 
+<script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
 <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" />
 <script type="text/javascript; version=1.8" charset="utf-8">
 // <![CDATA[
