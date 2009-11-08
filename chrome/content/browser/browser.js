@@ -88,7 +88,8 @@ function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aMessageTyp
   if (!aPath) return true;
   if (aFrom.barejid != aPath.barejid) return false;
   if (aMessageType == "groupchat") return true;
-  if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
+  // TODO: consider whether to need a following conditional or not.
+  //if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
   return true;
 }
 
@@ -98,7 +99,8 @@ function alreadyExistP(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOutofBandD
   if (aAccount.resource && aAccount.resource != aAuth.resource) return false;
   if (aFrom.barejid != aPath.barejid) return false;
   if (aMessageType == "groupchat") return true;
-  if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
+  // TODO: consider whether to need a following conditional or not.
+  //if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
   return (aFrag == aOutofBandDataURI);
 }
 
