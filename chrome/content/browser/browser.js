@@ -81,34 +81,31 @@ function onXmppEventAtDocument(aEvent) {
   xmppSend(p, stanza);
 }
 
-function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOpt) {
-  aOpt = aOpt || {};
-  if (( aAccount.resource && aAuth.fulljid == aAccount.fulljid) ||
-      (!aAccount.resource && aAuth.barejid == aAccount.barejid)) {
-    if (aFrom) {
-      if (aPath) {
-        if (aPath.barejid == aFrom.barejid) {
-          // TODO: consider wheather to use the following conditionals or not...
-          if (( aFrom.resource && aPath.fulljid == aFrom.fulljid) ||
-              (!aFrom.resource && aPath.barejid == aFrom.barejid) ||
-              ( aOpt.messageType == "groupchat" &&
-                aFrom.resource && aPath.barejid == aFrom.barejid)) {
-            return {result: true,
-                    addtabp: (aFrag == aOpt.frag || aOpt.messageType == "groupchat")};
-          }
-        }
-      }
-      return {result: true, addtabp: false};
-    }
-  }
-  return null;
+function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aMessageType) {
+  if (!aFrom || !aAuth) return false;
+  if (aAccount.barejid != aAuth.barejid) return false;
+  if (aAccount.resource && (aAccount.resource != aAuth.resource)) return false;
+  if (!aPath) return true;
+  if (aFrom.barejid != aPath.barejid) return false;
+  if (aMessageType == "groupchat") return true;
+  if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
+  return true;
 }
 
-function filterBrowsers(aAccount, aFrom, aURL, aMessageType) {
+function alreadyExistP(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOutofBandDataURI, aMessageType) {
+  if (!aFrom || !aAuth || !aPath) return false;
+  if (aAccount.barejid != aAuth.barejid) return false;
+  if (aAccount.resource && aAccount.resource != aAuth.resource) return false;
+  if (aFrom.barejid != aPath.barejid) return false;
+  if (aMessageType == "groupchat") return true;
+  if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
+  return (aFrag == aOutofBandDataURI);
+}
+
+function filterBrowsers(aAccount, aFrom, aOutofBandDataURI, aMessageType) {
   if (!gBrowser) return [];
   var bs = [];
-  var addtabp = true;
-  var option = {frag: aURL, messageType: aMessageType};
+  var exist = false;
   for (var i = 0, len = gBrowser.browsers.length; i < len; i++) {
     var b = gBrowser.getBrowserAtIndex(i);
     var o = parseURI(b.currentURI.spec);
@@ -116,13 +113,11 @@ function filterBrowsers(aAccount, aFrom, aURL, aMessageType) {
     var p = parseJID(o.auth);
     if (!p) continue;
     var q = parseJID(o.path);
-    var obj = filterWithURI(aAccount, aFrom, p, q, o.query, o.frag, option);
-    if (obj) {
-      if (obj.result) bs.push(b);
-      if (obj.addtab) addtabp = true;
-    }
+    if (filterWithURI(aAccount, aFrom, p, q, o.query, o.frag, aMessageType)) bs.push(b);
+    if (!exist &&
+        alreadyExistP(aAccount, aFrom, p, q, o.query, o.frag, aOutofBandDataURI, aMessageType)) exist = true;
   }
-  return {browsers: bs, addtabp: addtabp};
+  return {browsers: bs, exist: exist};
 }
 
 function makeChannel() {
@@ -155,9 +150,7 @@ function filterSidebarIframe(aAccount, aFrom) {
   if (!o) return null;
   var p = parseJID(o.auth);
   if (!p) return null;
-  var q = parseJID(o.path);
-  var obj = filterWithURI(aAccount, aFrom, p, q, o.query, o.frag);
-  if (obj && obj.result) return sidebarIframe;
+  if (filterWithURI(aAccount, aFrom, p, null, o.query, o.frag)) return sidebarIframe;
   return null;
 }
 
@@ -171,9 +164,9 @@ function makeStorageKey(aURL) {
   return "init:" + aURL;
 }
 
-function addTab(aAuth, aPath, aFrag, aStanza) {
+function addTab(aAuth, aPath, aOutofBandDataURI, aStanza) {
   if (!gBrowser) return;
-  var url = makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aFrag);
+  var url = makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aOutofBandDataURI);
   // guard from duplicating tab during its loading.
   if (Application.storage.get(url, false)) return;
   var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
@@ -194,12 +187,10 @@ function onMessage(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
   print("message:" + stanza.toXMLString());
   if (from && to) {
-    var url  = stanza.nsOob::x.nsOob::url.toString() || getPrefDefaultPage();
-    var r = filterBrowsers(account, from, url, stanza.@type.toString());
+    var oobURI  = stanza.nsOob::x.nsOob::url.toString() || getPrefDefaultPage();
+    var r = filterBrowsers(account, from, oobURI, stanza.@type.toString());
     appendStanzaToBrowsers(r.browsers, stanza);
-    if (r.addtabp) {
-      addTab(account, from, url, stanza);
-    }
+    if (!r.exist) addTab(account, from, oobURI, stanza);
   }
 }
 
