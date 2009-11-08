@@ -28,6 +28,9 @@ const StorageStatementWrapper = Components.Constructor(
                                   "mozIStorageStatementWrapper",
                                   "initialize");
 
+var parseURICache = {};
+var parseJIDCache = {};
+
 function toJSON(aObject) {
   switch (typeof aObject) {
   case "undefined":
@@ -116,6 +119,18 @@ function makeXmppURI(aAuth, aPath, aQuery, aFrag) {
          (aFrag  ? "#" + aFrag  : "");
 }
 
+function cloneCache(aObj) {
+  var rv = {};
+  for (var p in aObj) {
+    if (aObj[p] === null) {
+      rv[p] = null;
+    } else {
+      rv[p] = aObj[p].toString();
+    }
+  }
+  return rv;
+}
+
 // We'll reuse parseURI and parseJID functions at App_Musubi/musubi.js
 // so please implement it in Javascript ver. 1.5.
 function parseURI(aURISpec) {
@@ -161,37 +176,55 @@ function parseURI(aURISpec) {
     }
     return null;
   }
+  if (!aURISpec) return null;
+  var cache = parseURICache[aURISpec];
+  if (cache) return cloneCache(cache);
   var tmp;
   tmp = parseXmpp(aURISpec);
-  if (!tmp) return null;
+  if (!tmp) {
+    parseURICache[aURISpec] = null;
+    return null;
+  }
   var scheme = tmp[0];
   tmp = parseFrag(tmp[1]);
   var frag = tmp[0];
   tmp = parseQuery(tmp[1]);
   var query = tmp[0];
   tmp = parseHier(tmp[1], scheme);
-  if (!tmp) return null;
+  if (!tmp) {
+    parseURICache[aURISpec] = null;
+    return null;
+  }
   var auth = tmp[0], path = tmp[1];
-  return {
-    auth:  auth,
-    path:  path,
+  cache = {
+    auth: auth,
+    path: path,
     query: query,
-    frag:  frag
+    frag: frag
   };
+  parseURICache[aURISpec] = cache;
+  return cloneCache(cache);
 }
 
 function parseJID(aString) {
   if (!aString) return null;
+  var cache = parseJIDCache[aString];
+  if (cache) return cloneCache(cache);
   var m = /^(.+?@)?(.+?)(?:\/|$)(.*$)/.exec(aString);
-  if (!m) return null;
+  if (!m) {
+    parseURICache[aString] = null;
+    return null;
+  }
   if (m[1] == undefined) m[1] = "";
-  return {
+  cache = {
     node:     m[1] ? m[1].slice(0, -1) : "",
     domain:   m[2],
     resource: (aString.indexOf("/") == -1) ? null : m[3],
     barejid:  m[1] + m[2],
     fulljid:  m[1] + m[2] + "/" + m[3]
   };
+  parseJIDCache[aString] = cache;
+  return cloneCache(cache);
 }
 
 const _MODULE_BASE_URI = "resource://musubi/modules/";
