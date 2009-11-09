@@ -3,7 +3,14 @@ function recv(aXML) {
 
 function main() {
   Musubi.init(recv);
-  if (!Musubi.info) return;
+  if (!Musubi.info) {
+    Musubi.info = {
+      auth: "yourname@gmail.com",
+      path: null,
+      query: null,
+      frag: null
+    };
+  }
   var gemma = "teruakigemma@gmail.com";
   var chat  = "http://musubi.im/chat/";
   var p = Musubi.parseJID(Musubi.info.auth);

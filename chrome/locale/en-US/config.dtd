@@ -6,3 +6,4 @@
 <!ENTITY Musubi.config.privatemode.label     "Private mode">
 <!ENTITY Musubi.config.defaultauth.label     "Default auth">
 <!ENTITY Musubi.config.defaultpage.label     "Default page">
+<!ENTITY Musubi.config.defaultsidebar.label  "Default sidebar">

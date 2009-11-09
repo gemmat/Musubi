@@ -63,6 +63,10 @@
          id="extensions.musubi.defaultpage"
          name="extensions.musubi.defaultpage"
          type="string"/>
+      <preference
+         id="extensions.musubi.defaultsidebar"
+         name="extensions.musubi.defaultsidebar"
+         type="string"/>
     </preferences>
     <vbox>
       <groupbox orient="vertical">
@@ -84,6 +88,10 @@
             <row>
               <label value="&Musubi.config.defaultpage.label;" control="defaultpage"/>
               <textbox id="defaultpage" preference="extensions.musubi.defaultpage"/>
+            </row>
+            <row>
+              <label value="&Musubi.config.defaultsidebar.label;" control="defaultsidebar"/>
+              <textbox id="defaultsidebar" preference="extensions.musubi.defaultsidebar"/>
             </row>
           </rows>
         </grid>

@@ -13,20 +13,28 @@ function onXmppEventAtIframe(aEvent) {
   aEvent.stopPropagation();
   var o = parseURI(document.getElementById("sidebar-iframe").contentDocument.location.href);
   if (!o) return;
+  var stanza = DOMToE4X(aEvent.target);
   var p = parseJID(o.auth);
   if (!p) return;
   var q = parseJID(o.path);
-  var stanza = DOMToE4X(aEvent.target);
-  if (stanza.name().localName == "musubi") {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  switch (stanza.name().localName) {
+  case "musubi":
     if (stanza.init.length()) {
       getCachedPresences(p);
+    } else if (stanza.opencontact.length()) {
+      if (mw) {
+        mw.openUILink(makeXmppURI(o.auth, stanza.opencontact.toString(), "", ""));
+      }
     }
-    return;
+    break;
+  case "presence":
+    if (mw) {
+      mw.Musubi.processStanzaWithURI(p, q, stanza);
+      mw.Musubi.xmppSend(p, stanza);
+    }
+    break;
   }
-  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return;
-  mw.Musubi.processStanzaWithURI(p, q, stanza);
-  mw.Musubi.xmppSend(p, stanza);
 }
 
 function onSelectedAccount(aXULElement) {
@@ -41,7 +49,8 @@ function onSelectedAccount(aXULElement) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
-    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", "resource://musubi/app/presence/presence.html");
+    var prefs = new Prefs("extensions.musubi.");
+    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", prefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
   });
 }
 

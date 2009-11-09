@@ -7,12 +7,13 @@ function recv(xml) {
       var p = Musubi.parseJID(account.barejid.toString());
       if (!p) return;
       var service = makeServiceInfo(p.domain);
+      var href = service.href + "?barejid=" + p.barejid;
       df.appendChild(
-        LI(A({href: service.href + "?barejid=" + p.barejid},
-          UL({className: "service"},
-            LI(IMG({src: service.imgsrc, alt: service.imgalt})),
-            LI(SPAN({className: "account-jid"}, p.barejid)),
-            LI(service.imgalt)))));
+        LI(UL({className: "service"},
+              LI(A({href: href},
+                   IMG({src: service.imgsrc, alt: service.imgalt}))),
+              LI(A({href: href}, p.barejid)),
+              LI(A({href: href}, service.imgalt)))));
     }
     $("accounts").appendChild(df);
   }
