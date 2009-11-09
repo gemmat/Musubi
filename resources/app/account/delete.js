@@ -24,16 +24,20 @@ function recv(xml) {
       df.appendChild(LI(elt));
     }
     eltAccounts.appendChild(df);
-  } else if (xml.@type == "result" && xml.account.length()) {
+    return;
+  }
+  if (xml.@type == "result" && xml.account.length()) {
     if (xml.account.@del.length()) {
       sendMusubiReadAllAccount();
     }
+    return;
   }
+  processLocale(xml);
 }
 
 Event.observe(window, "load", function (evt) {
   Builder.dump(window);
-  Musubi.init();
-  Musubi.onRecv = recv;
+  Musubi.init(recv);
+  sendMusubiGetLocales("chrome://musubi/locale/account.delete.properties");
   sendMusubiReadAllAccount();
 });

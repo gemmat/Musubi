@@ -1,6 +1,5 @@
 <!ENTITY Musubi.config.title     "設定">
-<!ENTITY Musubi.config.general   "全般">
-<!ENTITY Musubi.config.new       "あたらしく">
+<!ENTITY Musubi.config.new       "つくる">
 <!ENTITY Musubi.config.edit      "いじる">
 <!ENTITY Musubi.config.delete    "けす">
 <!ENTITY Musubi.config.defaults  "その他">

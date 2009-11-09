@@ -16,10 +16,24 @@ function makeServiceInfo(aDomain) {
   }
 }
 
+function processLocale(aXML) {
+  if (aXML.name().localName == "musubi" &&
+      aXML.@type == "result" &&
+      aXML.locales.length()) {
+    for (var i = 0, len = aXML.locales.locale.length(); i < len; i++) {
+      var locale = aXML.locales.locale[i];
+      var elt = $(locale.@id.toString());
+      if (elt) elt.textContent = locale.toString();
+    }
+  }
+}
+
+function sendMusubiGetLocales(aProperties) {
+  Musubi.send(<musubi type="get"><locales properties={aProperties}/></musubi>);
+}
+
 function sendMusubiReadAllAccount() {
-  Musubi.send(<musubi type="get">
-                <accounts/>
-              </musubi>);
+  Musubi.send(<musubi type="get"><accounts/></musubi>);
 }
 
 function sendMusubiReadAccount(aBarejid) {
@@ -108,5 +122,14 @@ function recvTestD() {
 function recvTest0() {
   recv(<musubi type="result">
          <defaultauth>romeo@localhost/Home</defaultauth>
+       </musubi>);
+}
+
+function recvTestLocale() {
+  recv(<musubi type="result">
+         <locales>
+           <locale id="locale-username">Localized Username</locale>
+           <locale id="locale-password">Localized Password</locale>
+         </locales>
        </musubi>);
 }

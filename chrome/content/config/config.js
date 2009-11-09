@@ -70,6 +70,15 @@ function setDefaultAuth(aE4X) {
   return getDefaultAuth();
 }
 
+function getLocales(aProperties) {
+  var strings = new Strings(aProperties);
+  var xml = <musubi type="result"><locales properties={aProperties}/></musubi>;
+  strings.map(function(key, value) {
+    xml.locales.appendChild(<locale id={key}>{value}</locale>);
+  });
+  return xml;
+}
+
 function onXmppEventAtIframe(aEvent) {
   function reloadIframe(aId) {
     var elt = document.getElementById(aId);
@@ -82,6 +91,7 @@ function onXmppEventAtIframe(aEvent) {
       if (xml.accounts.length()) return readAllAccount();
       if (xml.account.length()) return readAccount(xml);
       if (xml.defaultauth.length()) return getDefaultAuth();
+      if (xml.locales.length()) return getLocales(xml.locales.@properties.toString());
       break;
     case "set":
       if (xml.account.length()) {

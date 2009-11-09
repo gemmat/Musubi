@@ -1,9 +1,8 @@
-<!ENTITY Musubi.config.title     "Settings for the Musubi Messenger Extension">
-<!ENTITY Musubi.config.general   "General">
-<!ENTITY Musubi.config.new       "Create a account">
+<!ENTITY Musubi.config.title     "Preferences">
+<!ENTITY Musubi.config.new       "Create">
 <!ENTITY Musubi.config.edit      "Edit">
 <!ENTITY Musubi.config.delete    "Delete">
-<!ENTITY Musubi.config.defaults  "Misc">
+<!ENTITY Musubi.config.defaults  "Misc.">
 <!ENTITY Musubi.config.privatemode.label     "Private mode">
-<!ENTITY Musubi.config.defaultauth.label     "A default auth">
-<!ENTITY Musubi.config.defaultpage.label     "A default page">
+<!ENTITY Musubi.config.defaultauth.label     "Default auth">
+<!ENTITY Musubi.config.defaultpage.label     "Default page">

@@ -15,11 +15,12 @@ function recv(xml) {
       }
     }
   }
+  processLocale(xml);
 }
 
 Event.observe(window, "load", function windowOnLoad(evt) {
-  Musubi.init();
-  Musubi.onRecv = recv;
+  Musubi.init(recv);
+  sendMusubiGetLocales("chrome://musubi/locale/account.properties");
   Event.observe("form", "submit", function(e) {
     var o = Form.serialize("form", true);
     sendMusubiCreateUpdateAccount(o["node"] + "@" + o["domain"],

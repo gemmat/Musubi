@@ -13,30 +13,34 @@
   </head>
   <body>
     <img src="jabber.png" alt="Jabber(XMPP)"/>
-    <span>Jabber(XMPP)のアカウント</span>
+    <span>Jabber(XMPP)</span>
     <form id="form">
       <dl>
-        <dt>ユーザ名</dt>
+        <dt id="locale-username">User name</dt>
         <dd><input type="text" id="node" name="node"></input></dd>
-        <dt>ドメイン</dt>
+        <dt id="locale-domain">Domain</dt>
         <dd><input type="text" id="domain" name="domain"></input></dd>
-        <dt>パスワード</dt>
+        <dt id="locale-password">Password</dt>
         <dd><input type="password" id="password" name="password"></input></dd>
       </dl>
       <input type="submit" value="OK"></input>
       <hr/>
-      高度な設定
+      <p id="locale-advanced-settings">Advanced Settings</p>
       <dl>
-        <dt>リソース</dt>
+        <dt id="locale-resource">Resource</dt>
         <dd><input type="text" id="resource" name="resource" value="Musubi"></input></dd>
-        <dt>接続ホスト</dt>
+        <dt id="locale-connection-host">Connection Host</dt>
         <dd><input type="text" id="connection-host" name="connection-host" value="talk.google.com"></input></dd>
-        <dt>接続ポート</dt>
+        <dt id="locale-connection-port">Connection Port</dt>
         <dd><input type="text" id="connection-port" name="connection-port" value="443"></input></dd>
-        <dt>暗号化</dt>
+        <dt id="locale-connection-scrty">Encryption</dt>
         <dd>
-          <input type="radio" id="connection-scrty-ssl"  name="connection-scrty" value="1"  checked="checked">あり</input>
-          <input type="radio" id="connection-scrty-none" name="connection-scrty" value="0">なし</input>
+          <input type="radio" id="connection-scrty-ssl"  name="connection-scrty" value="1"  checked="checked">
+            <span id="locale-connection-scrty-ssl">SSL</span>
+          </input>
+          <input type="radio" id="connection-scrty-none" name="connection-scrty" value="0">
+            <span id="locale-connection-scrty-none">none</span>
+          </input>
         </dd>
       </dl>
     </form>

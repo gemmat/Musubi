@@ -11,7 +11,7 @@
           <Description>
             <em:name>Musubi</em:name>
             <em:locale>en-US</em:locale>
-            <em:description>Musubi Web Communicator Firefox Add-on</em:description>
+            <em:description>Musubi Web Communicator</em:description>
             <em:creator>Teruaki Gemma</em:creator>
             <em:homepageURL>http://d.hatena.ne.jp/Gemma/</em:homepageURL>
           </Description>
@@ -20,7 +20,7 @@
           <Description>
             <em:name>Musubi</em:name>
             <em:locale>ja</em:locale>
-            <em:description>Webと対話するブラウザ</em:description>
+            <em:description>Musubi Web Communicator</em:description>
             <em:creator>源馬 照明</em:creator>
             <em:homepageURL>http://d.hatena.ne.jp/Gemma/</em:homepageURL>
           </Description>

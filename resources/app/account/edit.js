@@ -16,11 +16,12 @@ function recv(xml) {
     }
     $("accounts").appendChild(df);
   }
+  processLocale(xml);
 }
 
 Event.observe(window, "load", function (evt) {
   Builder.dump(window);
-  Musubi.init();
-  Musubi.onRecv = recv;
+  Musubi.init(recv);
+  sendMusubiGetLocales("chrome://musubi/locale/account.edit.properties");
   sendMusubiReadAllAccount();
 });
