@@ -1,9 +1,9 @@
 const EXPORT = ["onLoadAtIframe", "connect", "onUnloadAtIframe", "byeContacts"];
 
-function updateMainWindowBookmark() {
+function updateMainWindowBookmark(aAccount) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (mw) {
-    mw.Musubi.initializeBookmark(account);
+    mw.Musubi.initializeBookmark(aAccount);
   }
 }
 
@@ -39,7 +39,7 @@ function createupdateAccount(aE4X) {
   var account = DBNewAccount(accountE4XToObj(aE4X.account));
   updateXMPP4MOZAccount(account);
   XMPP.setPassword(account.barejid, aE4X.account.password.toString());
-  updateMainWindowBookmark();
+  updateMainWindowBookmark(account);
   updateSidebarAccountMenu();
   return <musubi type="result"><account/></musubi>;
 }
@@ -54,19 +54,15 @@ function deleteAccount(aE4X) {
 }
 
 function getDefaultAuth() {
-  var prefs = new Prefs("extensions.musubi.");
-  if (!prefs) return null;
-  var d = prefs.get("defaultauth", "default@localhost/Default");
+  var d = MusubiPrefs.get("defaultauth", "default@localhost/Default");
   if (!d) return null;
   return <musubi type="result"><defaultauth>{d}</defaultauth></musubi>;
 }
 
 function setDefaultAuth(aE4X) {
-  var prefs = new Prefs("extensions.musubi.");
-  if (!prefs) return null;
   var p = parseJID(aE4X.defaultauth.toString());
   if (!p) return null;
-  prefs.set("defaultauth", p.fulljid);
+  MusubiPrefs.set("defaultauth", p.fulljid);
   return getDefaultAuth();
 }
 

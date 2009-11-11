@@ -12,7 +12,7 @@ function appendHistory(aElement) {
 
 function appendMessage(aFrom, aMessage) {
   var li = new Element("li");
-  li.appendChild(document.createTextNode(aFrom + ": " + aMessage.toString()));
+  li.appendChild(document.createTextNode(aFrom.replace(/@.*/, "") + ": " + aMessage.toString()));
   new Tip(li, Date(),
           {
             title: aFrom,

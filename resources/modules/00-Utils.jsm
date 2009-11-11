@@ -49,7 +49,7 @@ function toJSON(aObject) {
 
 function print(x) {
   // Debug Printer
-  //return;
+  return;
   Application.console.log(x ? x : "**");
 }
 

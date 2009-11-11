@@ -68,6 +68,14 @@ function onXmppEventAtDocument(aEvent) {
     }
     return;
     break;
+  case "message":
+    if (o.frag) {
+      stanza.appendChild(<x xmlns="jabber:x:oob">
+                           <url>{o.frag}</url>
+                           <desc>{doc.title}</desc>
+                         </x>);
+    }
+    break;
   case "presence":
     if (q) {
       if (stanza.@res.length() && stanza.@type == "unavailable") {
@@ -205,8 +213,7 @@ function onPresence(aObj) {
     bookmarkPresence(stanza);
     if (stanza.@type.toString() == "subscribe") {
       // This is the Twitter style.
-      var prefs = new Prefs("extensions.musubi.");
-      if (!prefs.get("privatemode", false)) {
+      if (!MusubiPrefs.get("privatemode", false)) {
         xmppSend(account, <presence to={from.barejid} type="subscribed"/>);
       }
     }

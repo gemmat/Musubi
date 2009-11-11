@@ -56,8 +56,7 @@ XMPProtocol.prototype = {
       o.auth = o1.auth;
     }
     if (!o.auth) {
-      var prefs = new Prefs("extensions.musubi.");
-      o.auth = prefs.get("defaultauth", "default@localhost/Default");
+      o.auth = MusubiPrefs.get("defaultauth", "default@localhost/Default");
     }
     // handle the frag.
     // aSpec         : "page0.html"

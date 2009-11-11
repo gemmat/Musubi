@@ -1,4 +1,4 @@
-const EXPORTED_SYMBOLS = ["getPrefDefaultPage", "Prefs"];
+const EXPORTED_SYMBOLS = ["getPrefDefaultPage", "Prefs", "MusubiPrefs"];
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 
 function getPrefDefaultPage() {
@@ -122,3 +122,5 @@ Prefs.prototype = {
     return this.prefs.getChildList(aStartingAt, {});
   }
 };
+
+var MusubiPrefs = new Prefs("extensions.musubi.");

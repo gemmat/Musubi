@@ -49,19 +49,24 @@ function onSelectedAccount(aXULElement) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
-    var prefs = new Prefs("extensions.musubi.");
-    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", prefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
+    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
   });
 }
 
 function updateAccountMenu() {
   var menupopup = document.getElementById("account-menupopup");
   while (menupopup.firstChild) menupopup.removeChild(menupopup.firstChild);
-  DBFindAllAccount().forEach(function(account) {
+  var accounts = DBFindAllAccount();
+  accounts.forEach(function(account) {
     var elt = document.createElement("menuitem");
     elt.setAttribute("label", account.barejid + "/" + account.resource);
     menupopup.appendChild(elt);
   });
+  if (accounts.length == 1) {
+    var menulist = document.getElementById("account-menulist");
+    menulist.selectedIndex = 0;
+    onSelectedAccount(menulist);
+  }
 }
 
 function onLoad(aEvent) {
