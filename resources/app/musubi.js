@@ -1,7 +1,7 @@
 var Musubi = {
   eltIn:  null,
   eltOut: null,
-  info: null,
+  location: {href: "", info: null},
   init: function MusubiInit(onRecv) {
     if ("createEvent" in document) {
       this.eltIn  = document.createElement("xmppin");
@@ -13,7 +13,13 @@ var Musubi = {
       this.eltIn .addEventListener("DOMNodeInserted", this.listnerIn,  false);
       this.eltOut.addEventListener("DOMNodeInserted", this.listnerOut, false);
     }
-    this.info = this.parseURI(document.location.href);
+    var o = this.parseURI(document.location.href);
+    if (o) {
+      this.location.info = o;
+      this.location.href = o.frag;
+    } else {
+      this.location.href = document.location.href;
+    }
     Musubi.onRecv = onRecv;
     Musubi.send(<musubi><init/></musubi>);
   },
@@ -116,4 +122,3 @@ var Musubi = {
     };
   }
 };
-

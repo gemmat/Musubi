@@ -23,7 +23,7 @@ XMPProtocol.prototype = {
 
   scheme: "xmpp",
   defaultPort: -1,
-  protocolFlags: Ci.nsIProtocolHandler.URI_NOAUTH | Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE,
+  protocolFlags: Ci.nsIProtocolHandler.URI_STD | Ci.nsIProtocolHandler.URI_LOADABLE_BY_ANYONE,
 
   allowPort: function XMPProtocolAllowPort(aPort, aScheme) {
     return false;
@@ -52,12 +52,12 @@ XMPProtocol.prototype = {
       uri.spec = aSpec;
       return uri;
     }
-    if (o0 && o1) {
-      o.auth = o1.auth;
+    if (o0 && !o0.path) {
+      uri.spec = o0.frag || "about:blank";
+      return uri;
     }
-    if (!o.auth) {
-      o.auth = MusubiPrefs.get("defaultauth", "default@localhost/Default");
-    }
+    if (o0 && o1) o.auth = o1.auth;
+    o.auth = o.auth || MusubiPrefs.get("defaultauth", "default@localhost/Default");
     // handle the frag.
     // aSpec         : "page0.html"
     // aBaseURI      : "xmpp...#http://www.acme.com/index.html"

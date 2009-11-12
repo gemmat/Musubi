@@ -43,6 +43,10 @@ function send(e) {
   var input = $("input");
   Musubi.send(<message type="chat">
                 <body>{input.value}</body>
+                <x xmlns="jabber:x:oob">
+                  <url>{Musubi.location.href}</url>
+                  <desc>Musubi Chat</desc>
+                </x>);
               </message>);
   appendMessage("me", input.value);
   input.value = "";

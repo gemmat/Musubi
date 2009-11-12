@@ -20,33 +20,22 @@ function onPageLoad(aEvent) {
   if (!o || !o.auth) return;
   var p = parseJID(o.auth);
   if (!p) return;
-  xmppConnect(p, function(account) {
-    if (!o.path || !o.frag) return;
-    if (/^http:/.test(o.frag)) {
-      // Don't use the body, user may hate to send
-      // a message when just loaded a page.
-      xmppSend(p, <message to={o.path}>
-                    <x xmlns="jabber:x:oob">
-                      <url>{o.frag}</url>
-                    </x>;
-                   </message>);
-    }
-  });
+  xmppConnect(p);
 }
 
 function processStanzaWithURI(aAuth, aPath, aStanza) {
   if (aPath) {
     if (aPath.resource) {
       aStanza.@to = aPath.fulljid;
-    } else if (aStanza.@res.length()) {
-      aStanza.@to = aPath.barejid + "/" + aStanza.@res;
+    } else if (aStanza.@rsrc.length()) {
+      aStanza.@to = aPath.barejid + "/" + aStanza.@rsrc;
     } else {
       aStanza.@to = aPath.barejid;
     }
   } else {
     delete aStanza.@to;
   }
-  delete aStanza.@res;
+  delete aStanza.@rsrc;
 }
 
 function onXmppEventAtDocument(aEvent) {
@@ -68,17 +57,12 @@ function onXmppEventAtDocument(aEvent) {
     }
     return;
     break;
-  case "message":
-    if (o.frag) {
-      stanza.appendChild(<x xmlns="jabber:x:oob">
-                           <url>{o.frag}</url>
-                           <desc>{doc.title}</desc>
-                         </x>);
-    }
+  case "message":  //FALLTHROUGH
+  case "iq":
     break;
   case "presence":
     if (q) {
-      if (stanza.@res.length() && stanza.@type == "unavailable") {
+      if (stanza.@rsrc.length() && stanza.@type == "unavailable") {
         // User left the MUC Room.
         bookmarkPresence(<presence from={q.barejid} to={p.fulljid} type="unavailable"/>, true);
       }
