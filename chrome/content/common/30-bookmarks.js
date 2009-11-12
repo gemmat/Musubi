@@ -368,7 +368,7 @@ function initializeBookmark(aAccount) {
   var folderIdAuth = createFolders(p)["auth"];
   removePresenceItem(p, null, folderIdAuth);
   insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
-                     makeXmppURI(p.fulljid, p.fulljid, "", "resource://musubi/app/help/start.html"), true);
+                     makeXmppURI(p.fulljid, p.fulljid, "", strings.get("help")), true);
 }
 
 function observeBookmarks() {

@@ -49,7 +49,7 @@ function onSelectedAccount(aXULElement) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
-    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
+    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, p.fulljid, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
   });
 }
 

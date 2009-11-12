@@ -111,6 +111,9 @@ function ajaxRequest(aMethod, aURL, aQuery, aOnComplete) {
   req.send(queryToString(aQuery));
 }
 
+//(2009-11-13) https://bugzilla.mozilla.org/show_bug.cgi?id=195356
+//So we can't use #, omg.
+
 function makeXmppURI(aAuth, aPath, aQuery, aFrag) {
   return "xmpp://" +
          aAuth +
