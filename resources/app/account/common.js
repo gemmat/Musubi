@@ -82,6 +82,7 @@ function recvTestRAll() {
          <accounts>
            <account>
              <barejid>romeo@localhost</barejid>
+             <password>romeo</password>
              <connectionHost>localhost</connectionHost>
              <connectionPort>5223</connectionPort>
              <connectionScrty>0</connectionScrty>
@@ -100,6 +101,7 @@ function recvTestR() {
   recv(<musubi type="result">
          <account>
            <barejid>romeo@localhost</barejid>
+           <password>romeo</password>
            <connectionHost>localhost</connectionHost>
            <connectionPort>5223</connectionPort>
            <connectionScrty>0</connectionScrty>
@@ -128,8 +130,8 @@ function recvTest0() {
 function recvTestLocale() {
   recv(<musubi type="result">
          <locales>
-           <locale id="locale-username">Localized Username</locale>
-           <locale id="locale-password">Localized Password</locale>
+           <locale id="locale-username">Localized String0</locale>
+           <locale id="locale-password">Localized String1</locale>
          </locales>
        </musubi>);
 }

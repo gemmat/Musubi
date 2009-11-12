@@ -22,7 +22,9 @@ function readAllAccount() {
   if (!accounts) return null;
   var xml = <musubi type="result"><accounts/></musubi>;
   accounts.forEach(function f(x) {
-    xml.accounts.appendChild(accountObjToE4X(x));
+    var a = accountObjToE4X(x);
+    a.appendChild(<password>{XMPP.getPassword(x.barejid)}</password>);
+    xml.accounts.appendChild(a);
   });
   return xml;
 }
@@ -32,7 +34,9 @@ function readAccount(aE4X) {
   if (!p) return null;
   var account = DBFindAccount(p);
   if (!account) return null;
-  return <musubi type="result">{accountObjToE4X(account)}</musubi>;
+  var a = accountObjToE4X(account);
+  a.appendChild(<password>{XMPP.getPassword(account.barejid)}</password>);
+  return <musubi type="result">{a}</musubi>;
 }
 
 function createupdateAccount(aE4X) {
