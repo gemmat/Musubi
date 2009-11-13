@@ -3,7 +3,13 @@
 <!ENTITY Musubi.config.edit      "Edit">
 <!ENTITY Musubi.config.delete    "Delete">
 <!ENTITY Musubi.config.defaults  "Misc.">
+<!ENTITY Musubi.config.about                 "About">
 <!ENTITY Musubi.config.privatemode.label     "Private mode">
 <!ENTITY Musubi.config.defaultauth.label     "Default auth">
 <!ENTITY Musubi.config.defaultpage.label     "Default page">
 <!ENTITY Musubi.config.defaultsidebar.label  "Default sidebar">
+<!ENTITY Musubi.config.label.about           "Special Thanks to ...">
+<!ENTITY Musubi.config.label.ackknowledge0   "The xmpp4moz Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge1   "The Hatena Bookmark Extension Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge2   "The Tombloo Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge255 "Jacques Garrigue">

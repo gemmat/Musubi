@@ -47,12 +47,6 @@ function toJSON(aObject) {
   return "{" + results.join(", ") + "}";
 }
 
-function print(x) {
-  // Debug Printer
-  return;
-  Application.console.log(x ? x : "**");
-}
-
 function $A(aObj) {
   if (!aObj) return false;
   switch (typeof aObj) {

@@ -99,6 +99,19 @@
     </vbox>
 </prefpane>
 
+<prefpane
+   image="chrome://musubi/skin/images/transparent.png"
+   id="prefpane-about" label="&Musubi.config.about;" flex="1">
+    <preferences />
+    <vbox>
+      <label value="&Musubi.config.label.about;" />
+      <label value="&Musubi.config.label.ackknowledge0;" />
+      <label value="&Musubi.config.label.ackknowledge1;" />
+      <label value="&Musubi.config.label.ackknowledge2;" />
+      <label value="&Musubi.config.label.ackknowledge255;" />
+    </vbox>
+  </prefpane>
+
 <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
 <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" />
 <script type="text/javascript; version=1.8" charset="utf-8">

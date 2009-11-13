@@ -3,7 +3,13 @@
 <!ENTITY Musubi.config.edit      "いじる">
 <!ENTITY Musubi.config.delete    "けす">
 <!ENTITY Musubi.config.defaults  "その他">
+<!ENTITY Musubi.config.about                 "About">
 <!ENTITY Musubi.config.privatemode.label     "プライベートモード">
 <!ENTITY Musubi.config.defaultauth.label     "デフォルトのアカウント">
 <!ENTITY Musubi.config.defaultpage.label     "デフォルトのページ">
 <!ENTITY Musubi.config.defaultsidebar.label  "デフォルトのサイドバー">
+<!ENTITY Musubi.config.label.about           "Special Thanks to ...">
+<!ENTITY Musubi.config.label.ackknowledge0   "xmpp4moz 開発者のみなさん">
+<!ENTITY Musubi.config.label.ackknowledge1   "はてなブックマーク拡張 制作スタッフのみなさん">
+<!ENTITY Musubi.config.label.ackknowledge2   "Tombloo 開発者のみなさん">
+<!ENTITY Musubi.config.label.ackknowledge255 "雅利賀 惹玖 先生">
