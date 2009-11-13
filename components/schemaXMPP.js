@@ -1,4 +1,28 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+
+/*
+ * Bug 459107 - Sunbird startup error (NS_ERROR_FILE_NOT_FOUND - nsIXPCComponents_Utils.import)
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=459107
+ * Bug 457596 -  loading resources with Cu.import during xpcom registration fails
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=457596
+ */
+
+var iosvc = Components.classes["@mozilla.org/network/io-service;1"].
+              getService(Components.interfaces.nsIIOService);
+let appdir = __LOCATION__.parent.parent.clone();
+// Register our alias here: this code always needs to run first (triggered by app-startup)
+let modulesDir = appdir.clone();
+modulesDir.append("resources");
+modulesDir.append("modules");
+modulesDir = iosvc.newFileURI(modulesDir);
+// bug 459196:
+// we need to cut/hack around the trailing slash, otherwise our modules won't be found
+// when loaded like "resource://musubi/modules/foobar.jsm"
+modulesDir.spec = modulesDir.spec.replace(/\/$/, "");
+iosvc.getProtocolHandler("resource")
+  .QueryInterface(Components.interfaces.nsIResProtocolHandler)
+  .setSubstitution("musubi", modulesDir);
+
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 Components.utils.import("resource://musubi/modules/20-Prefs.jsm");
 
