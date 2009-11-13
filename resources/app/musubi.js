@@ -71,20 +71,24 @@ var Musubi = {
       var arr = aURISpec.split("/");
       switch (arr.length) {
       case 1:
+        if (!arr[0]) return null;
         if (aScheme == "xmpp:")
           return [null, arr[0]];
         break;
       case 2:
+        if (!arr[0]) return null;
         if (aScheme == "xmpp:")
           return [null, arr[0] + "/" + arr[1]];
         if (aScheme == "xmpp://")
           return [arr[0] + "/" + arr[1], null];
         break;
       case 3:
+        if (!arr[0] || !arr[2]) return null;
         if (aScheme == "xmpp://")
           return [arr[0] + "/" + arr[1], arr[2]];
         break;
       case 4:
+        if (!arr[0] || !arr[2]) return null;
         if (aScheme == "xmpp://")
           return [arr[0] + "/" + arr[1], arr[2] + "/" + arr[3]];
         break;

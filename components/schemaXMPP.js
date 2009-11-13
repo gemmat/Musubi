@@ -49,11 +49,7 @@ XMPProtocol.prototype = {
     var o1 = aBaseURI ? parseURI(aBaseURI.spec) : null;
     var o = o0 || o1;
     if (!o) {
-      uri.spec = aSpec;
-      return uri;
-    }
-    if (o0 && !o0.path) {
-      uri.spec = o0.frag || "about:blank";
+      uri.spec = "about:blank";
       return uri;
     }
     if (o0 && o1) o.auth = o1.auth;
