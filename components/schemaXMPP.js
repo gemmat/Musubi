@@ -29,11 +29,13 @@ Components.utils.import("resource://musubi/modules/20-Prefs.jsm");
 function XMPProtocol() {}
 
 function getContentDocumentURISpec() {
+  function defpage() {
+    return MusubiPrefs.get("defaultpage", "resource://musubi/app/chat/index.html");
+  }
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
-  if (!mw) return getPrefDefaultPage();
+  if (!mw) return defpage();
   var currentURISpec = mw.content.document.documentURI;
-  if (!currentURISpec || currentURISpec == "about:blank")
-    return getPrefDefaultPage();
+  if (!currentURISpec || currentURISpec == "about:blank") return defpage();
   var o = parseURI(currentURISpec);
   if (!o) return currentURISpec;
   return o.frag;

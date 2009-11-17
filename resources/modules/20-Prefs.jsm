@@ -1,10 +1,5 @@
-const EXPORTED_SYMBOLS = ["getPrefDefaultPage", "Prefs", "MusubiPrefs", "print"];
+const EXPORTED_SYMBOLS = ["Prefs", "MusubiPrefs", "print"];
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
-
-function getPrefDefaultPage() {
-  var prefs = new Prefs("extensions.musubi.");
-  return prefs.get("defaultpage", "resource://musubi/app/chat/index.html");
-}
 
 /*
  * Codes in this file follow the licence of the Hatena Bookmark Extension.

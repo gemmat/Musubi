@@ -1,4 +1,4 @@
-const EXPORT = ["onSelectedAccount", "updateAccountMenu", "onLoad", "onUnload"];
+const EXPORT = ["onSelectedAccount", "updateAccountMenu", "onCommandDisconnect", "onLoad", "onUnload"];
 
 function getCachedPresences(aAuth) {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
@@ -37,36 +37,55 @@ function onXmppEventAtIframe(aEvent) {
   }
 }
 
-function onSelectedAccount(aXULElement) {
-  var item = aXULElement.selectedItem;
-  if (!item) return;
+function getSelectedAccount() {
+  var menulist  = document.getElementById("account-menulist");
+  var item = menulist.selectedItem;
+  if (!item) return null;
   var label = item.label;
-  if (!label) return;
+  if (!label) return null;
+  var p = parseJID(label);
+  if (!p) return null;
+  return p;
+}
+
+function onSelectedAccount() {
   var iframe = document.getElementById("sidebar-iframe");
   if (!iframe) return;
-  var p = parseJID(label);
-  if (!p) return;
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
+  var p = getSelectedAccount();
+  if (!p) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
     iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
   });
 }
 
 function updateAccountMenu() {
+  var menulist  = document.getElementById("account-menulist");
   var menupopup = document.getElementById("account-menupopup");
   while (menupopup.firstChild) menupopup.removeChild(menupopup.firstChild);
   var accounts = DBFindAllAccount();
   accounts.forEach(function(account) {
+    var fulljid = account.barejid + "/" + account.resource;
     var elt = document.createElement("menuitem");
-    elt.setAttribute("label", account.barejid + "/" + account.resource);
+    elt.setAttribute("label", fulljid);
     menupopup.appendChild(elt);
+    if (MusubiPrefs.get("autoconnect.sidebar", false) &&
+        MusubiPrefs.get("defaultauth") == fulljid) {
+      menulist.selectedItem = elt;
+    }
   });
-  if (accounts.length == 1) {
-    var menulist = document.getElementById("account-menulist");
-    menulist.selectedIndex = 0;
+  if (MusubiPrefs.get("autoconnect.sidebar", false))  {
     onSelectedAccount(menulist);
   }
+}
+
+function onCommandDisconnect() {
+  var mw = WindowMediator.getMostRecentWindow("navigator:browser");
+  if (!mw) return;
+  var p = getSelectedAccount();
+  if (!p) return;
+  mw.Musubi.xmppDisconnect(p);
 }
 
 function onLoad(aEvent) {
@@ -85,4 +104,3 @@ function onUnload(aEvent) {
     iframe.removeEventListener("XmppEvent", onXmppEventAtIframe, false, true);
   }
 }
-

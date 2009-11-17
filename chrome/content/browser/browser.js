@@ -5,22 +5,10 @@ const nsOob = new Namespace("jabber:x:oob");
 
 function onLoad(aEvent) {
   document.addEventListener("XmppEvent", onXmppEventAtDocument, false, true);
-  var appcontent = document.getElementById("appcontent");
-  if (appcontent)
-    appcontent.addEventListener("DOMContentLoaded", onPageLoad, true);
 }
 
 function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
-}
-
-function onPageLoad(aEvent) {
-  var doc = aEvent.originalTarget;
-  var o = parseURI(doc.location.href);
-  if (!o || !o.auth) return;
-  var p = parseJID(o.auth);
-  if (!p) return;
-  xmppConnect(p);
 }
 
 function processStanzaWithURI(aAuth, aPath, aStanza) {
@@ -181,7 +169,8 @@ function onMessage(aObj) {
   var [stanza, account, from, to] = parseXMPP4MOZEvent(aObj);
   print("message:" + stanza.toXMLString());
   if (from && to) {
-    var oobURI  = stanza.nsOob::x.nsOob::url.toString() || getPrefDefaultPage();
+    var oobURI  = stanza.nsOob::x.nsOob::url.toString() ||
+                    MusubiPrefs.get("defaultpage", "resource://musubi/app/chat/index.html");
     var r = filterBrowsers(account, from, oobURI, stanza.@type.toString());
     appendStanzaToBrowsers(r.browsers, stanza);
     if (!r.exist) addTab(account, from, oobURI, stanza);

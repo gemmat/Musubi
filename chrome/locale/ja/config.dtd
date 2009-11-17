@@ -5,6 +5,7 @@
 <!ENTITY Musubi.config.defaults  "その他">
 <!ENTITY Musubi.config.about                 "About">
 <!ENTITY Musubi.config.privatemode.label     "プライベートモード">
+<!ENTITY Musubi.config.autoconnect.sidebar.label     "オートでつなぐ(サイドバー)">
 <!ENTITY Musubi.config.defaultauth.label     "デフォルトのアカウント">
 <!ENTITY Musubi.config.defaultpage.label     "デフォルトのページ">
 <!ENTITY Musubi.config.defaultsidebar.label  "デフォルトのサイドバー">

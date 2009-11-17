@@ -43,8 +43,7 @@ function xmppConnect(aAuth, aCont) {
 
 function xmppDisconnect(aAuth) {
   var account = Application.storage.get(aAuth.fulljid, null);
-  if (!account) return;
-  account.channel.release();
+  if (account) account.channel.release();
   XMPP.down(aAuth.fulljid);
   Application.storage.set(aAuth.fulljid, null);
 }

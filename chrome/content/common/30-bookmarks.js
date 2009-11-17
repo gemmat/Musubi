@@ -253,11 +253,13 @@ function onItemAdded(aItemId, aFolder, aIndex) {
                   <item jid={q.barejid} name={title}/>
                 </query>
               </iq>);
-  xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
+  if (subs == "to" || subs == "both") {
+    xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
+  }
 }
 
 // users often remove items easily, so we decided not to correspond "onItemRemoved" to "remove roster".
-// Instead of it, "onItemMoved to the 'remove' folder" do to "remove roster".
+// Instead of it, "onItemMoved to the 'remove' folder" do that.
 function onItemRemoved(aItemId, aFolder, aIndex) {
   if (inBatch()) return;
 }
@@ -321,14 +323,14 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
       break;
     case "from":
       switch (aNewSubscription) {
-      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
-      case "to":   return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "none": return <presence to={aPath.barejid} type="unsubscribed"/>;
+      case "to":   return <presence to={aPath.barejid} type="subscribe"/>;
       case "both": return <presence to={aPath.barejid} type="subscribe"/>;
       }
       break;
     case "both":
       switch (aNewSubscription) {
-      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "none": return <presence to={aPath.barejid} type="unsubscribed"/>;
       case "from": return <presence to={aPath.barejid} type="unsubscribe"/>;
       }
       break;
@@ -367,8 +369,6 @@ function initializeBookmark(aAccount) {
   var strings = new Strings("chrome://Musubi/locale/bookmarks.properties");
   var folderIdAuth = createFolders(p)["auth"];
   removePresenceItem(p, null, folderIdAuth);
-  insertPresenceItem(p, null, folderIdAuth, strings.get("start"),
-                     makeXmppURI(p.fulljid, p.fulljid, "", strings.get("help")), true);
 }
 
 function observeBookmarks() {

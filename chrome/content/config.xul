@@ -56,6 +56,10 @@
          name="extensions.musubi.privatemode"
          type="bool"/>
       <preference
+         id="extensions.musubi.autoconnect.sidebar"
+         name="extensions.musubi.autoconnect.sidebar"
+         type="bool"/>
+      <preference
          id="extensions.musubi.defaultauth"
          name="extensions.musubi.defaultauth"
          type="string"/>
@@ -80,6 +84,10 @@
             <row>
               <label value="&Musubi.config.privatemode.label;" control="privatemode"/>
               <checkbox id="privatemode" preference="extensions.musubi.privatemode"/>
+            </row>
+            <row>
+              <label value="&Musubi.config.autoconnect.sidebar.label;" control="autoconnect.sidebar"/>
+              <checkbox id="autoconnect.sidebar" preference="extensions.musubi.autoconnect.sidebar"/>
             </row>
             <row>
               <label value="&Musubi.config.defaultauth.label;" control="defaultauth"/>
