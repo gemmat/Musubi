@@ -95,17 +95,6 @@ function createFolders(aAuth) {
   };
 }
 
-//remove a resource and append the account's resource.
-function parseJIDwithResource(aString) {
-  var tmp = parseJID(aString);
-  if (!tmp) return null;
-  var account = DBFindAccount(tmp);
-  if (!account) return null;
-  var p = parseJID(account.barejid + "/" + account.resource);
-  if (!p) return null;
-  return p;
-}
-
 // TODO: represent the roster group with Bookmark tags(taggingService.tagURI).
 
 function insertRosterItem(aAuth, aPath, aFolder, aName, aGroup) {

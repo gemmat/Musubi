@@ -48,9 +48,7 @@ function getSelectedAccount() {
     onCommandOpenAccount();
     return null;
   }
-  var p = parseJID(label);
-  if (!p) return null;
-  return p;
+  return label;
 }
 
 function onSelectedAccount() {
@@ -58,7 +56,7 @@ function onSelectedAccount() {
   if (!iframe) return;
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
-  var p = getSelectedAccount();
+  var p = parseJIDwithResource(getSelectedAccount());
   if (!p) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
     iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
@@ -90,18 +88,18 @@ function updateAccountMenu() {
     var menuitem = menulist.getItemAtIndex(i);
     if (menuitem.getAttribute("label") == p.barejid) {
       menulist.selectedItem = menuitem;
-      return;
+      break;
     }
   }
   if (MusubiPrefs.get("autoconnect.sidebar", false))  {
-    onSelectedAccount(menulist);
+    onSelectedAccount();
   }
 }
 
 function onCommandDisconnect() {
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return;
-  var p = getSelectedAccount();
+  var p = parseJIDwithResource(getSelectedAccount());
   if (!p) return;
   mw.Musubi.xmppDisconnect(p);
 }
