@@ -11,45 +11,10 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     title="&Musubi.config.title;"
     >
-
-<prefpane
-   id="prefpane-account-add" label="&Musubi.config.new;" flex="1">
-  <preferences>
-  </preferences>
-  <vbox>
-    <iframe type="content"
-            id="prefpane-account-add-iframe"
-            src="resource://musubi/app/account/new.html"
-            flex="1"/>
-  </vbox>
-</prefpane>
-
-<prefpane
-    id="prefpane-account-edit" label="&Musubi.config.edit;" flex="1">
-    <preferences>
-    </preferences>
-    <vbox>
-      <iframe type="content"
-              id="prefpane-account-edit-iframe"
-              src="resource://musubi/app/account/edit.html"
-              flex="1"/>
-    </vbox>
-</prefpane>
-
-<prefpane
-    id="prefpane-account-delete" label="&Musubi.config.delete;" flex="1">
-    <preferences>
-    </preferences>
-    <vbox>
-      <iframe type="content"
-              id="prefpane-account-delete-iframe"
-              src="resource://musubi/app/account/delete.html"
-              flex="1"/>
-    </vbox>
-</prefpane>
-
-<prefpane
-    id="prefpane-defaults" label="&Musubi.config.defaults;" flex="1">
+  <prefpane
+     id="musubi-config-preferences"
+     image="chrome://musubi/skin/images/transparent.png"
+     label="&Musubi.config.title;" flex="1">
     <preferences>
       <preference
          id="extensions.musubi.privatemode"
@@ -74,7 +39,7 @@
     </preferences>
     <vbox>
       <groupbox orient="vertical">
-        <caption label="&Musubi.config.defaults;" />
+        <caption label="&Musubi.config.title;" />
         <grid>
           <columns>
             <column/>
@@ -105,11 +70,11 @@
         </grid>
       </groupbox>
     </vbox>
-</prefpane>
-
-<prefpane
-   image="chrome://musubi/skin/images/transparent.png"
-   id="prefpane-about" label="&Musubi.config.about;" flex="1">
+  </prefpane>
+  <prefpane
+     id="musubi-config-about"
+     image="chrome://musubi/skin/images/transparent.png"
+     label="&Musubi.config.about;" flex="1">
     <preferences />
     <vbox>
       <label value="&Musubi.config.label.about;" />
@@ -119,15 +84,4 @@
       <label value="&Musubi.config.label.ackknowledge255;" />
     </vbox>
   </prefpane>
-
-<script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
-<script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" />
-<script type="text/javascript; version=1.8" charset="utf-8">
-// <![CDATA[
-(function() {
-  document.addEventListener("load",   Musubi.onLoadAtIframe,   true);
-  document.addEventListener("unload", Musubi.onUnloadAtIframe, true);
-})();
-// ]]>
-</script>
 </prefwindow>

@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://musubi/skin/account.css"?>
+
+<!DOCTYPE dialog SYSTEM "chrome://musubi/locale/account.dtd">
+
+<wizard id="account-manager" title="&Musubi.account.title;"
+        onwizardfinish="return Musubi.onWizardFinish();"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <wizardpage pageid="accounts"
+              onpageshow="return Musubi.onPageShowAccounts();"
+              onpageadvanced="return Musubi.onPageAdvancedAccounts();">
+    <richlistbox id="accounts-list" datasources="profile:musubi.sqlite" ref="*" querytype="storage">
+      <richlistitem class="account jabber create">
+        <image src="chrome://musubi/skin/images/jabber.png"/>
+        <label value="&Musubi.account.create-jabber;"/>
+      </richlistitem>
+      <richlistitem class="account gtalk create">
+        <image src="chrome://musubi/skin/images/gtalk.png"/>
+        <label value="&Musubi.account.create-gtalk;"/>
+      </richlistitem>
+      <template>
+        <query>
+          select barejid from accounts
+        </query>
+        <action>
+          <richlistitem uri="?">
+            <image/>
+            <label value="?barejid"/>
+          </richlistitem>
+        </action>
+      </template>
+    </richlistbox>
+  </wizardpage>
+  <wizardpage pageid="edit">
+    <hbox>
+      <image id="edit-header-image"/>
+      <label id="edit-header-title"/>
+    </hbox>
+    <grid>
+      <columns>
+        <column/>
+        <column flex="1"/>
+      </columns>
+      <rows>
+        <row>
+          <label control="node" value="&Musubi.account.node;"/>
+          <textbox id="node"/>
+        </row>
+        <row>
+          <label control="domain" value="&Musubi.account.domain;"/>
+          <textbox id="domain"/>
+        </row>
+        <row>
+          <label control="password" value="&Musubi.account.password;"/>
+          <textbox id="password" type="password"/>
+        </row>
+      </rows>
+    </grid>
+    <groupbox orient="vertical">
+      <caption>
+        <checkbox id="checkbox-advanced" oncommand="Musubi.onCommandCheckedAdvanced();" label="&Musubi.account.advanced-settings;"/>
+      </caption>
+      <grid>
+        <columns>
+          <column/>
+          <column flex="1"/>
+        </columns>
+        <rows>
+          <row>
+            <label control="resource" value="&Musubi.account.resource;"/>
+            <textbox id="resource" value="Musubi"/>
+          </row>
+          <row>
+            <label control="connection-host" value="&Musubi.account.connection-host;"/>
+            <textbox id="connection-host"/>
+          </row>
+          <row>
+            <label control="connection-port" value="&Musubi.account.connection-port;"/>
+            <textbox id="connection-port"/>
+          </row>
+          <row>
+            <label control="connection-scrty" value="&Musubi.account.connection-scrty;"/>
+            <radiogroup id="connection-scrty" orient="horizontal">
+              <radio id="connection-scrty-ssl" label="&Musubi.account.connection-scrty-ssl;" value="1"/>
+              <radio id="connection-scrty-none" label="&Musubi.account.connection-scrty-none;" value="0"/>
+            </radiogroup>
+          </row>
+        </rows>
+      </grid>
+    </groupbox>
+    <checkbox id="checkbox-delete" oncommand="Musubi.onCommandCheckedDelete();" label="&Musubi.account.delete;"/>
+  </wizardpage>
+  <script type="application/javascript" src="chrome://xmpp4moz/content/xmpp.js"/>
+  <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js" />
+</wizard>
+

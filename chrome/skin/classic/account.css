@@ -1,0 +1,30 @@
+richlistitem.account > label {
+    font-size: 150%;
+}
+
+richlistitem.account > image {
+    width: 32px;
+    height: 32px;
+}
+
+image.gtalk {
+    list-style-image: url("chrome://musubi/skin/images/gtalk.png");
+}
+
+image.jabber {
+    list-style-image: url("chrome://musubi/skin/images/jabber.png");
+}
+
+#edit-header-image {
+    width:  32px;
+    height: 32px;
+}
+
+#edit-header-title {
+    font-size: 25px;
+}
+
+#checkbox-delete {
+    list-style-image: url("chrome://musubi/skin/images/lightbulb_off_32.png");
+    font-weight: bold;
+}

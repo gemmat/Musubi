@@ -11,10 +11,19 @@
 >
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
     <description></description>
-    <menulist id="account-menulist" label="&Musubi.sidebar.button.account;" oncommand="Musubi.onSelectedAccount();">
-      <menupopup id="account-menupopup"></menupopup>
-    </menulist>
     <hbox>
+      <menulist id="account-menulist"  label="&Musubi.sidebar.button.account;" oncommand="Musubi.onSelectedAccount();">
+        <menupopup id="account-menupopup" datasources="profile:musubi.sqlite" ref="*" querytype="storage">
+          <template>
+            <query>
+              select * from accounts
+            </query>
+            <action>
+              <menuitem uri="?" label="?barejid"/>
+            </action>
+          </template>
+        </menupopup>
+      </menulist>
       <button oncommand="Musubi.onCommandDisconnect();" label="&Musubi.sidebar.button.disconnect;" />
     </hbox>
     <vbox flex="1" style="overflow: auto" >

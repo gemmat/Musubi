@@ -1,0 +1,14 @@
+<!ENTITY Musubi.account.title                 "アカウント設定">
+<!ENTITY Musubi.account.create-jabber         "つくる(Jabber, XMPP)">
+<!ENTITY Musubi.account.create-gtalk          "つくる(グーグルトーク)">
+<!ENTITY Musubi.account.node                  "ユーザ名">
+<!ENTITY Musubi.account.domain                "ドメイン">
+<!ENTITY Musubi.account.password              "パスワード">
+<!ENTITY Musubi.account.advanced-settings     "難しい設定">
+<!ENTITY Musubi.account.resource              "リソース">
+<!ENTITY Musubi.account.connection-host       "接続ホスト">
+<!ENTITY Musubi.account.connection-port       "接続ポート">
+<!ENTITY Musubi.account.connection-scrty      "暗号化">
+<!ENTITY Musubi.account.connection-scrty-ssl  "SSL">
+<!ENTITY Musubi.account.connection-scrty-none "なし">
+<!ENTITY Musubi.account.delete                "このアカウントを消す">

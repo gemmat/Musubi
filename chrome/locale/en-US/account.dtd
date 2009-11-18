@@ -1,0 +1,11 @@
+<!ENTITY Musubi.account.title                 "Account Manager">
+<!ENTITY Musubi.account.username              "User name">
+<!ENTITY Musubi.account.domain                "Domain">
+<!ENTITY Musubi.account.password              "password">
+<!ENTITY Musubi.account.advanced-settings     "Advanced Settings">
+<!ENTITY Musubi.account.resource              "Resource">
+<!ENTITY Musubi.account.connection-host       "Connection Host">
+<!ENTITY Musubi.account.connection-port       "Connection Port">
+<!ENTITY Musubi.account.connection-scrty      "Encryption">
+<!ENTITY Musubi.account.connection-scrty-ssl  "SSL">
+<!ENTITY Musubi.account.connection-scrty-none "none">

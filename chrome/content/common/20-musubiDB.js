@@ -45,10 +45,6 @@ function accountE4XToObj(aE4X) {
 MusubiDB.prototype = {
   get file() {
     let pd = DirectoryService.get("ProfD", Ci.nsIFile);
-    pd.append("musubi");
-    if (!pd.exists() || !pd.isDirectory()) {
-      pd.create(Ci.nsIFile.DIRECTORY_TYPE, 0755);
-    }
     pd.append("musubi.sqlite");
     return pd;
   },
