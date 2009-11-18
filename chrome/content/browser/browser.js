@@ -170,7 +170,7 @@ function onMessage(aObj) {
   print("message:" + stanza.toXMLString());
   if (from && to) {
     var oobURI  = stanza.nsOob::x.nsOob::url.toString() ||
-                    MusubiPrefs.get("defaultpage", "resource://musubi/app/chat/index.html");
+                    MusubiPrefs.get("defaultpage", "http://musubi.im/chat/");
     var r = filterBrowsers(account, from, oobURI, stanza.@type.toString());
     appendStanzaToBrowsers(r.browsers, stanza);
     if (!r.exist) addTab(account, from, oobURI, stanza);

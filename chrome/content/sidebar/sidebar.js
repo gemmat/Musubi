@@ -59,7 +59,7 @@ function onSelectedAccount() {
   var p = parseJIDwithResource(getSelectedAccount());
   if (!p) return;
   mw.Musubi.xmppConnect(p, function connectFromSidebar(account) {
-    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "resource://musubi/app/presence/index.html"));
+    iframe.contentDocument.location.href = makeXmppURI(p.fulljid, null, "", MusubiPrefs.get("defaultsidebar", "http://musubi.im/presence/"));
   });
 }
 

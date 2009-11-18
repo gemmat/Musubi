@@ -30,7 +30,7 @@ function XMPProtocol() {}
 
 function getContentDocumentURISpec() {
   function defpage() {
-    return MusubiPrefs.get("defaultpage", "resource://musubi/app/chat/index.html");
+    return MusubiPrefs.get("defaultpage", "http://musubi.im/chat/");
   }
   var mw = WindowMediator.getMostRecentWindow("navigator:browser");
   if (!mw) return defpage();
