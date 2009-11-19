@@ -97,6 +97,9 @@ function onCommandDisconnect() {
   setTimeout(function(evt) {
     document.getElementById("message").setAttribute("class", "hidden");
   }, 5000);
+  var iframe = document.getElementById("sidebar-iframe");
+  if (!iframe) return;
+  iframe.webNavigation.loadURI("about:blank", 0, null, null, null);
 }
 
 function onCommandOpenAccount() {
