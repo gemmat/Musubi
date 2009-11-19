@@ -6,7 +6,8 @@
 <!ENTITY Musubi.config.defaultpage.label     "Default page">
 <!ENTITY Musubi.config.defaultsidebar.label  "Default sidebar">
 <!ENTITY Musubi.config.label.about           "Special Thanks to ...">
-<!ENTITY Musubi.config.label.ackknowledge0   "The xmpp4moz Dev-Team">
-<!ENTITY Musubi.config.label.ackknowledge1   "The Hatena Bookmark Extension Dev-Team">
-<!ENTITY Musubi.config.label.ackknowledge2   "The Tombloo Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge0   "Massimiliano Mirra, aka bard (a creator of the xmpp4moz)">
+<!ENTITY Musubi.config.label.ackknowledge1   "The Sameplace Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge2   "The Hatena Bookmark Extension Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge3   "The Tombloo Dev-Team">
 <!ENTITY Musubi.config.label.ackknowledge255 "Jacques Garrigue">

@@ -81,6 +81,7 @@
       <label value="&Musubi.config.label.ackknowledge0;" />
       <label value="&Musubi.config.label.ackknowledge1;" />
       <label value="&Musubi.config.label.ackknowledge2;" />
+      <label value="&Musubi.config.label.ackknowledge3;" />
       <label value="&Musubi.config.label.ackknowledge255;" />
     </vbox>
   </prefpane>

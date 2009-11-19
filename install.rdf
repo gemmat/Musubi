@@ -25,7 +25,6 @@
             <em:homepageURL>http://twitter.com/Gemmat</em:homepageURL>
           </Description>
         </em:localized>
-
         <em:targetApplication>
             <Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
@@ -33,5 +32,12 @@
                 <em:maxVersion>3.6a1pre</em:maxVersion>
             </Description>
         </em:targetApplication>
+        <em:requires>
+          <Description>
+            <em:id>xmpp4moz@hyperstruct.net</em:id>
+            <em:minVersion>0.0.1</em:minVersion>
+            <em:maxVersion>2010010100</em:maxVersion>
+          </Description>
+        </em:requires>
     </Description>
 </RDF>

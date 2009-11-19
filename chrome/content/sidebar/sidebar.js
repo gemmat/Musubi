@@ -102,6 +102,13 @@ function onCommandDisconnect() {
   var p = parseJIDwithResource(getSelectedAccount());
   if (!p) return;
   mw.Musubi.xmppDisconnect(p);
+  var message = document.getElementById("message");
+  var strings = new Strings("chrome://musubi/locale/sidebar.properties");
+  message.value = strings.get("offline", [p.barejid]);
+  message.setAttribute("class", "");
+  setTimeout(function(evt) {
+    document.getElementById("message").setAttribute("class", "hidden");
+  }, 5000);
 }
 
 function onCommandOpenAccount() {

@@ -1,4 +1,4 @@
-const EXPORTED_SYMBOLS = ["Strings", "stringsGetter"];
+const EXPORTED_SYMBOLS = ["Strings"];
 Components.utils.import("resource://musubi/modules/00-Utils.jsm");
 
 function Strings(propertiesFile) {

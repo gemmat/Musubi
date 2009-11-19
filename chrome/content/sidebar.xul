@@ -2,6 +2,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
 <?xml-stylesheet href="chrome://browser/skin/browser.css" type="text/css" ?>
 <?xml-stylesheet href="chrome://browser/skin/places/places.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://musubi/skin/sidebar.css" type="text/css" ?>
 <!DOCTYPE page SYSTEM "chrome://musubi/locale/sidebar.dtd">
 
 <page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -27,6 +28,7 @@
       <button oncommand="Musubi.onCommandDisconnect();" label="&Musubi.sidebar.button.disconnect;" />
     </hbox>
     <vbox flex="1" style="overflow: auto" >
+      <label id="message" class="hidden" value=""/>
       <iframe id="sidebar-iframe"
               flex="1"
               src="about:blank"
