@@ -1,5 +1,7 @@
 <!ENTITY Musubi.account.title                 "Account Manager">
-<!ENTITY Musubi.account.username              "User name">
+<!ENTITY Musubi.account.create-jabber         "New(Jabber, XMPP)">
+<!ENTITY Musubi.account.create-gtalk          "New(Google Talk)">
+<!ENTITY Musubi.account.node                  "User name">
 <!ENTITY Musubi.account.domain                "Domain">
 <!ENTITY Musubi.account.password              "password">
 <!ENTITY Musubi.account.advanced-settings     "Advanced Settings">
@@ -9,3 +11,4 @@
 <!ENTITY Musubi.account.connection-scrty      "Encryption">
 <!ENTITY Musubi.account.connection-scrty-ssl  "SSL">
 <!ENTITY Musubi.account.connection-scrty-none "none">
+<!ENTITY Musubi.account.delete                "Delete this account.">
