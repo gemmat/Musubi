@@ -1,4 +1,5 @@
 <!ENTITY Musubi.sidebar.title "Musubiサイドバー">
 <!ENTITY Musubi.sidebar.button.account "アカウント">
+<!ENTITY Musubi.sidebar.openAccountManager "アカウントを設定する">
 <!ENTITY Musubi.sidebar.button.disconnect "切る">
 

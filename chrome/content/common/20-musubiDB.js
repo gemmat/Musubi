@@ -1,4 +1,4 @@
-const EXPORT = ["MusubiDB", "accountObjToE4X", "accountE4XToObj", "callWithMusubiDB", "DBFindAccount", "DBFindAllAccount", "DBNewAccount", "DBUpdateAccount", "DBDeleteAccount"];
+const EXPORT = ["MusubiDB", "callWithMusubiDB", "DBFindAccount", "DBFindAllAccount", "DBNewAccount", "DBUpdateAccount", "DBDeleteAccount", "DBCountAllAccount"];
 
 function MusubiDB() {
   this.db = null;
@@ -20,26 +20,6 @@ function MusubiDB() {
         bmBoth          : "INTEGER"
       }
     });
-}
-
-function accountObjToE4X(aObject) {
-  return <account>
-           <barejid>{aObject.barejid}</barejid>
-           <resource>{aObject.resource}</resource>
-           <connectionHost>{aObject.connectionHost}</connectionHost>
-           <connectionPort>{aObject.connectionPort}</connectionPort>
-           <connectionScrty>{aObject.connectionScrty}</connectionScrty>
-         </account>;
-}
-
-function accountE4XToObj(aE4X) {
-  return {
-    barejid:          aE4X.barejid        .toString(),
-    resource:         aE4X.resource       .toString(),
-    connectionHost:   aE4X.connectionHost .toString(),
-    connectionPort:   parseInt(aE4X.connectionPort .toString(), 10),
-    connectionScrty:  parseInt(aE4X.connectionScrty.toString(), 10)
-  };
 }
 
 MusubiDB.prototype = {
@@ -112,5 +92,11 @@ function DBDeleteAccount(aAuth) {
     if (!r || !r[0]) return false;
     msbdb.account.deleteById(r[0].id);
     return true;
+  });
+}
+
+function DBCountAllAccount() {
+  return callWithMusubiDB(function countAll(msbdb) {
+    return msbdb.account.countAll();
   });
 }

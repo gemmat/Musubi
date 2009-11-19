@@ -1,3 +1,4 @@
 <!ENTITY Musubi.sidebar.title "Musubi Sidebar">
 <!ENTITY Musubi.sidebar.button.account "Account">
+<!ENTITY Musubi.sidebar.openAccountManager "Open the account manager">
 <!ENTITY Musubi.sidebar.button.disconnect "offline">

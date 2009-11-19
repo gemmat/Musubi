@@ -1,8 +1,8 @@
-richlistitem.account > label {
+richlistitem > label {
     font-size: 150%;
 }
 
-richlistitem.account > image {
+richlistitem > image {
     width: 32px;
     height: 32px;
 }

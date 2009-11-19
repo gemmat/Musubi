@@ -11,7 +11,7 @@
       title="&Musubi.sidebar.title;"
 >
     <script type="application/javascript; version=1.8" charset="utf-8" src="autoloader.js"/>
-    <description></description>
+    <description/>
     <hbox>
       <menulist id="account-menulist"  label="&Musubi.sidebar.button.account;" oncommand="Musubi.onSelectedAccount();">
         <menupopup id="account-menupopup" datasources="profile:musubi.sqlite" ref="*" querytype="storage">
@@ -23,6 +23,7 @@
               <menuitem uri="?" label="?barejid"/>
             </action>
           </template>
+          <menuitem id="open-account-manager" label="&Musubi.sidebar.openAccountManager;" selected="false"/>
         </menupopup>
       </menulist>
       <button oncommand="Musubi.onCommandDisconnect();" label="&Musubi.sidebar.button.disconnect;" />
@@ -37,8 +38,7 @@
     <script type="text/javascript; version=1.8" charset="utf-8">
     // <![CDATA[
     (function() {
-       document.addEventListener("load",   Musubi.onLoad,   true);
-       document.addEventListener("unload", Musubi.onUnload, true);
+      document.addEventListener("load", Musubi.onLoad, true);
     })();
     // ]]>
     </script>

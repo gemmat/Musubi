@@ -8,10 +8,10 @@ function onPageShowAccounts() {
       var image = item.firstChild;
       var label = item.firstChild.nextSibling;
       if (/@gmail\.com$/.test(label.value)) {
-        item.setAttribute("class", "account gtalk edit");
+         item.setAttribute("class", "gtalk");
         image.setAttribute("class", "gtalk");
       } else {
-        item.setAttribute("class", "account jabber edit");
+         item.setAttribute("class", "jabber");
         image.setAttribute("class", "jabber");
       }
     }
@@ -19,22 +19,25 @@ function onPageShowAccounts() {
 }
 
 function onPageAdvancedAccounts() {
-  function parseItemClass(item) {
-    var arr = item.getAttribute("class").split(" ");
-    if (arr.indexOf("create") != -1) return "create";
-    if (arr.indexOf("edit")   != -1) return "edit";
-    return "";
-  }
-  function parseItemClass2(item) {
+  function selectService(item) {
     var arr = item.getAttribute("class").split(" ");
     if (arr.indexOf("gtalk")  != -1) return "gtalk";
     if (arr.indexOf("jabber") != -1) return "jabber";
     return "";
   }
+  function selectAction(item) {
+    switch (item.getAttribute("id")) {
+    case "create-account-jabber": //FALLTHROUGH
+    case "create-account-gtalk":
+      return "create";
+    default:
+      return "edit";
+    };
+  }
   var item = document.getElementById("accounts-list").selectedItem;
   if (!item) return false;
   var strings = new Strings("chrome://musubi/locale/account.properties");
-  switch (parseItemClass2(item)) {
+  switch (selectService(item)) {
   case "gtalk":
     document.getElementById("edit-header-image").setAttribute("class", "gtalk");
     document.getElementById("edit-header-title").value = strings.get("gtalk-title");
@@ -56,7 +59,7 @@ function onPageAdvancedAccounts() {
   }
   document.getElementById("checkbox-delete").checked = false;
   onCommandCheckedDelete();
-  switch (parseItemClass(item)) {
+  switch (selectAction(item)) {
   case "create":
     document.getElementById("node").value = "";
     document.getElementById("password").value = "";

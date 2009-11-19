@@ -11,12 +11,12 @@
               onpageshow="return Musubi.onPageShowAccounts();"
               onpageadvanced="return Musubi.onPageAdvancedAccounts();">
     <richlistbox id="accounts-list" datasources="profile:musubi.sqlite" ref="*" querytype="storage">
-      <richlistitem class="account jabber create">
-        <image src="chrome://musubi/skin/images/jabber.png"/>
+      <richlistitem id="create-account-jabber" class="jabber">
+        <image class="jabber"/>
         <label value="&Musubi.account.create-jabber;"/>
       </richlistitem>
-      <richlistitem class="account gtalk create">
-        <image src="chrome://musubi/skin/images/gtalk.png"/>
+      <richlistitem id="create-account-gtalk" class="gtalk">
+        <image class="gtalk"/>
         <label value="&Musubi.account.create-gtalk;"/>
       </richlistitem>
       <template>
