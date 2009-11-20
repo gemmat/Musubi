@@ -94,7 +94,7 @@ function onCommandDisconnect() {
   var strings = new Strings("chrome://musubi/locale/sidebar.properties");
   message.value = strings.get("offline", [p.barejid]);
   message.setAttribute("class", "");
-  setTimeout(function(evt) {
+  timerOneShot(function(timer) {
     document.getElementById("message").setAttribute("class", "hidden");
   }, 5000);
   var iframe = document.getElementById("sidebar-iframe");

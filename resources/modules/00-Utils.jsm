@@ -105,6 +105,15 @@ function ajaxRequest(aMethod, aURL, aQuery, aOnComplete) {
   req.send(queryToString(aQuery));
 }
 
+function timerOneShot(aCallback, aMilliseconds) {
+  var event = {notify: aCallback};
+  var timer = Cc["@mozilla.org/timer;1"]
+                .createInstance(Ci.nsITimer);
+  timer.initWithCallback(event,
+                         aMilliseconds,
+                         Ci.nsITimer.TYPE_ONE_SHOT);
+}
+
 //(2009-11-13) https://bugzilla.mozilla.org/show_bug.cgi?id=195356
 //So we can't use #, omg.
 
