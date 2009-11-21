@@ -236,15 +236,13 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   var q = parseJID(o.path);
   if (!q) return;
   var subs = findPWDSubscription(p, aItemId);
-  if (!subs || subs == "remove") return;
+  if (subs == "remove" || subs == "none") return;
   xmppSend(p, <iq type="set" id="roster_2">
                 <query xmlns="jabber:iq:roster">
                   <item jid={q.barejid} name={title}/>
                 </query>
               </iq>);
-  if (subs == "to" || subs == "both") {
-    xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
-  }
+  xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
 }
 
 // users often remove items easily, so we decided not to correspond "onItemRemoved" to "remove roster".
