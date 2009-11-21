@@ -1,0 +1,3 @@
+.musubi-link {
+   -moz-binding: url("chrome://musubi/content/widgets.xml#link");
+}

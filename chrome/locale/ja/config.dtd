@@ -6,8 +6,15 @@
 <!ENTITY Musubi.config.defaultpage.label     "デフォルトのページ">
 <!ENTITY Musubi.config.defaultsidebar.label  "デフォルトのサイドバー">
 <!ENTITY Musubi.config.label.about           "Special Thanks to ...">
-<!ENTITY Musubi.config.label.ackknowledge0   "Massimiliano Mirra, aka bard (xmpp4moz開発者)">
-<!ENTITY Musubi.config.label.ackknowledge1   "Sameplace 開発者のみなさん">
-<!ENTITY Musubi.config.label.ackknowledge2   "はてなブックマーク拡張 制作スタッフのみなさん">
-<!ENTITY Musubi.config.label.ackknowledge3   "Tombloo 開発者のみなさん">
-<!ENTITY Musubi.config.label.ackknowledge255 "雅利賀 惹玖 先生">
+<!ENTITY Musubi.config.label.ackknowledge0         "Massimiliano Mirra, aka bard (xmpp4moz開発者)">
+<!ENTITY Musubi.config.label.ackknowledge0.href    "http://hyperstruct.net/">
+<!ENTITY Musubi.config.label.ackknowledge1         "Sameplace 開発者のみなさん">
+<!ENTITY Musubi.config.label.ackknowledge1.href    "http://www.sameplace.cc/">
+<!ENTITY Musubi.config.label.ackknowledge2         "はてなブックマーク拡張 制作スタッフのみなさん">
+<!ENTITY Musubi.config.label.ackknowledge2.href    "http://b.hatena.ne.jp/guide/firefox_addon">
+<!ENTITY Musubi.config.label.ackknowledge3         "Tombloo 開発者のみなさん">
+<!ENTITY Musubi.config.label.ackknowledge3.href    "http://wiki.github.com/to/tombloo">
+<!ENTITY Musubi.config.label.ackknowledge4         "Hide Itoh様(PIXTURE STUDIO)(かわいいおむすびのアイコン)">
+<!ENTITY Musubi.config.label.ackknowledge4.href    "http://www.pixture.com/drupal/ja">
+<!ENTITY Musubi.config.label.ackknowledge255       "雅利賀 惹玖 先生">
+<!ENTITY Musubi.config.label.ackknowledge255.href  "http://www.math.nagoya-u.ac.jp/~garrigue/home-j.html">

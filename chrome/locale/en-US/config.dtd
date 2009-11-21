@@ -6,8 +6,15 @@
 <!ENTITY Musubi.config.defaultpage.label     "Default page">
 <!ENTITY Musubi.config.defaultsidebar.label  "Default sidebar">
 <!ENTITY Musubi.config.label.about           "Special Thanks to ...">
-<!ENTITY Musubi.config.label.ackknowledge0   "Massimiliano Mirra, aka bard (a creator of the xmpp4moz)">
-<!ENTITY Musubi.config.label.ackknowledge1   "The Sameplace Dev-Team">
-<!ENTITY Musubi.config.label.ackknowledge2   "The Hatena Bookmark Extension Dev-Team">
-<!ENTITY Musubi.config.label.ackknowledge3   "The Tombloo Dev-Team">
-<!ENTITY Musubi.config.label.ackknowledge255 "Jacques Garrigue">
+<!ENTITY Musubi.config.label.ackknowledge0         "Massimiliano Mirra, aka bard (a creator of the xmpp4moz)">
+<!ENTITY Musubi.config.label.ackknowledge0.href    "http://hyperstruct.net/">
+<!ENTITY Musubi.config.label.ackknowledge1         "The Sameplace Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge1.href    "http://www.sameplace.cc/">
+<!ENTITY Musubi.config.label.ackknowledge2         "The Hatena Bookmark Extension Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge2.href    "http://b.hatena.ne.jp/guide/firefox_addon">
+<!ENTITY Musubi.config.label.ackknowledge3         "The Tombloo Dev-Team">
+<!ENTITY Musubi.config.label.ackknowledge3.href    "http://wiki.github.com/to/tombloo">
+<!ENTITY Musubi.config.label.ackknowledge4         "Hide Itoh(PIXTURE STUDIO) for the cute riceball icon">
+<!ENTITY Musubi.config.label.ackknowledge4.href    "http://www.pixture.com/drupal/">
+<!ENTITY Musubi.config.label.ackknowledge255       "Jacques Garrigue">
+<!ENTITY Musubi.config.label.ackknowledge255.href  "http://www.math.nagoya-u.ac.jp/~garrigue/">

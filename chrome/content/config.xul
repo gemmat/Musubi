@@ -78,11 +78,24 @@
     <preferences />
     <vbox>
       <label value="&Musubi.config.label.about;" />
-      <label value="&Musubi.config.label.ackknowledge0;" />
-      <label value="&Musubi.config.label.ackknowledge1;" />
-      <label value="&Musubi.config.label.ackknowledge2;" />
-      <label value="&Musubi.config.label.ackknowledge3;" />
-      <label value="&Musubi.config.label.ackknowledge255;" />
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge0;"
+              href="&Musubi.config.label.ackknowledge0.href;"/>
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge1;"
+              href="&Musubi.config.label.ackknowledge1.href;"/>
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge2;"
+              href="&Musubi.config.label.ackknowledge2.href;"/>
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge3;"
+              href="&Musubi.config.label.ackknowledge3.href;"/>
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge4;"
+              href="&Musubi.config.label.ackknowledge4.href;"/>
+      <label class="text-link musubi-link"
+             value="&Musubi.config.label.ackknowledge255;"
+              href="&Musubi.config.label.ackknowledge255.href;"/>
     </vbox>
   </prefpane>
 </prefwindow>
