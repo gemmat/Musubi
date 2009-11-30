@@ -149,7 +149,7 @@ function makeStorageKey(aURL) {
 
 function addTab(aAuth, aPath, aOutofBandDataURI, aStanza) {
   if (!gBrowser) return;
-  var url = makeXmppURI(aAuth.fulljid, aPath.fulljid, "", aOutofBandDataURI);
+  var url = makeXmppURI(aAuth.fulljid, aPath ? aPath.fulljid : null, "", aOutofBandDataURI);
   // guard from duplicating tab during its loading.
   if (Application.storage.get(url, false)) return;
   var newTab = gBrowser.getBrowserForTab(gBrowser.addTab(url));
