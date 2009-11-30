@@ -77,6 +77,7 @@ function alreadyExistP(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOutofBandD
   if (!aFrom || !aAuth || !aPath) return false;
   if (aAccount.barejid != aAuth.barejid) return false;
   if (aAccount.resource && aAccount.resource != aAuth.resource) return false;
+  if (!aPath) return true;
   if (aFrom.barejid != aPath.barejid) return false;
   if (aMessageType == "groupchat") return true;
   // TODO: consider whether to need a following conditional or not.
