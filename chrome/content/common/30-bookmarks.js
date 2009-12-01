@@ -237,12 +237,12 @@ function onItemAdded(aItemId, aFolder, aIndex) {
   if (!q) return;
   var subs = findPWDSubscription(p, aItemId);
   if (subs == "remove" || subs == "none") return;
-  xmppSend(p, <iq type="set" id="roster_2">
-                <query xmlns="jabber:iq:roster">
-                  <item jid={q.barejid} name={title}/>
-                </query>
-              </iq>);
-  xmppSend(p, <presence to={q.barejid} type="subscribe"/>);
+  xmppSend(p, null, <iq type="set" id="roster_2">
+                      <query xmlns="jabber:iq:roster">
+                        <item jid={q.barejid} name={title}/>
+                      </query>
+                    </iq>);
+  xmppSend(p, q, <presence type="subscribe"/>, true);
 }
 
 // users often remove items easily, so we decided not to correspond "onItemRemoved" to "remove roster".
@@ -265,11 +265,11 @@ function onItemChanged(aBookmarkId, aProperty, aIsAnnotationProperty, aValue) {
   if (!p) return;
   var q = parseJID(o.path);
   if (!q) return;
-  xmppSend(p, <iq type="set" id="roster_3">
-                <query xmlns="jabber:iq:roster">
-                  <item jid={q.barejid} name={aValue}/>
-                </query>
-              </iq>);
+  xmppSend(p, null, <iq type="set" id="roster_3">
+                      <query xmlns="jabber:iq:roster">
+                        <item jid={q.barejid} name={aValue}/>
+                      </query>
+                    </iq>);
 }
 
 function onItemVisited(aBookmarkId, aVisitID, aTime) {
@@ -291,34 +291,34 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
     switch (aOldSubscription) {
     case "remove":
       switch (aNewSubscription) {
-      case "to":   return <presence to={aPath.barejid} type="subscribe"/>;
-      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
+      case "to":   return <presence type="subscribe"/>;
+      case "both": return <presence type="subscribe"/>;
       }
       break;
     case "none":
       switch (aNewSubscription) {
-      case "to":   return <presence to={aPath.barejid} type="subscribe"/>;
-      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
+      case "to":   return <presence type="subscribe"/>;
+      case "both": return <presence type="subscribe"/>;
       }
       break;
     case "to":
       switch (aNewSubscription) {
-      case "none": return <presence to={aPath.barejid} type="unsubscribe"/>;
-      case "from": return <presence to={aPath.barejid} type="subscribe"/>;
-      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
+      case "none": return <presence type="unsubscribe"/>;
+      case "from": return <presence type="subscribe"/>;
+      case "both": return <presence type="subscribe"/>;
       }
       break;
     case "from":
       switch (aNewSubscription) {
-      case "none": return <presence to={aPath.barejid} type="unsubscribed"/>;
-      case "to":   return <presence to={aPath.barejid} type="subscribe"/>;
-      case "both": return <presence to={aPath.barejid} type="subscribe"/>;
+      case "none": return <presence type="unsubscribed"/>;
+      case "to":   return <presence type="subscribe"/>;
+      case "both": return <presence type="subscribe"/>;
       }
       break;
     case "both":
       switch (aNewSubscription) {
-      case "none": return <presence to={aPath.barejid} type="unsubscribed"/>;
-      case "from": return <presence to={aPath.barejid} type="unsubscribe"/>;
+      case "none": return <presence type="unsubscribed"/>;
+      case "from": return <presence type="unsubscribe"/>;
       }
       break;
     }
@@ -335,7 +335,14 @@ function onItemMoved(aItemId, aOldParent, aOldIndex, aNewParent, aNewIndex) {
                    findPWDSubscription(p, aOldParent),
                    findPWDSubscription(p, aNewParent));
   if (!r) return;
-  xmppSend(p, r);
+  switch (r.name().localName) {
+  case "presence":
+    xmppSend(p, q, r, true);
+    break;
+  case "iq":
+    xmppSend(p, null, r);
+    break;
+  }
 }
 
 function onBeforeItemRemoved(aItemId) {

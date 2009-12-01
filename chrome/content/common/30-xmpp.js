@@ -1,8 +1,28 @@
 const EXPORT = ["xmppSend", "xmppCachedPresences", "xmppConnect", "xmppDisconnect"];
 
-function xmppSend(aAuth, aXML) {
+function xmppSend(aAuth, aPath, aStanza, aToMustBeBarejidP) {
+  if (isChanP(aAuth)) {
+    if (!aStanza.@owner.length()) return;
+    aAuth = parseJID(aStanza.@owner.toString());
+    if (!aAuth) return;
+  }
+  if (aPath) {
+    if (aToMustBeBarejidP) {
+      aStanza.@to = aPath.barejid;
+    } else if (aPath.resource) {
+      aStanza.@to = aPath.fulljid;
+    } else if (aStanza.@rsrc.length()) {
+      aStanza.@to = aPath.barejid + "/" + aStanza.@rsrc;
+    } else {
+      aStanza.@to = aPath.barejid;
+    }
+  } else {
+    delete aStanza.@to;
+  }
+  delete aStanza.@rsrc;
+  delete aStanza.@owner;
   xmppConnect(aAuth, function(account) {
-    XMPP.send(aAuth.fulljid, aXML);
+    XMPP.send(aAuth.fulljid, aStanza);
   });
 }
 
