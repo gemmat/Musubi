@@ -1,4 +1,4 @@
-const EXPORT = ["onLoad", "onUnload", "processStanzaWithURI", "filterBrowsers", "makeChannel", "getMusubiSidebar"];
+const EXPORT = ["onLoad", "onUnload", "filterBrowsers", "makeChannel", "appendStanzaToBrowsers", "getMusubiSidebar"];
 // export filterBrowsers just for the debug.
 
 const nsOob = new Namespace("jabber:x:oob");
@@ -9,21 +9,6 @@ function onLoad(aEvent) {
 
 function onUnload(aEvent) {
   document.removeEventListener("XmppEvent", onXmppEventAtDocument, false, true);
-}
-
-function processStanzaWithURI(aAuth, aPath, aStanza) {
-  if (aPath) {
-    if (aPath.resource) {
-      aStanza.@to = aPath.fulljid;
-    } else if (aStanza.@rsrc.length()) {
-      aStanza.@to = aPath.barejid + "/" + aStanza.@rsrc;
-    } else {
-      aStanza.@to = aPath.barejid;
-    }
-  } else {
-    delete aStanza.@to;
-  }
-  delete aStanza.@rsrc;
 }
 
 function onXmppEventAtDocument(aEvent) {
@@ -57,12 +42,16 @@ function onXmppEventAtDocument(aEvent) {
     }
     break;
   }
-  processStanzaWithURI(p, q, stanza);
-  xmppSend(p, stanza);
+  var to = stanza.@to.length() ? parseJID(stanza.@to.toString()) : q;
+  if (isChanP(to)) {
+    chanSend(p, to, stanza);
+  } else {
+    xmppSend(p, q, stanza);
+  }
 }
 
 function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aMessageType) {
-  if (!aFrom || !aAuth) return false;
+  if (!aAccount || !aFrom || !aAuth) return false;
   if (aAccount.barejid != aAuth.barejid) return false;
   if (aAccount.resource && (aAccount.resource != aAuth.resource)) return false;
   if (!aPath) return true;
@@ -71,18 +60,6 @@ function filterWithURI(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aMessageTyp
   // TODO: consider whether to need a following conditional or not.
   //if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
   return true;
-}
-
-function alreadyExistP(aAccount, aFrom, aAuth, aPath, aQuery, aFrag, aOutofBandDataURI, aMessageType) {
-  if (!aFrom || !aAuth || !aPath) return false;
-  if (aAccount.barejid != aAuth.barejid) return false;
-  if (aAccount.resource && aAccount.resource != aAuth.resource) return false;
-  if (!aPath) return true;
-  if (aFrom.barejid != aPath.barejid) return false;
-  if (aMessageType == "groupchat") return true;
-  // TODO: consider whether to need a following conditional or not.
-  //if (aFrom.resource && (aFrom.resource != aPath.resource)) return false;
-  return (aFrag == aOutofBandDataURI);
 }
 
 function filterBrowsers(aAccount, aFrom, aOutofBandDataURI, aMessageType) {
@@ -96,9 +73,10 @@ function filterBrowsers(aAccount, aFrom, aOutofBandDataURI, aMessageType) {
     var p = parseJID(o.auth);
     if (!p) continue;
     var q = parseJID(o.path);
-    if (filterWithURI(aAccount, aFrom, p, q, o.query, o.frag, aMessageType)) bs.push(b);
-    if (!exist &&
-        alreadyExistP(aAccount, aFrom, p, q, o.query, o.frag, aOutofBandDataURI, aMessageType)) exist = true;
+    if (filterWithURI(aAccount, aFrom, p, q, o.query, o.frag, aMessageType)) {
+      bs.push(b);
+      if (o.frag == aOutofBandDataURI) exist = true;
+    }
   }
   return {browsers: bs, exist: exist};
 }
@@ -188,7 +166,7 @@ function onPresence(aObj) {
     if (stanza.@type.toString() == "subscribe") {
       // This is the Twitter style.
       if (!MusubiPrefs.get("privatemode", false)) {
-        xmppSend(account, <presence to={from.barejid} type="subscribed"/>);
+        xmppSend(account, from, <presence type="subscribed"/>, true);
       }
     }
   }

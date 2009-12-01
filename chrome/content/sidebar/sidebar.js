@@ -30,8 +30,7 @@ function onXmppEventAtIframe(aEvent) {
     break;
   case "presence":
     if (mw) {
-      mw.Musubi.processStanzaWithURI(p, q, stanza);
-      mw.Musubi.xmppSend(p, stanza);
+      mw.Musubi.xmppSend(p, q, stanza);
     }
     break;
   }
